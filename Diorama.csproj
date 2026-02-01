@@ -7,4 +7,10 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Reference Include="BrickVault">
+      <HintPath>G:\BV\BrickVault\bin\Release\net8.0\BrickVault.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

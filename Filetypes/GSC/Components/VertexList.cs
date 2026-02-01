@@ -40,11 +40,12 @@ namespace Diorama.Filetypes.GSC.Components
 
                 list.Definitions[vDef] = def;
 
-                Console.WriteLine($"Vertex Definition {vDef}: Variable={def.Variable}, Type={def.Type}, Offset={def.Offset}");
+                //Console.WriteLine($"Vertex Definition {vDef}: Variable={def.Variable}, Type={def.Type}, Offset={def.Offset}");
             }
 
-            Debug.Assert(file.ReadUInt(true) == 0);
-            Debug.Assert(file.ReadUShort(true) == 0); // 6 bytes of padding
+            byte[] instancingDividers = new byte[6];
+            for (int i = 0; i < 6; i++)
+                instancingDividers[i] = file.ReadByte();
 
             for (int vertexIndex = 0; vertexIndex < vertexCount; vertexIndex++)
             {
@@ -90,38 +91,38 @@ namespace Diorama.Filetypes.GSC.Components
             {
                 case VertexDefinitionStorageEnum.vec2float:
                     return new Vector4(
-                        file.ReadFloat(true),
-                        file.ReadFloat(true),
+                        file.ReadFloat(false),
+                        file.ReadFloat(false),
                         0f,
                         1f);
 
                 case VertexDefinitionStorageEnum.vec3float:
                     return new Vector4(
-                        file.ReadFloat(true),
-                        file.ReadFloat(true),
-                        file.ReadFloat(true),
+                        file.ReadFloat(false),
+                        file.ReadFloat(false),
+                        file.ReadFloat(false),
                         1f);
 
                 case VertexDefinitionStorageEnum.vec4float:
                     return new Vector4(
-                        file.ReadFloat(true),
-                        file.ReadFloat(true),
-                        file.ReadFloat(true),
-                        file.ReadFloat(true));
+                        file.ReadFloat(false),
+                        file.ReadFloat(false),
+                        file.ReadFloat(false),
+                        file.ReadFloat(false));
 
                 case VertexDefinitionStorageEnum.vec2half:
                     return new Vector4(
-                        (float)file.ReadHalf(true),
-                        (float)file.ReadHalf(true),
+                        (float)file.ReadHalf(false),
+                        (float)file.ReadHalf(false),
                         0f,
                         1f);
 
                 case VertexDefinitionStorageEnum.vec4half:
                     return new Vector4(
-                        (float)file.ReadHalf(true),
-                        (float)file.ReadHalf(true),
-                        (float)file.ReadHalf(true),
-                        (float)file.ReadHalf(true));
+                        (float)file.ReadHalf(false),
+                        (float)file.ReadHalf(false),
+                        (float)file.ReadHalf(false),
+                        (float)file.ReadHalf(false));
 
                 case VertexDefinitionStorageEnum.vec4mini:
                     return new Vector4(
@@ -131,7 +132,7 @@ namespace Diorama.Filetypes.GSC.Components
                         NormalizeByte(file.ReadByte()));
 
                 case VertexDefinitionStorageEnum.vec4char:
-                    file.Seek(4, SeekOrigin.Current);
+                    Debug.Assert(1 == 0, "vec4char");
                     return Vector4.Zero;
 
                 case VertexDefinitionStorageEnum.color4char:

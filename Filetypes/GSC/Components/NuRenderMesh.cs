@@ -10,5 +10,10 @@ namespace Diorama.Filetypes.GSC.Components
     {
         public VertexList[] VertexBuffers;
         public ushort[] Indices;
+
+        public uint VerticesBase;
+        public uint VerticesCount;
+        public uint IndicesBase;
+        public uint IndicesCount;
     }
 }
