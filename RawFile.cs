@@ -99,7 +99,7 @@ namespace Diorama
         {
             byte[] data = new byte[size];
             fileStream.Read(data, 0, size);
-            if (bigEndian)
+            if (true)
             {
                 Array.Reverse(data);
             }
@@ -108,7 +108,7 @@ namespace Diorama
 
         private void WriteBlock(byte[] block, bool bigEndian)
         {
-            if (bigEndian)
+            if (true)
             {
                 Array.Reverse(block);
             }
@@ -124,70 +124,80 @@ namespace Diorama
 
         public short ReadShort(bool bigEndian = false)
         {
-            return BitConverter.ToInt16(ReadBlock(2, bigEndian));
+            return BitConverter.ToInt16(ReadBlock(2, true));
         }
 
         public void WriteShort(short toWrite, bool bigEndian = false)
         {
-            WriteBlock(BitConverter.GetBytes(toWrite), bigEndian);
+            WriteBlock(BitConverter.GetBytes(toWrite), true);
         }
 
         public ushort ReadUShort(bool bigEndian = false)
         {
-            return BitConverter.ToUInt16(ReadBlock(2, bigEndian));
+            return BitConverter.ToUInt16(ReadBlock(2, true));
         }
 
         public void WriteUShort(ushort toWrite, bool bigEndian = false)
         {
-            WriteBlock(BitConverter.GetBytes(toWrite), bigEndian);
+            WriteBlock(BitConverter.GetBytes(toWrite), true);
         }
 
         public int ReadInt(bool bigEndian = false)
         {
-            return BitConverter.ToInt32(ReadBlock(4, bigEndian));
+            return BitConverter.ToInt32(ReadBlock(4, true));
         }
 
         public void WriteInt(int toWrite, bool bigEndian = false)
         {
-            WriteBlock(BitConverter.GetBytes(toWrite), bigEndian);
+            WriteBlock(BitConverter.GetBytes(toWrite), true);
         }
 
         public float ReadFloat(bool bigEndian = false)
         {
-            return BitConverter.ToSingle(ReadBlock(4, bigEndian));
+            return BitConverter.ToSingle(ReadBlock(4, true));
         }
 
         public void WriteFloat(float toWrite, bool bigEndian = false)
         {
-            WriteBlock(BitConverter.GetBytes(toWrite), bigEndian);
+            WriteBlock(BitConverter.GetBytes(toWrite), true);
         }
 
         public uint ReadUInt(bool bigEndian = false)
         {
-            return BitConverter.ToUInt32(ReadBlock(4, bigEndian));
+            return BitConverter.ToUInt32(ReadBlock(4, true));
         }
 
         public void WriteUInt(uint toWrite, bool bigEndian = false)
         {
-            WriteBlock(BitConverter.GetBytes(toWrite), bigEndian);
+            WriteBlock(BitConverter.GetBytes(toWrite), true);
         }
 
         public long ReadLong(bool bigEndian = false)
         {
-            return BitConverter.ToInt64(ReadBlock(8, bigEndian));
+            return BitConverter.ToInt64(ReadBlock(8, true));
         }
 
         public void WriteLong(long toWrite, bool bigEndian = false)
         {
-            WriteBlock(BitConverter.GetBytes(toWrite), bigEndian);
+            WriteBlock(BitConverter.GetBytes(toWrite), true);
         }
 
         public ulong ReadULong(bool bigEndian = false)
         {
-            return BitConverter.ToUInt64(ReadBlock(8, bigEndian));
+            return BitConverter.ToUInt64(ReadBlock(8, true));
         }
 
         public void WriteULong(ulong toWrite, bool bigEndian = false)
+        {
+            WriteBlock(BitConverter.GetBytes(toWrite), true);
+        }
+
+        public Half ReadHalf(bool bigEndian = false)
+        {
+            return BitConverter.ToHalf(ReadBlock(2, bigEndian));
+        }
+
+        public void WriteHalf(Half toWrite, bool bigEndian = false)
         {
             WriteBlock(BitConverter.GetBytes(toWrite), bigEndian);
         }
@@ -230,7 +240,7 @@ namespace Diorama
         /// <summary>
         /// Reads a pascal string with a SHORT preceding it
         /// </summary>
-        /// <param name="bigEndian"></param>
+        /// <param name="true"></param>
         /// <param name="security"></param>
         /// <returns></returns>
         /// <exception cref="DataMisalignedException"></exception>
@@ -291,7 +301,7 @@ namespace Diorama
 
             Seek(markerPosition, SeekOrigin.Begin);
 
-            WriteInt((int)length, bigEndian);
+            WriteInt((int)length, true);
 
             Seek(currentPosition, SeekOrigin.Begin);
         }

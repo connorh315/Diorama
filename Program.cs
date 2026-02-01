@@ -1,10 +1,12 @@
-﻿namespace Diorama
+﻿using Diorama.Filetypes.GSC;
+
+namespace Diorama
 {
     internal class Program
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello, World!");
+            GScene.Parse(@"A:\CHARS\MISC\ITEMS\VORTECHSTAFF_DX11.GSC");
         }
     }
 }
