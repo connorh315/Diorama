@@ -16,24 +16,24 @@ namespace Diorama
             int total = 0;
             foreach (var datPath in Directory.GetFiles("F:\\PS4Games\\CUSA01176\\data\\", "*.DAT", SearchOption.AllDirectories))
             {
-                if (datPath.Contains("GAME")) continue;
-
                 var dat = DATFile.Open(datPath);
                 foreach (var entry in dat.Files)
                 {
                     if (entry.Path.EndsWith("gsc"))
                     {
                         total++;
-                        using (BrickVault.RawFile file = BrickVault.RawFile.Create(@"A:\testfile.gsc"), datFile = new BrickVault.RawFile(dat.FileLocation))
+                        using (RawFile file = new RawFile(new MemoryStream()))
+                        using (BrickVault.RawFile datFile = new BrickVault.RawFile(dat.FileLocation))
                         {
                             dat.ExtractFile(entry, datFile, file.fileStream);
+                            file.fileStream.Position = 0;
+                            bool success = TryParseFile(file);
+                            if (success)
+                            {
+                                counter++;
+                            }
                         }
 
-                        bool success = TryParseFile(@"A:\testfile.gsc");
-                        if (success)
-                        {
-                            counter++;
-                        }
                     }
                 }
             }
@@ -64,6 +64,31 @@ namespace Diorama
                 countFails[ex.Message]++;
             }
             return false;
+        }
+
+        static bool TryParseFile(RawFile file)
+        {
+            try
+            {
+                ParseRawFile(file);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                if (!ex.Message.StartsWith("Unsupported NU20 version"))
+                    Console.WriteLine($"Failed to parse {file.FileLocation}: {ex}");
+
+                if (!countFails.ContainsKey(ex.Message))
+                    countFails[ex.Message] = 0;
+
+                countFails[ex.Message]++;
+            }
+            return false;
+        }
+
+        static void ParseRawFile(RawFile file)
+        {
+            GScene gsc = GScene.Parse(file);
         }
 
         static void ParseFile(string path, bool shouldExport = true)

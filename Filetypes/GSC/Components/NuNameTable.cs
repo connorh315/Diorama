@@ -16,7 +16,7 @@ namespace Diorama.Filetypes.GSC.Components
             Debug.Assert(file.ReadString(4) == "LBTN");
 
             uint ntblVersion = file.ReadUInt(true);
-            Debug.Assert(ntblVersion == 0x4f || ntblVersion == 0x50);
+            Debug.Assert(ntblVersion == 0x4f || ntblVersion == 0x50 || ntblVersion == 0x53);
 
             int ntblLength = file.ReadInt(true);
             string ntblData = file.ReadString(ntblLength);
