@@ -89,6 +89,61 @@ namespace Diorama.Filetypes.GSC
             List<NuSpline> splines = NuVector.ReadVectorArray<NuSpline>(file);
         }
 
+        protected virtual void ReadLightmapData()
+        {
+            Debug.Assert(file.ReadString(4) == "TDML");
+            uint version = file.ReadUInt(true);
+            Debug.Assert(version == 3); 
+
+            if (version >= 3)
+            {
+                List<NuLightmapData> lightmapData = NuVector.ReadVectorArray<NuLightmapData>(file);
+            }
+        }
+
+        protected virtual void ReadCpuSkinned()
+        {
+            Debug.Assert(file.ReadString(4) == "SUPC");
+            uint version = file.ReadUInt(true);
+            Debug.Assert(version == 4);
+
+            List<ushort> dummy = NuVector.ReadVectorArray<ushort>(file);
+        }
+
+        protected virtual void ReadDisplayScene()
+        {
+            Debug.Assert(file.ReadString(4) == "PSID");
+            uint version = file.ReadUInt(true);
+            Debug.Assert(version == 0x20);
+
+            List<NuDefunctDisplayItem> displayItems = NuVector.ReadVectorArray<NuDefunctDisplayItem>(file); // only for versions < 0x22
+            List<NuClipObject> clipObjects = NuVector.ReadVectorArray<NuClipObject>(file);
+            List<NuSpecialObject> specialObjects = NuVector.ReadVectorArray<NuSpecialObject>(file);
+            
+            List<ushort> specialGroupNodes = NuVector.ReadVectorArray<ushort>(file);
+            Debug.Assert(specialGroupNodes.Count == 0);
+
+            List<NuVec4> boundsCenterAndDistSqrt = NuVector.ReadVectorArray<NuVec4>(file);
+            List<NuVec4> boundsExtentsAndRadius = NuVector.ReadVectorArray<NuVec4>(file);
+            List<NuSceneInstance> sceneInstances = NuVector.ReadVectorArray<NuSceneInstance>(file);
+            List<ushort> sceneInstanceFixups = NuVector.ReadVectorArray<ushort>(file); // not sure about this one - needs looking into
+            Debug.Assert(sceneInstanceFixups.Count == 0);
+            List<ushort> animMtls = NuVector.ReadVectorArray<ushort>(file); // not sure about this one - needs looking into
+            Debug.Assert(animMtls.Count == 0);
+            List<NuTransformMtx> transformMtxs = NuVector.ReadVectorArray<NuTransformMtx>(file);
+            List<ushort> faceOnDisplayItems = NuVector.ReadVectorArray<ushort>(file); // not sure about this one - needs looking into
+            Debug.Assert(faceOnDisplayItems.Count == 0);
+        }
+
+        protected override void ReadTextureAnim3SceneBlock()
+        {
+            Debug.Assert(file.ReadString(4) == "BNAT");
+            uint version = file.ReadUInt(true);
+            Debug.Assert(version == 5);
+
+
+        }
+
         protected override void Parse()
         {
             ReadInfo();
@@ -104,7 +159,6 @@ namespace Diorama.Filetypes.GSC
             }
 
             ReadSplines();
-            //Debug.Assert(splines.Count == 0); // NuSpline structure (replace the ushort)
 
             List<NuVfxLocator> vfxLocators = NuVector.ReadVectorArray<NuVfxLocator>(file);
 
@@ -171,6 +225,28 @@ namespace Diorama.Filetypes.GSC
 
                 RenderMeshes[part] = mesh;
             }
+
+            Debug.Assert(file.ReadUInt(true) == 0);
+            Debug.Assert(file.ReadUInt(true) == 1);
+
+            NuMaterialData[] materials = NuMaterialData.Read(file);
+
+            List<ushort> embedded_textures = NuVector.ReadVectorArray<ushort>(file);
+            Debug.Assert(embedded_textures.Count == 0);
+
+            file.Seek(0x9, SeekOrigin.Current); // TODO: What is this data?
+
+            uint lightmapCount = file.ReadUInt(true);
+            Debug.Assert(lightmapCount == 1);
+            ReadLightmapData();
+
+            uint cpusCount = file.ReadUInt(true);
+            Debug.Assert(cpusCount == 1);
+            ReadCpuSkinned();
+
+            ReadDisplayScene();
+
+            ReadTextureAnim3SceneBlock();
         }
     }
 }

@@ -9,8 +9,8 @@ namespace Diorama
     {
         static void Main(string[] args)
         {
-            //ParseFile(@"A:\ADDITIONALCONTENT\RELEASE1\LEVELS\LEVELPACK\LP2_THESIMPSONS\LP2_THESIMPSONSE\LP2_THESIMPSONSE2_DX11.GSC");
-            //return;
+            ParseFile(@"A:\CHARS\MISC\ITEMS\VORTECHSTAFF_DX11.GSC");
+            return;
 
             int counter = 0;
             int total = 0;
