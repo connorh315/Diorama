@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Diorama.Types
 {
-    public class NuVector
+    public class NuSerializer
     {
         public static List<T> ReadVectorArray<T>(RawFile file)
             where T : new()
@@ -20,6 +20,32 @@ namespace Diorama.Types
 
             bool isVectorSerializable =
                 typeof(IVectorSerializable).IsAssignableFrom(typeof(T));
+
+            for (int i = 0; i < count; i++)
+            {
+                if (isVectorSerializable)
+                {
+                    var obj = new T();
+                    ((IVectorSerializable)obj).Deserialize(file);
+                    list.Add(obj);
+                }
+                else
+                {
+                    list.Add(ReadPrimitive<T>(file));
+                }
+            }
+
+            return list;
+        }
+
+        public static List<T> ReadLegacyVarArray<T>(RawFile file)
+            where T : new()
+        {
+            int count = file.ReadInt(true);
+            var list = new List<T>();
+
+            bool isVectorSerializable =
+                            typeof(IVectorSerializable).IsAssignableFrom(typeof(T));
 
             for (int i = 0; i < count; i++)
             {
@@ -55,6 +81,9 @@ namespace Diorama.Types
 
             if (typeof(T) == typeof(float))
                 return (T)(object)file.ReadFloat();
+
+            if (typeof(T) == typeof(string))
+                return (T)(object)file.ReadPascalString();
 
             if (typeof(T) == typeof(Vector3))
             {

@@ -17,7 +17,7 @@ namespace Diorama.Filetypes.GSC.Components
         public virtual void Deserialize(RawFile file)
         {
             Title = file.ReadPascalString(true);
-            Path = NuVector.ReadVectorArray<Vector3>(file);
+            Path = NuSerializer.ReadVectorArray<Vector3>(file);
         }
     }
 

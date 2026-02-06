@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices.Marshalling;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -86,7 +87,7 @@ namespace Diorama.Filetypes.GSC
 
         protected virtual void ReadSplines()
         {
-            List<NuSpline> splines = NuVector.ReadVectorArray<NuSpline>(file);
+            List<NuSpline> splines = NuSerializer.ReadVectorArray<NuSpline>(file);
         }
 
         protected virtual void ReadLightmapData()
@@ -97,7 +98,7 @@ namespace Diorama.Filetypes.GSC
 
             if (version >= 3)
             {
-                List<NuLightmapData> lightmapData = NuVector.ReadVectorArray<NuLightmapData>(file);
+                List<NuLightmapData> lightmapData = NuSerializer.ReadVectorArray<NuLightmapData>(file);
             }
         }
 
@@ -107,7 +108,7 @@ namespace Diorama.Filetypes.GSC
             uint version = file.ReadUInt(true);
             Debug.Assert(version == 4);
 
-            List<ushort> dummy = NuVector.ReadVectorArray<ushort>(file);
+            List<ushort> dummy = NuSerializer.ReadVectorArray<ushort>(file);
         }
 
         protected virtual void ReadDisplayScene()
@@ -116,32 +117,94 @@ namespace Diorama.Filetypes.GSC
             uint version = file.ReadUInt(true);
             Debug.Assert(version == 0x20);
 
-            List<NuDefunctDisplayItem> displayItems = NuVector.ReadVectorArray<NuDefunctDisplayItem>(file); // only for versions < 0x22
-            List<NuClipObject> clipObjects = NuVector.ReadVectorArray<NuClipObject>(file);
-            List<NuSpecialObject> specialObjects = NuVector.ReadVectorArray<NuSpecialObject>(file);
+            List<NuDefunctDisplayItem> displayItems = NuSerializer.ReadVectorArray<NuDefunctDisplayItem>(file); // only for versions < 0x22
+            List<NuClipObject> clipObjects = NuSerializer.ReadVectorArray<NuClipObject>(file);
+            List<NuSpecialObject> specialObjects = NuSerializer.ReadVectorArray<NuSpecialObject>(file);
             
-            List<ushort> specialGroupNodes = NuVector.ReadVectorArray<ushort>(file);
+            List<ushort> specialGroupNodes = NuSerializer.ReadVectorArray<ushort>(file);
             Debug.Assert(specialGroupNodes.Count == 0);
 
-            List<NuVec4> boundsCenterAndDistSqrt = NuVector.ReadVectorArray<NuVec4>(file);
-            List<NuVec4> boundsExtentsAndRadius = NuVector.ReadVectorArray<NuVec4>(file);
-            List<NuSceneInstance> sceneInstances = NuVector.ReadVectorArray<NuSceneInstance>(file);
-            List<ushort> sceneInstanceFixups = NuVector.ReadVectorArray<ushort>(file); // not sure about this one - needs looking into
+            List<NuVec4> boundsCenterAndDistSqrt = NuSerializer.ReadVectorArray<NuVec4>(file);
+            List<NuVec4> boundsExtentsAndRadius = NuSerializer.ReadVectorArray<NuVec4>(file);
+            List<NuSceneInstance> sceneInstances = NuSerializer.ReadVectorArray<NuSceneInstance>(file);
+            List<ushort> sceneInstanceFixups = NuSerializer.ReadVectorArray<ushort>(file); // not sure about this one - needs looking into
             Debug.Assert(sceneInstanceFixups.Count == 0);
-            List<ushort> animMtls = NuVector.ReadVectorArray<ushort>(file); // not sure about this one - needs looking into
+            List<ushort> animMtls = NuSerializer.ReadVectorArray<ushort>(file); // not sure about this one - needs looking into
             Debug.Assert(animMtls.Count == 0);
-            List<NuTransformMtx> transformMtxs = NuVector.ReadVectorArray<NuTransformMtx>(file);
-            List<ushort> faceOnDisplayItems = NuVector.ReadVectorArray<ushort>(file); // not sure about this one - needs looking into
+            List<NuTransformMtx> transformMtxs = NuSerializer.ReadVectorArray<NuTransformMtx>(file);
+            List<ushort> faceOnDisplayItems = NuSerializer.ReadVectorArray<ushort>(file); // not sure about this one - needs looking into
             Debug.Assert(faceOnDisplayItems.Count == 0);
         }
 
-        protected override void ReadTextureAnim3SceneBlock()
+        protected virtual void ReadTextureAnim3SceneBlock()
         {
             Debug.Assert(file.ReadString(4) == "BNAT");
             uint version = file.ReadUInt(true);
             Debug.Assert(version == 5);
 
+            uint count = file.ReadUInt(true);
+            Debug.Assert(count == 0);
+        }
 
+        protected virtual void ReadAnimSceneBlock()
+        {
+            Debug.Assert(file.ReadString(4) == "3ALA");
+            uint version = file.ReadUInt(true);
+
+            List<ushort> nuinstanim = NuSerializer.ReadLegacyVarArray<ushort>(file);
+            Debug.Assert(nuinstanim.Count == 0);
+
+            List<ushort> nustateanim = NuSerializer.ReadLegacyVarArray<ushort>(file);
+            Debug.Assert(nustateanim.Count == 0);
+
+            List<ushort> nuanimheader = NuSerializer.ReadLegacyVarArray<ushort>(file);
+            Debug.Assert(nuanimheader.Count == 0);
+        }
+
+        protected virtual void ReadBlendShapeCharList()
+        {
+            Debug.Assert(file.ReadString(4) == "BCSB");
+            uint version = file.ReadUInt(true);
+            List<ushort> nublendshapeanimlist = NuSerializer.ReadLegacyVarArray<ushort>(file);
+            Debug.Assert(nublendshapeanimlist.Count == 0);
+        }
+
+        protected virtual void ReadOccluderList()
+        {
+            Debug.Assert(file.ReadString(4) == "BCCO");
+            uint version = file.ReadUInt(true);
+            if (version >= 3)
+            {
+                List<ushort> nuoccluder = NuSerializer.ReadVectorArray<ushort>(file);
+                Debug.Assert(nuoccluder.Count == 0);
+            }
+        }
+
+        protected virtual void ReadLSVOctreeBlock()
+        {
+            Debug.Assert(file.ReadString(4) == "5LVI");
+            uint version = file.ReadUInt(true);
+            if (version >= 3)
+            {
+                List<ushort> nulsvoctree = NuSerializer.ReadVectorArray<ushort>(file);
+                Debug.Assert(nulsvoctree.Count == 0);
+            }
+            else
+            {
+                List<ushort> nulsvoctree = NuSerializer.ReadLegacyVarArray<ushort>(file);
+                Debug.Assert(nulsvoctree.Count == 0);
+            }
+        }
+
+        protected virtual void ReadMetaData()
+        {
+            Debug.Assert(file.ReadString(4) == "ATEM");
+            uint version = file.ReadUInt(true);
+
+            if (version >= 0x46)
+            {
+                List<NuDynamicString> metaStrings = NuSerializer.ReadVectorArray<NuDynamicString>(file);
+            }
         }
 
         protected override void Parse()
@@ -160,7 +223,7 @@ namespace Diorama.Filetypes.GSC
 
             ReadSplines();
 
-            List<NuVfxLocator> vfxLocators = NuVector.ReadVectorArray<NuVfxLocator>(file);
+            List<NuVfxLocator> vfxLocators = NuSerializer.ReadVectorArray<NuVfxLocator>(file);
 
             Debug.Assert(file.ReadUInt(true) == 1); // possibly number of MESHes?
 
@@ -231,7 +294,7 @@ namespace Diorama.Filetypes.GSC
 
             NuMaterialData[] materials = NuMaterialData.Read(file);
 
-            List<ushort> embedded_textures = NuVector.ReadVectorArray<ushort>(file);
+            List<ushort> embedded_textures = NuSerializer.ReadVectorArray<ushort>(file);
             Debug.Assert(embedded_textures.Count == 0);
 
             file.Seek(0x9, SeekOrigin.Current); // TODO: What is this data?
@@ -247,6 +310,40 @@ namespace Diorama.Filetypes.GSC
             ReadDisplayScene();
 
             ReadTextureAnim3SceneBlock();
+
+            float playbackFPS = file.ReadFloat(true);
+
+            Debug.Assert(file.ReadUInt(true) == 1);
+            ReadAnimSceneBlock();
+
+            Debug.Assert(file.ReadUInt(true) == 0); // possibly portal instances? (SNIP)
+
+            ReadBlendShapeCharList();
+
+            ReadOccluderList();
+
+            ReadLSVOctreeBlock();
+
+            List<ushort> nucharacterdata = NuSerializer.ReadVectorArray<ushort>(file);
+
+            uint oldWiiMeshSceneBlockLinkArrayCount = file.ReadUInt(true);
+
+            ReadMetaData();
+
+            uint texhdrsceneblock = file.ReadUInt(true);
+            Debug.Assert(texhdrsceneblock == 0);
+
+            byte useSingleLodAnim = file.ReadByte();
+            Debug.Assert(useSingleLodAnim == 0);
+
+            uint numblendshapes = file.ReadUInt(true);
+            Debug.Assert(numblendshapes == 0);
+
+            List<ushort> unk = NuSerializer.ReadVectorArray<ushort>(file);
+
+            uint unk2 = file.ReadUInt(true);
+            Debug.Assert(unk2 == 0);
+
         }
     }
 }

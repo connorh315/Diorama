@@ -12,7 +12,7 @@ namespace Diorama.Filetypes.GSC
     {
         protected override void ReadSplines()
         {
-            List<NuSpline> splines = NuVector.ReadVectorArray<NuSpline_50>(file).Cast<NuSpline>().ToList();
+            List<NuSpline> splines = NuSerializer.ReadVectorArray<NuSpline_50>(file).Cast<NuSpline>().ToList();
         }
     }
 }
