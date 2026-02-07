@@ -67,6 +67,9 @@ namespace Diorama.Types
         // TODO: Boxing + unboxing is bad
         static T ReadPrimitive<T>(RawFile file)
         {
+            if (typeof(T) == typeof(byte))
+                return (T)(object)file.ReadByte();
+
             if (typeof(T) == typeof(short))
                 return (T)(object)file.ReadShort();
 

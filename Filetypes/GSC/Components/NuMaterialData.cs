@@ -32,6 +32,9 @@ namespace Diorama.Filetypes.GSC.Components
                     case 0xe4:
                         materialData = new NuMaterialData_E0();
                         break;
+                    case 0xe5:
+                        materialData = new NuMaterialData_E5();
+                        break;
                     default:
                         throw new Exception($"Unsupported UMTL Version: {version}");
                 }
@@ -43,6 +46,15 @@ namespace Diorama.Filetypes.GSC.Components
             }
 
             return materials;
+        }
+    }
+
+    public class NuMaterialData_E5 : NuMaterialData_E0
+    {
+        public override void Parse(RawFile file)
+        {
+            base.Parse(file);
+            file.Seek(0x1, SeekOrigin.Current);
         }
     }
 

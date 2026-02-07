@@ -9,7 +9,12 @@ namespace Diorama
     {
         static void Main(string[] args)
         {
-            //ParseFile(@"A:\CHARS\MISC\ITEMS\VORTECHSTAFF_DX11.GSC");
+            
+            ParseFile(@"A:\levels\story\1wizardofoz\1wizardofozc2\tech\1wizardofozc2_tech_dx11.gsc");
+            //TryParseFile("A:\\levels\\builder\\buildergamemechanics\\builderpressurepad\\builderpressurepad_dx11.gsc");
+            //TryParseFile("A:\\levels\\builder\\buildergamemechanics\\builderghostreceptor\\builderghostreceptor_dx11.gsc");
+            //ParseFile("A:\\levels\\vfx\\vfx_story\\vfx_1wizardofoz\\vfx_1wizardofoza\\vfx_1wizardofoza_dx11.gsc");
+            //TryParseFile("A:\\levels\\vfx\\vfx_ipsharedscenes\\vfx_puncheffects\\vfx_puncheffects_dx11.gsc");
             //return;
 
             int counter = 0;
@@ -56,7 +61,7 @@ namespace Diorama
             catch (Exception ex)
             {
                 if (!ex.Message.StartsWith("Unsupported NU20 version"))
-                    Console.WriteLine($"Failed to parse {path}: {ex}");
+                    //Console.WriteLine($"Failed to parse {path}: {ex}");
 
                 if (!countFails.ContainsKey(ex.Message))
                     countFails[ex.Message] = 0;
@@ -75,6 +80,11 @@ namespace Diorama
             }
             catch (Exception ex)
             {
+                if (ex.Message == "Yield")
+                {
+                    Console.WriteLine();
+                }
+
                 //if (!ex.Message.StartsWith("Unsupported NU20 version"))
                 //    Console.WriteLine($"Failed to parse {file.FileLocation}: {ex}");
 

@@ -150,15 +150,13 @@ namespace Diorama.Filetypes.GSC
         {
             Debug.Assert(file.ReadString(4) == "3ALA");
             uint version = file.ReadUInt(true);
+            Debug.Assert(version == 3);
 
-            List<ushort> nuinstanim = NuSerializer.ReadLegacyVarArray<ushort>(file);
-            Debug.Assert(nuinstanim.Count == 0);
+            List<NuInstAnim> nuinstanim = NuSerializer.ReadLegacyVarArray<NuInstAnim>(file); // 1wizardofozc2_tech_dx11.gsc
 
-            List<ushort> nustateanim = NuSerializer.ReadLegacyVarArray<ushort>(file);
-            Debug.Assert(nustateanim.Count == 0);
+            List<NuStateAnim> nustateanim = NuSerializer.ReadLegacyVarArray<NuStateAnim>(file);
 
-            List<ushort> nuanimheader = NuSerializer.ReadLegacyVarArray<ushort>(file);
-            Debug.Assert(nuanimheader.Count == 0);
+            List<NuAnimHeader> nuanimheader = NuSerializer.ReadLegacyVarArray<NuAnimHeader>(file);
         }
 
         protected virtual void ReadBlendShapeCharList()
