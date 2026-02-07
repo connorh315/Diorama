@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Security.AccessControl;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -27,6 +28,7 @@ namespace Diorama.Filetypes.GSC.Components
                 switch (version)
                 {
                     case 0xe0:
+                    case 0xe2:
                     case 0xe4:
                         materialData = new NuMaterialData_E0();
                         break;

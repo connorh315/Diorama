@@ -9,8 +9,8 @@ namespace Diorama
     {
         static void Main(string[] args)
         {
-            ParseFile(@"A:\CHARS\MISC\ITEMS\VORTECHSTAFF_DX11.GSC");
-            return;
+            //ParseFile(@"A:\CHARS\MISC\ITEMS\VORTECHSTAFF_DX11.GSC");
+            //return;
 
             int counter = 0;
             int total = 0;
@@ -75,8 +75,8 @@ namespace Diorama
             }
             catch (Exception ex)
             {
-                if (!ex.Message.StartsWith("Unsupported NU20 version"))
-                    Console.WriteLine($"Failed to parse {file.FileLocation}: {ex}");
+                //if (!ex.Message.StartsWith("Unsupported NU20 version"))
+                //    Console.WriteLine($"Failed to parse {file.FileLocation}: {ex}");
 
                 if (!countFails.ContainsKey(ex.Message))
                     countFails[ex.Message] = 0;

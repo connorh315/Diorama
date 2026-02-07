@@ -62,6 +62,11 @@ namespace Diorama.Filetypes.GSC
 
             gsc.Parse();
 
+            if (file.Position != resourceHeaderSize + 4 + 4 + gscSize)
+            {
+                throw new Exception("Did not read entire file size!");
+            }
+
             return gsc;
         }
 
