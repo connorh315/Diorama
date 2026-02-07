@@ -60,6 +60,11 @@ namespace Diorama.Filetypes.GSC.Components
             List<byte> tangentKeys = NuSerializer.ReadLegacyVarArray<byte>(file);
             List<byte> curveSetFlags = NuSerializer.ReadLegacyVarArray<byte>(file);
 
+            if (Version > 'D')
+            {
+                byte[] buffer = file.ReadArray(file.ReadInt(true)); // 4-byte size prepended buffer
+            }
+
             file.Seek(keysNeeded * curveGroupSize, SeekOrigin.Current);
         }
     }

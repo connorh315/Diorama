@@ -80,9 +80,10 @@ namespace Diorama.Filetypes.GSC
             }
         }
 
+        public NuNameTable NameTable { get; set; }
         protected virtual void ReadNameTable()
         {
-            NuNameTable nameTable = NuNameTable.Read(file);
+            NameTable = NuNameTable.Read(file);
         }
 
         protected virtual void ReadSplines()
@@ -115,11 +116,19 @@ namespace Diorama.Filetypes.GSC
         {
             Debug.Assert(file.ReadString(4) == "PSID");
             uint version = file.ReadUInt(true);
-            Debug.Assert(version == 0x20);
+            Debug.Assert(version == 0x20 || version == 0x21, $"Unsupported DISP version: {version}");
 
             List<NuDefunctDisplayItem> displayItems = NuSerializer.ReadVectorArray<NuDefunctDisplayItem>(file); // only for versions < 0x22
             List<NuClipObject> clipObjects = NuSerializer.ReadVectorArray<NuClipObject>(file);
-            List<NuSpecialObject> specialObjects = NuSerializer.ReadVectorArray<NuSpecialObject>(file);
+            
+            if (version == 0x21)
+            {
+                List<NuSpecialObject_21> specialObjects = NuSerializer.ReadVectorArray<NuSpecialObject_21>(file);
+            }
+            else
+            {
+                List<NuSpecialObject> specialObjects = NuSerializer.ReadVectorArray<NuSpecialObject>(file);
+            }
             
             List<ushort> specialGroupNodes = NuSerializer.ReadVectorArray<ushort>(file);
             Debug.Assert(specialGroupNodes.Count == 0);
@@ -129,11 +138,14 @@ namespace Diorama.Filetypes.GSC
             List<NuSceneInstance> sceneInstances = NuSerializer.ReadVectorArray<NuSceneInstance>(file);
             List<ushort> sceneInstanceFixups = NuSerializer.ReadVectorArray<ushort>(file); // not sure about this one - needs looking into
             Debug.Assert(sceneInstanceFixups.Count == 0);
-            List<ushort> animMtls = NuSerializer.ReadVectorArray<ushort>(file); // not sure about this one - needs looking into
-            Debug.Assert(animMtls.Count == 0);
+            List<uint> animMtls = NuSerializer.ReadVectorArray<uint>(file); // not sure about this one - needs looking into
             List<NuTransformMtx> transformMtxs = NuSerializer.ReadVectorArray<NuTransformMtx>(file);
             List<ushort> faceOnDisplayItems = NuSerializer.ReadVectorArray<ushort>(file); // not sure about this one - needs looking into
             Debug.Assert(faceOnDisplayItems.Count == 0);
+            if (version == 0x21)
+            {
+                Debug.Assert(file.ReadUInt(true) == 0, "should be 0");
+            }
         }
 
         protected virtual void ReadTextureAnim3SceneBlock()
@@ -150,9 +162,16 @@ namespace Diorama.Filetypes.GSC
         {
             Debug.Assert(file.ReadString(4) == "3ALA");
             uint version = file.ReadUInt(true);
-            Debug.Assert(version == 3);
-
-            List<NuInstAnim> nuinstanim = NuSerializer.ReadLegacyVarArray<NuInstAnim>(file); // 1wizardofozc2_tech_dx11.gsc
+            Debug.Assert(version == 3 || version == 4, "ala3 vesrion!");
+            
+            if (version == 3)
+            {
+                List<NuInstAnim> nuinstanim = NuSerializer.ReadLegacyVarArray<NuInstAnim>(file); // 1wizardofozc2_tech_dx11.gsc
+            }
+            else if (version == 4)
+            {
+                List<NuInstAnim_4> nuinstanim = NuSerializer.ReadLegacyVarArray<NuInstAnim_4>(file);
+            }
 
             List<NuStateAnim> nustateanim = NuSerializer.ReadLegacyVarArray<NuStateAnim>(file);
 
@@ -328,8 +347,11 @@ namespace Diorama.Filetypes.GSC
 
             ReadMetaData();
 
-            uint texhdrsceneblock = file.ReadUInt(true);
-            Debug.Assert(texhdrsceneblock == 0);
+            if (NameTable.Version < 0x51)
+            {
+                uint texhdrsceneblock = file.ReadUInt(true);
+                Debug.Assert(texhdrsceneblock == 0);
+            }
 
             byte useSingleLodAnim = file.ReadByte();
             Debug.Assert(useSingleLodAnim == 0);

@@ -79,6 +79,9 @@ namespace Diorama.Types
             if (typeof(T) == typeof(int))
                 return (T)(object)file.ReadInt();
 
+            if (typeof(T) == typeof(uint))
+                return (T)(object)file.ReadUInt();
+
             if (typeof(T) == typeof(long))
                 return (T)(object)file.ReadLong();
 

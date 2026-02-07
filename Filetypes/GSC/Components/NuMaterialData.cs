@@ -33,7 +33,11 @@ namespace Diorama.Filetypes.GSC.Components
                         materialData = new NuMaterialData_E0();
                         break;
                     case 0xe5:
+                    case 0xec:
                         materialData = new NuMaterialData_E5();
+                        break;
+                    case 0xf2:
+                        materialData = new NuMaterialData_F2();
                         break;
                     default:
                         throw new Exception($"Unsupported UMTL Version: {version}");
@@ -46,6 +50,23 @@ namespace Diorama.Filetypes.GSC.Components
             }
 
             return materials;
+        }
+    }
+
+    public class NuMaterialData_F2 : NuMaterialData_E5
+    {
+        public override void Parse(RawFile file)
+        {
+            ReadShaderDesc(file);
+            ReadShaderParams(file, Version);
+            string materialName = file.ReadPascalString(true);
+            uint flags = file.ReadUInt(true);
+            Debug.Assert(flags == 4);
+
+            file.Seek(0x494, SeekOrigin.Current); // "dummyHashArray"
+            VertexList.Parse(file);
+
+            file.Seek(0x4a, SeekOrigin.Current);
         }
     }
 
@@ -293,7 +314,7 @@ namespace Diorama.Filetypes.GSC.Components
             byte unknown1 = file.ReadByte();
         }
 
-        private static void ReadShaderParams(RawFile file, uint version)
+        public void ReadShaderParams(RawFile file, uint version)
         {
             int diffuse0 = file.ReadInt(true);
             int diffuse1 = file.ReadInt(true);

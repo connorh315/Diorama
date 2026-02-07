@@ -6,9 +6,35 @@ using System.Threading.Tasks;
 
 namespace Diorama.Filetypes.GSC.Components
 {
+    public class NuInstAnim_4 : NuInstAnim
+    {
+        public override void ReadFlags(RawFile file)
+        {
+            ushort numframes = file.ReadUShort(true);
+            uint numTextAnims = file.ReadUInt(true);
+            ushort textureAnimListIdx = file.ReadUShort(true);
+            ushort groupNode = file.ReadUShort(true);
+
+            base.ReadFlags(file);
+        }
+    }
+
     public class NuInstAnim : IVectorSerializable
     {
         public NuMtx Mtx;
+
+        public virtual void ReadFlags(RawFile file)
+        {
+            uint unk1 = file.ReadUInt(true); // TODO
+            uint unk2 = file.ReadUInt(true);
+            uint unk3 = file.ReadUInt(true);
+
+            uint animIdx = file.ReadUInt(true);
+            uint stateAnimIdx = file.ReadUInt(true);
+
+            ushort instanceIdx = file.ReadUShort(true);
+            ushort bsobj_ix = file.ReadUShort(true);
+        }
 
         public void Deserialize(RawFile file)
         {
@@ -20,15 +46,11 @@ namespace Diorama.Filetypes.GSC.Components
             float tInterval = file.ReadFloat(true);
             float LocalTime = file.ReadFloat(true);
 
-            uint unk1 = file.ReadUInt(true); // TODO
-            uint unk2 = file.ReadUInt(true);
-            uint unk3 = file.ReadUInt(true);
+            ReadFlags(file);
 
-            uint animIdx = file.ReadUInt(true);
-            uint stateAnimIdx = file.ReadUInt(true);
+            //byte[] bytes = file.ReadArray(34);
 
-            ushort instanceIdx = file.ReadUShort(true);
-            ushort bsobj_ix = file.ReadUShort(true);
+            //Console.WriteLine(BitConverter.ToString(bytes).Replace("-", " "));
         }
     }
 }

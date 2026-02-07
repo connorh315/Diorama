@@ -8,10 +8,12 @@ namespace Diorama.Filetypes.GSC.Components
 {
     public class NuTransformMtx : IVectorSerializable
     {
+        public float[] Mtx = new float[12];
+
         public void Deserialize(RawFile file)
         {
             for (int i = 0; i < 12; i++)
-                file.ReadFloat(true);
+                Mtx[i] = file.ReadFloat(true);
         }
     }
 }

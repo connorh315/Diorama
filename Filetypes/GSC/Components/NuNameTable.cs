@@ -9,14 +9,16 @@ namespace Diorama.Filetypes.GSC.Components
 {
     public class NuNameTable
     {
+        public uint Version;
+
         public static NuNameTable Read(RawFile file)
         {
             NuNameTable table = new NuNameTable();
 
             Debug.Assert(file.ReadString(4) == "LBTN");
 
-            uint ntblVersion = file.ReadUInt(true);
-            Debug.Assert(ntblVersion == 0x4f || ntblVersion == 0x50 || ntblVersion == 0x53);
+            table.Version = file.ReadUInt(true);
+            Debug.Assert(table.Version == 0x4f || table.Version == 0x50 || table.Version == 0x53);
 
             int ntblLength = file.ReadInt(true);
             string ntblData = file.ReadString(ntblLength);

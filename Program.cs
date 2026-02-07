@@ -1,6 +1,7 @@
 ﻿using BrickVault.Types;
 using Diorama.Filetypes.GSC;
 using Diorama.Filetypes.GSC.Components;
+using System.Collections.Concurrent;
 using System.Diagnostics.Metrics;
 
 namespace Diorama
@@ -10,7 +11,7 @@ namespace Diorama
         static void Main(string[] args)
         {
             
-            ParseFile(@"A:\levels\story\1wizardofoz\1wizardofozc2\tech\1wizardofozc2_tech_dx11.gsc");
+            ParseFile(@"A:\CHARCACHE\SUPERMAN\LEVELS\VFX\VFX_CHARS\VFX_SUPERMAN\VFX_SUPERMAN_DX11.gsc");
             //TryParseFile("A:\\levels\\builder\\buildergamemechanics\\builderpressurepad\\builderpressurepad_dx11.gsc");
             //TryParseFile("A:\\levels\\builder\\buildergamemechanics\\builderghostreceptor\\builderghostreceptor_dx11.gsc");
             //ParseFile("A:\\levels\\vfx\\vfx_story\\vfx_1wizardofoz\\vfx_1wizardofoza\\vfx_1wizardofoza_dx11.gsc");
@@ -19,29 +20,58 @@ namespace Diorama
 
             int counter = 0;
             int total = 0;
-            foreach (var datPath in Directory.GetFiles("F:\\PS4Games\\CUSA01176\\data\\", "*.DAT", SearchOption.AllDirectories))
-            {
-                var dat = DATFile.Open(datPath);
-                foreach (var entry in dat.Files)
+
+            var datFiles = Directory.GetFiles(
+                @"F:\PS4Games\CUSA01176\data\",
+                "*.DAT",
+                SearchOption.AllDirectories
+            );
+            //Parallel.ForEach(
+            //    datFiles,
+            //    new ParallelOptions { MaxDegreeOfParallelism = 4 },
+                //datPath =>
+                byte[] compressedShare = new byte[32000000];
+                byte[] decompressedShare = new byte[96000000];
+
+                using var file = new RawFile(new MemoryStream(100000000));
+                foreach(string datPath in datFiles)
                 {
-                    if (entry.Path.EndsWith("gsc"))
+                    var dat = DATFile.Open(datPath);
+
+
+                    using (var datFile = new BrickVault.RawFile(dat.FileLocation)) 
                     {
-                        total++;
-                        using (RawFile file = new RawFile(new MemoryStream()))
-                        using (BrickVault.RawFile datFile = new BrickVault.RawFile(dat.FileLocation))
+                        foreach (var entry in dat.Files)
                         {
-                            dat.ExtractFile(entry, datFile, file.fileStream);
-                            file.fileStream.Position = 0;
-                            bool success = TryParseFile(file);
-                            if (success)
+                            if (!entry.Path.EndsWith("gsc"))
+                                continue;
+
+                            if (compressedShare.Length < entry.CompressedSize)
                             {
-                                counter++;
+                                compressedShare = new byte[entry.CompressedSize];
+                            }
+
+                            if (decompressedShare.Length < entry.DecompressedSize)
+                            {
+                                decompressedShare = new byte[entry.DecompressedSize];
+                            }
+
+                            Interlocked.Increment(ref total);
+
+                            file.fileStream.Position = 0;
+                            
+                            dat.Extract(entry, file.fileStream, datFile, compressedShare, decompressedShare);
+                            file.fileStream.Position = 0;
+
+                            if (TryParseFile(file))
+                            {
+                                Interlocked.Increment(ref counter);
                             }
                         }
-
                     }
                 }
-            }
+            //);
+
             Console.WriteLine($"Successfully processed {counter} meshes out of {total} files.");
             foreach (var pair in countFails)
             {
@@ -49,7 +79,9 @@ namespace Diorama
             }
         }
 
-        static Dictionary<string, int> countFails = new();
+        static ConcurrentDictionary<string, int> countFails =
+            new ConcurrentDictionary<string, int>();
+
 
         static bool TryParseFile(string path)
         {
@@ -88,10 +120,11 @@ namespace Diorama
                 //if (!ex.Message.StartsWith("Unsupported NU20 version"))
                 //    Console.WriteLine($"Failed to parse {file.FileLocation}: {ex}");
 
-                if (!countFails.ContainsKey(ex.Message))
-                    countFails[ex.Message] = 0;
-
-                countFails[ex.Message]++;
+                countFails.AddOrUpdate(
+                    ex.Message,
+                    1,                  // if key does not exist
+                    (_, old) => old + 1 // if key exists
+                );
             }
             return false;
         }

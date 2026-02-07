@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Diorama.Types;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -7,8 +8,21 @@ using System.Threading.Tasks;
 
 namespace Diorama.Filetypes.GSC.Components
 {
+    public class NuSpecialObject_21 : NuSpecialObject
+    {
+        public override List<float> ReadClipData(RawFile file)
+        {
+            return NuSerializer.ReadVectorArray<float>(file);
+        }
+    }
+
     public class NuSpecialObject : IVectorSerializable
     {
+        public virtual List<float> ReadClipData(RawFile file)
+        {
+            return NuSerializer.ReadLegacyVarArray<float>(file);
+        }
+
         public void Deserialize(RawFile file)
         {
             string name = file.ReadPascalString(); // > 0x1b
@@ -23,11 +37,7 @@ namespace Diorama.Filetypes.GSC.Components
             uint clipObjectIndex = file.ReadUInt(true);
             uint flags = file.ReadUInt(true);
 
-            uint clipCount = file.ReadUInt(true); // this becomes a NuVector in 0x21
-            for (int i = 0; i < clipCount; i++)
-            {
-                file.ReadFloat(true);
-            }
+            List<float> clipData = ReadClipData(file);
 
             int instanceIndex = file.ReadInt(true);
             int animIndex = file.ReadInt(true);
