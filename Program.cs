@@ -12,7 +12,7 @@ namespace Diorama
         {
             
             //ParseFile(@"A:\commonobjects\env_co\avoidvignette_dx11.gsc");
-            TryParseFile(@"A:\LEVELS\STORY\MAININTRO\MAININTRO_KHAZADDUM\mainintro_khazaddum_dx11.gsc");
+            TryParseFile(@"A:\STUFF\THINGS_DX11.GSC");
             //TryParseFile("A:\\levels\\builder\\buildergamemechanics\\builderghostreceptor\\builderghostreceptor_dx11.gsc");
             //ParseFile("A:\\levels\\vfx\\vfx_story\\vfx_1wizardofoz\\vfx_1wizardofoza\\vfx_1wizardofoza_dx11.gsc");
             //TryParseFile("A:\\levels\\vfx\\vfx_ipsharedscenes\\vfx_puncheffects\\vfx_puncheffects_dx11.gsc");

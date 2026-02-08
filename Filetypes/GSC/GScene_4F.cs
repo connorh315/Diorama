@@ -131,7 +131,7 @@ namespace Diorama.Filetypes.GSC
             }
             
             List<ushort> specialGroupNodes = NuSerializer.ReadVectorArray<ushort>(file);
-            Debug.Assert(specialGroupNodes.Count == 0);
+            Debug.Assert(specialGroupNodes.Count == 0, "specialgroupnodes != 0");
 
             List<NuVec4> boundsCenterAndDistSqrt = NuSerializer.ReadVectorArray<NuVec4>(file);
             List<NuVec4> boundsExtentsAndRadius = NuSerializer.ReadVectorArray<NuVec4>(file);
@@ -140,8 +140,7 @@ namespace Diorama.Filetypes.GSC
             Debug.Assert(sceneInstanceFixups.Count == 0);
             List<uint> animMtls = NuSerializer.ReadVectorArray<uint>(file); // not sure about this one - needs looking into
             List<NuTransformMtx> transformMtxs = NuSerializer.ReadVectorArray<NuTransformMtx>(file);
-            List<ushort> faceOnDisplayItems = NuSerializer.ReadVectorArray<ushort>(file); // not sure about this one - needs looking into
-            Debug.Assert(faceOnDisplayItems.Count == 0);
+            List<NuFaceOnDisplayItem> faceOnDisplayItems = NuSerializer.ReadVectorArray<NuFaceOnDisplayItem>(file); // not sure about this one - needs looking into
             if (NameTable.Version > 0x52)
             {
                 List<short> textureAnimListIndexs2 = NuSerializer.ReadLegacyVarArray<short>(file);
@@ -182,7 +181,7 @@ namespace Diorama.Filetypes.GSC
             Debug.Assert(file.ReadString(4) == "BCSB");
             uint version = file.ReadUInt(true);
             List<ushort> nublendshapeanimlist = NuSerializer.ReadLegacyVarArray<ushort>(file);
-            Debug.Assert(nublendshapeanimlist.Count == 0);
+            Debug.Assert(nublendshapeanimlist.Count == 0, "blendshapeanimlist != 0");
         }
 
         protected virtual void ReadOccluderList()
@@ -192,7 +191,7 @@ namespace Diorama.Filetypes.GSC
             if (version >= 3)
             {
                 List<ushort> nuoccluder = NuSerializer.ReadVectorArray<ushort>(file);
-                Debug.Assert(nuoccluder.Count == 0);
+                Debug.Assert(nuoccluder.Count == 0, "occluderlist != 0");
             }
         }
 
@@ -310,7 +309,7 @@ namespace Diorama.Filetypes.GSC
             NuMaterialData[] materials = NuMaterialData.Read(file);
 
             List<ushort> embedded_textures = NuSerializer.ReadVectorArray<ushort>(file);
-            Debug.Assert(embedded_textures.Count == 0);
+            Debug.Assert(embedded_textures.Count == 0, "embedded_textures != 0");
 
             file.Seek(0x9, SeekOrigin.Current); // TODO: What is this data?
 
