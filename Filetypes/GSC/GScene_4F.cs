@@ -130,8 +130,7 @@ namespace Diorama.Filetypes.GSC
                 List<NuSpecialObject> specialObjects = NuSerializer.ReadVectorArray<NuSpecialObject>(file);
             }
             
-            List<ushort> specialGroupNodes = NuSerializer.ReadVectorArray<ushort>(file);
-            Debug.Assert(specialGroupNodes.Count == 0, "specialgroupnodes != 0");
+            List<NuSpecialGroupNode> specialGroupNodes = NuSerializer.ReadVectorArray<NuSpecialGroupNode>(file);
 
             List<NuVec4> boundsCenterAndDistSqrt = NuSerializer.ReadVectorArray<NuVec4>(file);
             List<NuVec4> boundsExtentsAndRadius = NuSerializer.ReadVectorArray<NuVec4>(file);
