@@ -308,8 +308,7 @@ namespace Diorama.Filetypes.GSC
 
             NuMaterialData[] materials = NuMaterialData.Read(file);
 
-            List<ushort> embedded_textures = NuSerializer.ReadVectorArray<ushort>(file);
-            Debug.Assert(embedded_textures.Count == 0, "embedded_textures != 0");
+            List<NuMtlOldReferencedMaterial> embedded_textures = NuSerializer.ReadVectorArray<NuMtlOldReferencedMaterial>(file);
 
             file.Seek(0x9, SeekOrigin.Current); // TODO: What is this data?
 
