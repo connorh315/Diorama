@@ -202,13 +202,12 @@ namespace Diorama.Filetypes.GSC
             uint version = file.ReadUInt(true);
             if (version >= 3)
             {
-                List<ushort> nulsvoctree = NuSerializer.ReadVectorArray<ushort>(file);
+                List<NuLSVOctree> nulsvoctree = NuSerializer.ReadVectorArray<NuLSVOctree>(file);
                 Debug.Assert(nulsvoctree.Count == 0);
             }
             else
             {
-                List<ushort> nulsvoctree = NuSerializer.ReadLegacyVarArray<ushort>(file);
-                Debug.Assert(nulsvoctree.Count == 0);
+                List<NuLSVOctree> nulsvoctree = NuSerializer.ReadLegacyVarArray<NuLSVOctree>(file);
             }
         }
 

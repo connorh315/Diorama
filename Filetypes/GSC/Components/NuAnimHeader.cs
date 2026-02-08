@@ -9,13 +9,13 @@ namespace Diorama.Filetypes.GSC.Components
 {
     public class NuAnimHeader : IVectorSerializable
     {
-        public char Version;
+        public byte Version;
 
         public void Deserialize(RawFile file)
         {
-            string version = file.ReadString(4);
-            Debug.Assert(version.Substring(0, 3) == "ANI");
-            Version = version[3];
+            uint version = file.ReadUInt(true);
+            //Debug.Assert(version.Substring(0, 3) == "ANI");
+            Version = (byte)version;
 
             ushort numNodes = file.ReadUShort(true);
             ushort numFrames = file.ReadUShort(true);
@@ -40,7 +40,7 @@ namespace Diorama.Filetypes.GSC.Components
             if (Version <= 'A')
             {
                 List<short> keyItems = NuSerializer.ReadLegacyVarArray<short>(file); // no keys needed
-                Debug.Assert(1 == 0, "ANIA unknown!");
+                //Debug.Assert(1 == 0, "ANIA unknown!");
             }
             else
             {
