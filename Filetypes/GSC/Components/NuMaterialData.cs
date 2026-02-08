@@ -33,6 +33,7 @@ namespace Diorama.Filetypes.GSC.Components
                         materialData = new NuMaterialData_E0();
                         break;
                     case 0xe5:
+                    case 0xeb:
                     case 0xec:
                         materialData = new NuMaterialData_E5();
                         break;
