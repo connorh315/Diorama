@@ -11,7 +11,7 @@ namespace Diorama
         static void Main(string[] args)
         {
             
-            ParseFile(@"A:\CHARCACHE\SUPERMAN\LEVELS\VFX\VFX_CHARS\VFX_SUPERMAN\VFX_SUPERMAN_DX11.gsc");
+            ParseFile(@"A:\commonobjects\env_co\avoidvignette_dx11.gsc");
             //TryParseFile("A:\\levels\\builder\\buildergamemechanics\\builderpressurepad\\builderpressurepad_dx11.gsc");
             //TryParseFile("A:\\levels\\builder\\buildergamemechanics\\builderghostreceptor\\builderghostreceptor_dx11.gsc");
             //ParseFile("A:\\levels\\vfx\\vfx_story\\vfx_1wizardofoz\\vfx_1wizardofoza\\vfx_1wizardofoza_dx11.gsc");
@@ -112,7 +112,7 @@ namespace Diorama
             }
             catch (Exception ex)
             {
-                if (ex.Message == "Yield")
+                if (ex.Message == "should be 0")
                 {
                     Console.WriteLine();
                 }

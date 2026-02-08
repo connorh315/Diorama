@@ -142,9 +142,9 @@ namespace Diorama.Filetypes.GSC
             List<NuTransformMtx> transformMtxs = NuSerializer.ReadVectorArray<NuTransformMtx>(file);
             List<ushort> faceOnDisplayItems = NuSerializer.ReadVectorArray<ushort>(file); // not sure about this one - needs looking into
             Debug.Assert(faceOnDisplayItems.Count == 0);
-            if (version == 0x21)
+            if (NameTable.Version > 0x52)
             {
-                Debug.Assert(file.ReadUInt(true) == 0, "should be 0");
+                List<short> textureAnimListIndexs2 = NuSerializer.ReadLegacyVarArray<short>(file);
             }
         }
 
@@ -154,8 +154,7 @@ namespace Diorama.Filetypes.GSC
             uint version = file.ReadUInt(true);
             Debug.Assert(version == 5);
 
-            uint count = file.ReadUInt(true);
-            Debug.Assert(count == 0);
+            List<NuTexAnim3Header> texAnim3Headers = NuSerializer.ReadLegacyVarArray<NuTexAnim3Header>(file);
         }
 
         protected virtual void ReadAnimSceneBlock()
