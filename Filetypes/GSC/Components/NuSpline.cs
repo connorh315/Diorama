@@ -14,7 +14,7 @@ namespace Diorama.Filetypes.GSC.Components
         public string Title;
         public List<Vector3> Path;
 
-        public virtual void Deserialize(RawFile file)
+        public virtual void Deserialize(RawFile file, uint parentVersion)
         {
             Title = file.ReadPascalString(true);
             Path = NuSerializer.ReadVectorArray<Vector3>(file);
@@ -23,9 +23,9 @@ namespace Diorama.Filetypes.GSC.Components
 
     public class NuSpline_50 : NuSpline
     {
-        public override void Deserialize(RawFile file)
+        public override void Deserialize(RawFile file, uint parentVersion)
         {
-            base.Deserialize(file);
+            base.Deserialize(file, parentVersion);
             byte flag_not_sure = file.ReadByte();
         }
     }

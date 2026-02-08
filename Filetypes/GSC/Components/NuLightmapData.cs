@@ -8,7 +8,7 @@ namespace Diorama.Filetypes.GSC.Components
 {
     public class NuLightmapData : IVectorSerializable
     {
-        public void Deserialize(RawFile file)
+        public void Deserialize(RawFile file, uint parentVersion)
         {
             uint type = file.ReadUInt(true);
             int meshInstanceId = file.ReadInt(true);

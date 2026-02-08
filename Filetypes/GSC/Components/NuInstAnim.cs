@@ -36,10 +36,10 @@ namespace Diorama.Filetypes.GSC.Components
             ushort bsobj_ix = file.ReadUShort(true);
         }
 
-        public void Deserialize(RawFile file)
+        public void Deserialize(RawFile file, uint parentVersion)
         {
             Mtx = new NuMtx();
-            Mtx.Deserialize(file);
+            Mtx.Deserialize(file, parentVersion);
 
             float tFactor = file.ReadFloat(true);
             float tFirst = file.ReadFloat(true);

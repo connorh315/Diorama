@@ -180,8 +180,8 @@ namespace Diorama.Filetypes.GSC
         {
             Debug.Assert(file.ReadString(4) == "BCSB");
             uint version = file.ReadUInt(true);
-            List<ushort> nublendshapeanimlist = NuSerializer.ReadLegacyVarArray<ushort>(file);
-            Debug.Assert(nublendshapeanimlist.Count == 0, "blendshapeanimlist != 0");
+
+            List<NuBlendShapeAnimList> nublendshapeanimlist = NuSerializer.ReadLegacyVarArray<NuBlendShapeAnimList>(file, version);
         }
 
         protected virtual void ReadOccluderList()

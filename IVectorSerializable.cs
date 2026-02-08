@@ -8,6 +8,8 @@ namespace Diorama
 {
     interface IVectorSerializable
     {
-        void Deserialize(RawFile file);
+        void Deserialize(RawFile file, uint parentVersion);
+
+        //void Deserialize(RawFile file, uint parentVersion) => Deserialize(file, 0);
     }
 }

@@ -18,7 +18,7 @@ namespace Diorama.Filetypes.GSC.Components
         public byte FuzzySearch;
         public byte NxgOnly;
 
-        public void Deserialize(RawFile file)
+        public void Deserialize(RawFile file, uint parentVersion)
         {
             Debug.Assert(file.ReadString(4) == "LXFV");
             uint version = file.ReadUInt(true);

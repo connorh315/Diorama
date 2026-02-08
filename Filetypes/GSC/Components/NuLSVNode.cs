@@ -8,7 +8,7 @@ namespace Diorama.Filetypes.GSC.Components
 {
     public class NuLSVNode : IVectorSerializable
     {
-        public void Deserialize(RawFile file)
+        public void Deserialize(RawFile file, uint parentVersion)
         {
             for (int i = 0; i < 8; i++)
             {

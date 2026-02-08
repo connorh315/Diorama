@@ -23,7 +23,7 @@ namespace Diorama.Filetypes.GSC.Components
             return NuSerializer.ReadLegacyVarArray<float>(file);
         }
 
-        public void Deserialize(RawFile file)
+        public void Deserialize(RawFile file, uint parentVersion)
         {
             string name = file.ReadPascalString(); // > 0x1b
 

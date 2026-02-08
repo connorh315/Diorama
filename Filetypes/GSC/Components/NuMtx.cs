@@ -10,7 +10,7 @@ namespace Diorama.Filetypes.GSC.Components
     {
         public float[] mtx = new float[16];
 
-        public void Deserialize(RawFile file)
+        public void Deserialize(RawFile file, uint parentVersion)
         {
             for (int i = 0; i < 16; i++)
             {

@@ -9,7 +9,7 @@ namespace Diorama.Filetypes.GSC.Components
 {
     public class NuFaceOnDisplayItem : IVectorSerializable
     {
-        public void Deserialize(RawFile file)
+        public void Deserialize(RawFile file, uint parentVersion)
         {
             // version < 0x1e has "unusedIsFixedUp"
             uint type = file.ReadUInt(true);

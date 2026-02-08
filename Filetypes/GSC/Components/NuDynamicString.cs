@@ -10,7 +10,7 @@ namespace Diorama.Filetypes.GSC.Components
     {
         public string Value;
 
-        public void Deserialize(RawFile file)
+        public void Deserialize(RawFile file, uint parentVersion)
         {
             Value = file.ReadPascalString();
         }

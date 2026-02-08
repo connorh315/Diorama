@@ -9,7 +9,7 @@ namespace Diorama.Filetypes.GSC.Components
 {
     public class NuLSVSample : IVectorSerializable
     {
-        public void Deserialize(RawFile file)
+        public void Deserialize(RawFile file, uint parentVersion)
         {
             int lightId1 = file.ReadInt(true);
             float shadowFactor1 = file.ReadFloat(true);

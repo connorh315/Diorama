@@ -8,7 +8,7 @@ namespace Diorama.Filetypes.GSC.Components
 {
     public class NuDefunctDisplayItem : IVectorSerializable
     {
-        public void Deserialize(RawFile file)
+        public void Deserialize(RawFile file, uint parentVersion)
         {
             byte type = file.ReadByte();
             byte id = file.ReadByte();

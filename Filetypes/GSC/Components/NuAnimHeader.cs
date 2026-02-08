@@ -11,7 +11,7 @@ namespace Diorama.Filetypes.GSC.Components
     {
         public byte Version;
 
-        public void Deserialize(RawFile file)
+        public void Deserialize(RawFile file, uint parentVersion)
         {
             uint version = file.ReadUInt(true);
             //Debug.Assert(version.Substring(0, 3) == "ANI");

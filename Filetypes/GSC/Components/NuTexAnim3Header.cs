@@ -9,7 +9,7 @@ namespace Diorama.Filetypes.GSC.Components
 {
     public class NuTexAnim3Header : IVectorSerializable
     {
-        public void Deserialize(RawFile file)
+        public void Deserialize(RawFile file, uint parentVersion)
         {
             uint mtlNameHash = file.ReadUInt(true);
             short animId = file.ReadShort(true);
@@ -39,7 +39,7 @@ namespace Diorama.Filetypes.GSC.Components
             if (one == 1)
             {
                 NuAnimHeader header = new NuAnimHeader();
-                header.Deserialize(file);
+                header.Deserialize(file, parentVersion);
             }
         }
     }

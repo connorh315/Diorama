@@ -8,7 +8,7 @@ namespace Diorama.Filetypes.GSC.Components
 {
     public class NuMtlOldReferencedMaterial : IVectorSerializable
     {
-        public void Deserialize(RawFile file)
+        public void Deserialize(RawFile file, uint parentVersion)
         {
             uint replacedMaterialIndex = file.ReadUInt(true);
             string sourceGsc = file.ReadPascalString();

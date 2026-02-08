@@ -16,7 +16,7 @@ namespace Diorama.Filetypes.GSC.Components
     {
         public NuClipItem[] Elements;
 
-        public void Deserialize(RawFile file)
+        public void Deserialize(RawFile file, uint parentVersion)
         { // only works for DISP < 0x22
             ushort elementCount = file.ReadUShort(true);
             Elements = new NuClipItem[elementCount];

@@ -10,7 +10,7 @@ namespace Diorama.Types
 {
     public class NuSerializer
     {
-        public static List<T> ReadVectorArray<T>(RawFile file)
+        public static List<T> ReadVectorArray<T>(RawFile file, uint parentVersion = 0)
             where T : new()
         {
             Debug.Assert(file.ReadString(4) == "ROTV");
@@ -26,7 +26,14 @@ namespace Diorama.Types
                 if (isVectorSerializable)
                 {
                     var obj = new T();
-                    ((IVectorSerializable)obj).Deserialize(file);
+                    if (parentVersion != 0)
+                    {
+                        ((IVectorSerializable)obj).Deserialize(file, parentVersion);
+                    }
+                    else
+                    {
+                        ((IVectorSerializable)obj).Deserialize(file, parentVersion);
+                    }
                     list.Add(obj);
                 }
                 else
@@ -38,7 +45,7 @@ namespace Diorama.Types
             return list;
         }
 
-        public static List<T> ReadLegacyVarArray<T>(RawFile file)
+        public static List<T> ReadLegacyVarArray<T>(RawFile file, uint parentVersion = 0)
             where T : new()
         {
             int count = file.ReadInt(true);
@@ -52,7 +59,14 @@ namespace Diorama.Types
                 if (isVectorSerializable)
                 {
                     var obj = new T();
-                    ((IVectorSerializable)obj).Deserialize(file);
+                    if (parentVersion != 0)
+                    {
+                        ((IVectorSerializable)obj).Deserialize(file, parentVersion);
+                    }
+                    else
+                    {
+                        ((IVectorSerializable)obj).Deserialize(file, parentVersion);
+                    }
                     list.Add(obj);
                 }
                 else

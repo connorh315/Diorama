@@ -9,7 +9,7 @@ namespace Diorama.Filetypes.GSC.Components
 {
     public class NuSceneInstance : IVectorSerializable
     {
-        public void Deserialize(RawFile file)
+        public void Deserialize(RawFile file, uint parentVersion)
         {
             int hash = file.ReadInt(true);
             short flags = file.ReadShort(true);

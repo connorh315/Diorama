@@ -8,7 +8,7 @@ namespace Diorama.Filetypes.GSC.Components
 {
     public class NuVec4 : IVectorSerializable
     {
-        public void Deserialize(RawFile file)
+        public void Deserialize(RawFile file, uint parentVersion)
         {
             file.ReadFloat(true);
             file.ReadFloat(true);

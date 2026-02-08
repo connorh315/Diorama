@@ -158,13 +158,13 @@ namespace Diorama.Filetypes.GSC.Components
             byte usesLightRestrictionBox = file.ReadByte();
         }
 
-        public void Deserialize(RawFile file)
+        public void Deserialize(RawFile file, uint parentVersion)
         {
             ReadLightDescCommon(file);
             ReadLightDesc(file);
 
             NuMtx mtx = new NuMtx();
-            mtx.Deserialize(file);
+            mtx.Deserialize(file, parentVersion);
         }
     }
 }

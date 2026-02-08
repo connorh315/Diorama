@@ -10,7 +10,7 @@ namespace Diorama.Filetypes.GSC.Components
 {
     public class NuLSVOctree : IVectorSerializable
     {
-        public void Deserialize(RawFile file)
+        public void Deserialize(RawFile file, uint parentVersion)
         {
             Debug.Assert(file.ReadString(4) == "4LVI");
             uint version_4 = file.ReadUInt(true); // 0xa

@@ -13,7 +13,7 @@ namespace Diorama.Filetypes.GSC.Components
         public string Name;
         public byte Type;
 
-        public void Deserialize(RawFile file)
+        public void Deserialize(RawFile file, uint parentVersion)
         {
             Hash = file.ReadArray(16);
             Path = file.ReadPascalString();

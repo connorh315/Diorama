@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 
 namespace Diorama.Filetypes.GSC.Components
 {
-    public class NuStateAnim : IVectorSerializable
+    public class NuBlendShapeAnim : IVectorSerializable
     {
         public void Deserialize(RawFile file, uint parentVersion)
         {
-            ushort endFrame = file.ReadUShort(true);
-            List<float> frames = NuSerializer.ReadLegacyVarArray<float>(file);
-            List<byte> states = NuSerializer.ReadLegacyVarArray<byte>(file);
+            uint animNameIndex = file.ReadUInt(true);
+
+            List<NuBlendShapeAnimKey> keys = NuSerializer.ReadLegacyVarArray<NuBlendShapeAnimKey>(file, parentVersion);
         }
     }
 }

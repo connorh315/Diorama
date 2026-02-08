@@ -11,7 +11,7 @@ namespace Diorama.Filetypes.GSC.Components
         public float Scale { get; set; }
         public float Min { get; set; }
 
-        public void Deserialize(RawFile file)
+        public void Deserialize(RawFile file, uint parentVersion)
         {
             Scale = file.ReadFloat(true);
             Min = file.ReadFloat(true);

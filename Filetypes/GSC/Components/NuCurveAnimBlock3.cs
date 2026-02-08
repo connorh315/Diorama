@@ -8,7 +8,7 @@ namespace Diorama.Filetypes.GSC.Components
 {
     public class NuCurveAnimBlock3 : IVectorSerializable
     {
-        public void Deserialize(RawFile file)
+        public void Deserialize(RawFile file, uint parentVersion)
         {
             int iResult = file.ReadInt(true);
             short firstFrame = file.ReadShort(true);
