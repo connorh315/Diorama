@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices.Marshalling;
 using System.Security.AccessControl;
 using System.Text;
 using System.Threading.Tasks;
@@ -27,6 +28,17 @@ namespace Diorama.Filetypes.GSC.Components
                 NuMaterialData materialData;
                 switch (version)
                 {
+                    case 0xd5:
+                    case 0xd6:
+                    case 0xd7:
+                    case 0xd8:
+                    case 0xd9:
+                    case 0xda:
+                    case 0xdb:
+                    case 0xdc:
+                    case 0xdd:
+                    case 0xde:
+                    case 0xdf:
                     case 0xe0:
                     case 0xe2:
                     case 0xe4:
@@ -67,7 +79,7 @@ namespace Diorama.Filetypes.GSC.Components
             uint flags = file.ReadUInt(true);
             Debug.Assert(flags == 4);
 
-            file.Seek(0x494, SeekOrigin.Current); // "dummyHashArray"
+            file.Seek(0x494, SeekOrigin.Current); // "dummyHashArray" (really this should be 0x498, but the VertexList needs to read the prior int I think?)
             VertexList.Parse(file);
 
             file.Seek(0x4a, SeekOrigin.Current);
@@ -79,7 +91,7 @@ namespace Diorama.Filetypes.GSC.Components
         public override void Parse(RawFile file)
         {
             base.Parse(file);
-            file.Seek(0x1, SeekOrigin.Current);
+            //file.Seek(0x1, SeekOrigin.Current);
         }
     }
 
@@ -96,11 +108,115 @@ namespace Diorama.Filetypes.GSC.Components
             file.Seek(0x494, SeekOrigin.Current); // "dummyHashArray"
             VertexList.Parse(file);
 
-            file.Seek(0x49, SeekOrigin.Current);
+            if (Version < 0xda)
+            {
+                for (int i = 0; i < 6; i++)
+                {
+                    byte c = file.ReadByte();
+                }
+            }
+
+            ReadMtlAttrib(file);
+            uint fx1 = file.ReadUInt(true);
+            uint fx2 = file.ReadUInt(true);
+            uint fx3 = file.ReadUInt(true);
+            uint fx4 = file.ReadUInt(true);
+
+            int old_tid = file.ReadInt(true);
+
+            byte fxid = file.ReadByte();
+            byte specialId = file.ReadByte();
+
+            short shortPril16bit = file.ReadShort(true);
+
+            uint firstVariantIdx = file.ReadUInt(true);
+            uint nextVariantIdx = file.ReadUInt(true);
+
+            byte defunct_isCreasedMeshMaterial = file.ReadByte();
+            byte hasVariants = file.ReadByte();
+
+            byte legoStudMaterial = file.ReadByte();
+
+            byte maskShadows = file.ReadByte();
+            byte sortAfterRefraction = file.ReadByte();
+            byte skipValidation = file.ReadByte();
+
+            byte specialDepthSorting = file.ReadByte();
+            byte forceAlphaLightingSupport = file.ReadByte();
+
+            byte noAutoScreenDoor = file.ReadByte();
+            byte compileLiveCubemapGenShader = file.ReadByte();
+            byte compileToonShader = file.ReadByte();
+
+            byte shadowImpostor = file.ReadByte();
+            byte shadowFromFrontFaces = file.ReadByte();
+            byte doUntexturedTPage = file.ReadByte();
+            byte forceTPageRemap = file.ReadByte();
+            byte forceTPageSurfType = file.ReadByte();
+            byte forceTPageAlphaFade = file.ReadByte();
+
+            uint defaultRenderStage = file.ReadUInt(true);
+
+            //file.Seek(0x49, SeekOrigin.Current);
+        }
+
+        public void ReadMtlAttrib(RawFile file)
+        {
+            if (Version < 0xd8)
+            {
+                byte defunctOldAlpha = file.ReadByte();
+                byte defunctOldAtst = file.ReadByte();
+            }
+            byte afail = file.ReadByte();
+            byte aref = file.ReadByte();
+            byte cull = file.ReadByte();
+            byte zmode = file.ReadByte();
+            byte stencilMode = file.ReadByte();
+            byte noprepass = file.ReadByte();
+            byte filter = file.ReadByte();
+            byte old_utc = file.ReadByte();
+            byte old_vtc = file.ReadByte();
+            byte colour = file.ReadByte();
+            byte oldFillAttrib = file.ReadByte();
+            if (Version < 0xd8)
+            {
+                byte defunctOnly2D = file.ReadByte();
+            }
+            if (Version < 0xd9)
+            {
+                byte defunctStencilShadows = file.ReadByte();
+            }
+            byte castshadow = file.ReadByte();
+            byte old_autoStencil = file.ReadByte();
+            byte colourWriteMask = file.ReadByte();
+            if (Version > 0x85)
+            {
+                byte alwaysUpdateRefraction = file.ReadByte();
+            }
+            if (Version > 0x93)
+            {
+                byte sortLast = file.ReadByte();
+            }
+            if (Version > 0xbd)
+            {
+                byte externalFixupTarget = file.ReadByte();
+            }
+            if (Version > 0xca)
+            {
+                byte sortFirst = file.ReadByte();
+                byte disableEdgeOutlines = file.ReadByte();
+            }
+            if (Version > 0xe4)
+            {
+                byte preserveColoursDuringMainFilter = file.ReadByte();
+            }
+            byte alphaTestMode = file.ReadByte();
         }
 
         public void ReadShaderDesc(RawFile file)
         {
+            int iVar1 = 0;
+
             uint shader_Version = file.ReadUInt(true);
             if (Version > 0xe9)
             {
@@ -130,8 +246,13 @@ namespace Diorama.Filetypes.GSC.Components
             uint refraction = file.ReadUInt(true);
             uint reflection = file.ReadUInt(true);
             uint baseDiffuseUsage = file.ReadUInt(true);
-            uint layerBlendDiffuse = file.ReadUInt(true);
-            uint usesDiffuseLayerColour = file.ReadUInt(true); // 12
+            uint layerBlendDiffuse = file.ReadUInt(true); // (TODO: Should be 3?)
+            uint layerBlendDiffuse1 = file.ReadUInt(true); // (TODO: Should be 3?)
+            uint layerBlendDiffuse2 = file.ReadUInt(true); // (TODO: Should be 3?)
+            uint usesDiffuseLayerColour = file.ReadUInt(true); // 12 (TODO: Should be 4?)
+            uint usesDiffuseLayerColour1 = file.ReadUInt(true); // 12 (TODO: Should be 4?)
+            uint usesDiffuseLayerColour2 = file.ReadUInt(true); // 12 (TODO: Should be 4?)
+            uint usesDiffuseLayerColour3 = file.ReadUInt(true); // 12 (TODO: Should be 4?)
 
             uint layerBlendSpecular0 = file.ReadUInt(true);
             uint layerBlendSpecular1 = file.ReadUInt(true);
@@ -147,12 +268,12 @@ namespace Diorama.Filetypes.GSC.Components
             uint motionBlurVertexType = file.ReadUInt(true);
             uint motionBlurPixelType = file.ReadUInt(true);
 
-            uint dummy2 = file.ReadUInt(true);
-            uint dummy3 = file.ReadUInt(true);
-            uint dummy4 = file.ReadUInt(true);
-            uint dummy5 = file.ReadUInt(true);
-            uint dummy6 = file.ReadUInt(true);
-            uint dummy7 = file.ReadUInt(true);
+            //uint dummy2 = file.ReadUInt(true);
+            //uint dummy3 = file.ReadUInt(true);
+            //uint dummy4 = file.ReadUInt(true);
+            //uint dummy5 = file.ReadUInt(true);
+            //uint dummy6 = file.ReadUInt(true);
+            //uint dummy7 = file.ReadUInt(true);
 
             byte motionBlurSamples = file.ReadByte();
             byte numBones = file.ReadByte();
@@ -167,6 +288,10 @@ namespace Diorama.Filetypes.GSC.Components
                 uint state = file.ReadUInt(true);
                 uint UVSet = file.ReadUInt(true);
             }
+            if (Version < 0xe0)
+            {
+                byte old_bitangentFlip = file.ReadByte();
+            }
 
             byte materialFlags_tangentSwap = file.ReadByte();
             byte materialFlags_water = file.ReadByte();
@@ -174,8 +299,17 @@ namespace Diorama.Filetypes.GSC.Components
             {
                 byte materialFlags_parallaxBlendFix = file.ReadByte();
             }
+            if (Version < 0xe0)
+            {
+                byte old_nextgenshine = file.ReadByte();
+            }
             byte materialFlags_glow = file.ReadByte();
             byte materialFlags_carpaint = file.ReadByte();
+            if (Version < 0xe0)
+            {
+                byte old_fractalbump = file.ReadByte();
+                byte old_fractalbump2 = file.ReadByte();
+            }
             byte materialFlags_fog = file.ReadByte();
             byte materialFlags_unlitNonSRGB = file.ReadByte();
             byte materialFlags_hdralpha_diffuse = file.ReadByte();
@@ -211,13 +345,22 @@ namespace Diorama.Filetypes.GSC.Components
             byte materialFlags_disablePerPixelFade = file.ReadByte();
             byte materialFlags_cel_shading = file.ReadByte(); // 29
 
-            byte miscFlags_conditional_cel_shading = file.ReadByte();
+            if (Version > 0xd6)
+            {
+                byte miscFlags_conditional_cel_shading = file.ReadByte();
+            }
             if (Version > 0xee)
             {
                 byte materialFlags_receiveShadowDespiteCelShading = file.ReadByte();
             }
-            byte miscFlags_useRoomProjection = file.ReadByte();
-            byte miscFlags_useCustomPixelClipPlane = file.ReadByte();
+            if (Version > 0xde)
+            {
+                byte miscFlags_useRoomProjection = file.ReadByte();
+            }
+            if (Version > 0xdd)
+            {
+                byte miscFlags_useCustomPixelClipPlane = file.ReadByte();
+            }
             if (Version > 0xe0)
             {
                 byte miscFlags_layer2Refraction = file.ReadByte();
@@ -254,7 +397,10 @@ namespace Diorama.Filetypes.GSC.Components
             byte vertexFlags_disableSeparatePositionStream = file.ReadByte();
             byte vertexFlags_legoTerrain = file.ReadByte();
             byte vertexFlags_legoTerrainMeshType = file.ReadByte();
-            byte vertexFlags_largeWorldAwareCamera = file.ReadByte();
+            if (Version > 0xdb)
+            {
+                byte vertexFlags_largeWorldAwareCamera = file.ReadByte();
+            }
             byte vertexFlags_wind = file.ReadByte();
             if (Version > 0xe1)
             {
@@ -274,9 +420,12 @@ namespace Diorama.Filetypes.GSC.Components
             {
                 byte miscFlags_canAlphaBlend = file.ReadByte();
             }
-            byte miscFlags_defunctOpaque = file.ReadByte();
-            byte miscFlags_isDecal = file.ReadByte();
-            byte miscFlags_creaseMeshMaterial = file.ReadByte();
+            if (iVar1 != 2)
+            {
+                byte miscFlags_defunctOpaque = file.ReadByte();
+                byte miscFlags_isDecal = file.ReadByte();
+                byte miscFlags_creaseMeshMaterial = file.ReadByte();
+            }
             byte miscFlags_ttAnimationMode = file.ReadByte();
             byte miscFlags_culled = file.ReadByte();
             byte miscFlags_isDeferredDecal = file.ReadByte();
@@ -298,24 +447,40 @@ namespace Diorama.Filetypes.GSC.Components
             byte output_albedoRT = file.ReadByte();
             byte output_depthAsColourRT = file.ReadByte(); // 4
 
-            uint displayMode = file.ReadUInt(true);
-            uint grassLayers = file.ReadUInt(true);
+            // Only active when iVar1 == 2?
+            if (iVar1 == 2)
+            {
+                uint displayMode = file.ReadUInt(true);
+                byte grassLayers = file.ReadByte();
+            }
+            // Only active when iVar1 == 2?
+
             uint shaderVersion = file.ReadUInt(true);
             uint gpuVendor = file.ReadUInt(true);
             uint colourSpace = file.ReadUInt(true);
             uint bakedLighting = file.ReadUInt(true);
 
-            byte discreteLightType = file.ReadByte();
-            byte discreteLightShadingModel = file.ReadByte();
+            int discreteLightType = file.ReadInt(true);
+            int discreteLightShadingModel = file.ReadInt(true);
             byte discreteLightSoftShadows = file.ReadByte();
-            byte blank = file.ReadByte();
-            byte sceneZAccess = file.ReadByte();
-            byte shadowZAccess = file.ReadByte();
-            byte pcfMethod = file.ReadByte();
-            byte rainSplashSurfaceType = file.ReadByte();
+            if (Version < 0xdd)
+            {
+                for (int i = 0; i < 4; i++)
+                {
+                    int discreteLight2Type = file.ReadInt(true); // TODO: Should be an int!
+                    int discreteLight2ShadingModel = file.ReadInt(true); // TODO: Should be an int!
+                    byte discreteLIght2SoftShadows = file.ReadByte();
+                }
+            }
 
-            uint unknown = file.ReadUInt(true); // This might be engine hash
-            byte unknown1 = file.ReadByte();
+            if (refraction == 2 || iVar1 != 2)
+            {
+                int sceneZAccess = file.ReadInt(true); // TODO: Should be an int!
+            }
+            int shadowZAccess = file.ReadInt(true);
+            int pcfMethod = file.ReadInt(true);
+            //int glowMode = file.ReadInt(true); // doesn't exist for v > 0x99
+            int rainSplashSurfaceType = file.ReadInt(true);
         }
 
         public void ReadShaderParams(RawFile file, uint version)
@@ -359,9 +524,35 @@ namespace Diorama.Filetypes.GSC.Components
             }
 
             int numTexAuxEntries = file.ReadInt(true); // I think
+            for (int i = 0; i < numTexAuxEntries; i++)
+            {
+                if (Version < 0xdb)
+                {
+                    int maxAnisotropy = file.ReadInt(true);
+                }
+                else
+                {
+                    byte maxAnisotropy = file.ReadByte();
+                }
+            }
 
-            file.Seek(numTexAuxEntries * 9, SeekOrigin.Current);
-            file.Seek(0x10, SeekOrigin.Current); // Not sure what this section does either - Always 0xff
+            for (int i = 0; i < numTexAuxEntries; i++)
+            {
+                float mipmapBias = file.ReadFloat(true);
+            }
+
+            for (int i = 0; i < numTexAuxEntries; i++)
+            {
+                int texAuxData = file.ReadInt(true);
+            }
+
+            int texAnimData1 = file.ReadInt(true);
+            int texAnimData2 = file.ReadInt(true);
+            int texAnimData3 = file.ReadInt(true);
+            int texAnimData4 = file.ReadInt(true);
+
+            //file.Seek(numTexAuxEntries * 9, SeekOrigin.Current);
+            //file.Seek(0x10, SeekOrigin.Current); // Not sure what this section does either - Always 0xff
 
             //int maxAnisotropy = file.ReadInt(true);
             //int mipmapBias = file.ReadInt(true);
@@ -371,10 +562,10 @@ namespace Diorama.Filetypes.GSC.Components
                 byte modeU = file.ReadByte();
                 byte modeV = file.ReadByte();
 
-                int dU = file.ReadInt(true);
-                int dV = file.ReadInt(true);
-                int speedU = file.ReadInt(true);
-                int speedV = file.ReadInt(true);
+                float dU = file.ReadFloat(true);
+                float dV = file.ReadFloat(true);
+                float speedU = file.ReadFloat(true);
+                float speedV = file.ReadFloat(true);
 
                 byte ssNumColumns = file.ReadByte();
                 byte ssNumRows = file.ReadByte();
@@ -385,10 +576,7 @@ namespace Diorama.Filetypes.GSC.Components
                 byte ssOffset = file.ReadByte();
             }
 
-            byte colourA = file.ReadByte();
-            byte colourB = file.ReadByte();
-            byte colourG = file.ReadByte();
-            byte colourR = file.ReadByte();
+            int colour1 = file.ReadInt(true); // abgr
 
             int colour2 = file.ReadInt(true);
             int colour3 = file.ReadInt(true);
@@ -402,7 +590,7 @@ namespace Diorama.Filetypes.GSC.Components
             float kNormal3 = file.ReadFloat(true);
 
             float kParallax = file.ReadFloat(true);
-            int kParallaxBias = file.ReadInt(true);
+            float kParallaxBias = file.ReadFloat(true);
 
             int colour5 = file.ReadInt(true);
             int colour6 = file.ReadInt(true);
@@ -413,9 +601,9 @@ namespace Diorama.Filetypes.GSC.Components
             int colour11 = file.ReadInt(true);
             int colour12 = file.ReadInt(true);
 
-            int kRefractiveIndex = file.ReadInt(true);
-            int kRefractiveThicknessFactor = file.ReadInt(true);
-            int kGlow = file.ReadInt(true);
+            float kRefractiveIndex = file.ReadFloat(true);
+            float kRefractiveThicknessFactor = file.ReadFloat(true);
+            float kGlow = file.ReadFloat(true);
 
             int colour13 = file.ReadInt(true);
 
@@ -426,24 +614,42 @@ namespace Diorama.Filetypes.GSC.Components
             {
                 float kEnvLighting = file.ReadFloat(true);
             }
-            int kEnvAlphaHDR = file.ReadInt(true);
+            float kEnvAlphaHDR = file.ReadFloat(true);
             float kAlphaFresnelConst = file.ReadFloat(true);
             float kAlphaFresnelPower = file.ReadFloat(true);
             float kVTFHeight = file.ReadFloat(true);
             float kVTFNormal = file.ReadFloat(true);
             int kVTFOffset = file.ReadInt(true);
 
-            int kVTFDirection = file.ReadInt(true);
-            int kVTFDirection1 = file.ReadInt(true);
-            int kVTFDirection2 = file.ReadInt(true);
-            int kUseVTFDirection = file.ReadInt(true);
+            float kVTFDirection = file.ReadFloat(true);
+            float kVTFDirection1 = file.ReadFloat(true);
+            float kVTFDirection2 = file.ReadFloat(true);
+            float kUseVTFDirection = file.ReadFloat(true);
+
+            int vtfh2 = file.ReadInt(true);
 
             int colour14 = file.ReadInt(true);
             int colour15 = file.ReadInt(true);
+            if (Version < 0xdb)
+            {
+                int colour16 = file.ReadInt(true);
+                int colour17 = file.ReadInt(true);
+            }
 
-            int kCarPaintViewFactor = file.ReadInt(true);
+            float kCarPaintViewFactor = file.ReadFloat(true);
             float kCarPaintLightFactor = file.ReadFloat(true);
             float kBaseRoughness = file.ReadFloat(true);
+
+            if (Version < 0xe0)
+            {
+                float defunct_kBRDFAnotherSetting = file.ReadFloat(true);
+                float defunct_kFractalFrequency = file.ReadFloat(true);
+                float defunct_kFractalDiffuse = file.ReadFloat(true);
+                float defunct_kFractalSpecular = file.ReadFloat(true);
+                float defunct_kFractalLacunarity = file.ReadFloat(true);
+                float defunct_kFractalGain = file.ReadFloat(true);
+                float defunct_kFractalHeight = file.ReadFloat(true);
+            }
 
             float kEnvLightIntensity = file.ReadFloat(true);
             float kEnvLightSpecular = file.ReadFloat(true);
@@ -455,31 +661,36 @@ namespace Diorama.Filetypes.GSC.Components
                 float kSkinSpread = file.ReadFloat(true);
             }
             float kBaseSubstance = file.ReadFloat(true);
-            float extra = file.ReadFloat(true);
 
             byte kDepthBias = file.ReadByte();
 
             float kDepthBiasScale = file.ReadFloat(true);
             float kShadowBias = file.ReadFloat(true);
-            float kRoomWidth = file.ReadFloat(true);
-            float kRoomHeight = file.ReadFloat(true);
-            float kRoomDepth = file.ReadFloat(true);
+            if (Version > 0xde)
+            {
+                float kRoomWidth = file.ReadFloat(true);
+                float kRoomHeight = file.ReadFloat(true);
+                float kRoomDepth = file.ReadFloat(true);
+            }
             float kWiiMaxAlphaBias = file.ReadFloat(true);
 
-            int colour16 = file.ReadInt(true);
-            int colour17 = file.ReadInt(true);
+            int colour18 = file.ReadInt(true);
+            int colour19 = file.ReadInt(true);
 
             short kTPageID = file.ReadShort(true);
 
             float kStiffness = file.ReadFloat(true);
 
-            float perLayerUVScale1 = file.ReadFloat(true);
-            float perLayerUVScale2 = file.ReadFloat(true);
-            float perLayerUVScale3 = file.ReadFloat(true);
-            float perLayerUVScale4 = file.ReadFloat(true);
+            if (Version >= 0xd1)
+            {
+                float perLayerUVScale1 = file.ReadFloat(true);
+                float perLayerUVScale2 = file.ReadFloat(true);
+                float perLayerUVScale3 = file.ReadFloat(true);
+                float perLayerUVScale4 = file.ReadFloat(true);
+                byte kLightmapTranslucency = file.ReadByte();
+                byte kLightmapEmission = file.ReadByte();
+            }
 
-            byte kLightmapTranslucency = file.ReadByte();
-            byte kLightmapEmission = file.ReadByte();
             if (version > 0xe3)
             {
                 byte bForceDefaultCubeMap = file.ReadByte();

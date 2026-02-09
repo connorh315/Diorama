@@ -12,7 +12,8 @@ namespace Diorama
         {
             
             //ParseFile(@"A:\commonobjects\env_co\avoidvignette_dx11.gsc");
-            TryParseFile(@"A:\LEVELS\LOADING_SCREEN_STARTUP\CAMERA2_DX11.GSC");
+            TryParseFile(@"A:\CHARS\MISC\ITEMS\CUT_KEYSTONED_DX11.GSC");
+            TryParseFile(@"A:\LEVELS\BUILDER\BUILDERGAMEMECHANICS\BUILDERMASTERBUILD\BUILDERMASTERBUILD_DX11.GSC");
             //TryParseFile("A:\\levels\\builder\\buildergamemechanics\\builderghostreceptor\\builderghostreceptor_dx11.gsc");
             //ParseFile("A:\\levels\\vfx\\vfx_story\\vfx_1wizardofoz\\vfx_1wizardofoza\\vfx_1wizardofoza_dx11.gsc");
             //TryParseFile("A:\\levels\\vfx\\vfx_ipsharedscenes\\vfx_puncheffects\\vfx_puncheffects_dx11.gsc");
