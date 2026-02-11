@@ -28,8 +28,11 @@ namespace Diorama.Filetypes.GSC.Components
                 List<NuPointOfInterest> pointsOfInterest = NuSerializer.ReadVectorArray<NuPointOfInterest>(file, version);
                 List<byte> poiIxs = NuSerializer.ReadVectorArray<byte>(file);
 
-                uint buffer_size = file.ReadUInt(true); // I think
-                Debug.Assert(buffer_size == 0, "hgol buffer size != 0");
+                int buffer_size = file.ReadInt(true); // I think
+                if (buffer_size != 0)
+                {
+                    byte[] buffer = file.ReadArray(buffer_size);
+                }
 
                 List<NuLayer_SpecialFlags> layerMetaData = NuSerializer.ReadVectorArray<NuLayer_SpecialFlags>(file, version);
                 List<NuLayerData> layers = NuSerializer.ReadVectorArray<NuLayerData>(file, version);
