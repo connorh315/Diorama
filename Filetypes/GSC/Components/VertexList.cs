@@ -132,8 +132,7 @@ namespace Diorama.Filetypes.GSC.Components
                         NormalizeByte(file.ReadByte()));
 
                 case VertexDefinitionStorageEnum.vec4char:
-                    Debug.Assert(1 == 0, "vec4char");
-                    return Vector4.Zero;
+                    return new Vector4(file.ReadByte(), file.ReadByte(), file.ReadByte(), file.ReadByte());
 
                 case VertexDefinitionStorageEnum.color4char:
                     return new Vector4((float)file.ReadByte()/255, (float)file.ReadByte() / 255, (float)file.ReadByte() / 255, (float)file.ReadByte() / 255);

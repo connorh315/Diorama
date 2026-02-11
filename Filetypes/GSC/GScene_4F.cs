@@ -36,6 +36,11 @@ namespace Diorama.Filetypes.GSC
                 Debug.Assert(offset == 0);
             }
 
+            if (!vertexLists.ContainsKey(reference))
+            {
+                Console.WriteLine();
+            }
+
             return vertexLists[reference];
         }
 
@@ -63,6 +68,11 @@ namespace Diorama.Filetypes.GSC
 
                 reference = referenceCounter++;
                 indicesLists.Add(reference, indexBuffer);
+            }
+
+            if (!indicesLists.ContainsKey(reference))
+            {
+                Console.WriteLine();
             }
 
             return indicesLists[reference];
@@ -110,6 +120,7 @@ namespace Diorama.Filetypes.GSC
             Debug.Assert(version == 4);
 
             List<ushort> dummy = NuSerializer.ReadVectorArray<ushort>(file);
+            Debug.Assert(dummy.Count == 0, "cpuskinned not null");
         }
 
         protected virtual void ReadDisplayScene()
@@ -280,17 +291,23 @@ namespace Diorama.Filetypes.GSC
 
                 mesh.VerticesCount = file.ReadUInt(true);
 
-                int vbUsedCount = file.ReadInt(true);
-                //Debug.Assert(vbUsedCount == 0);
-
                 int vbInstBitsAsU32 = file.ReadInt(true);
-                Debug.Assert(vbInstBitsAsU32 == 0);
 
-                uint skinMtxMap = file.ReadUInt(true);
-                Debug.Assert(skinMtxMap == 0); // legacy array?
+                List<byte> skinMtxMap = NuSerializer.ReadLegacyVarArray<byte>(file);
+                if (skinMtxMap.Count != 0)
+                {
+                    referenceCounter++;
+                }
+                //Debug.Assert(skinMtxMap.Count == 0); // legacy array?
+
+                int nuBlendShape = file.ReadInt(true); // i think
+                if (nuBlendShape != 0)
+                {
+                    NuBlendShape.Parse(file, this, meshVersion);
+                }
+                //Debug.Assert(defunctOptFlags == 0);
 
                 uint defunctOptFlags = file.ReadUInt(true);
-                Debug.Assert(defunctOptFlags == 0);
 
                 Vector4 centreExtents0 = new Vector4(file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true));
                 Vector4 centreExtents1 = new Vector4(file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true));
@@ -336,7 +353,14 @@ namespace Diorama.Filetypes.GSC
 
             ReadLSVOctreeBlock();
 
-            List<ushort> nucharacterdata = NuSerializer.ReadVectorArray<ushort>(file);
+            if (NameTable.Version < 0x14)
+            {
+                List<NuCharacterData> nucharacterdata = NuSerializer.ReadLegacyVarArray<NuCharacterData>(file);
+            }
+            else
+            {
+                List<NuCharacterData> nucharacterdata = NuSerializer.ReadVectorArray<NuCharacterData>(file);
+            }
 
             uint oldWiiMeshSceneBlockLinkArrayCount = file.ReadUInt(true);
 
@@ -349,10 +373,10 @@ namespace Diorama.Filetypes.GSC
             }
 
             byte useSingleLodAnim = file.ReadByte();
-            Debug.Assert(useSingleLodAnim == 0);
+            Debug.Assert(useSingleLodAnim == 0, "usesinglelodanim");
 
             uint numblendshapes = file.ReadUInt(true);
-            Debug.Assert(numblendshapes == 0);
+            Debug.Assert(numblendshapes == 0, "numblendshapes");
 
             List<ushort> unk = NuSerializer.ReadVectorArray<ushort>(file);
 
