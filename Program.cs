@@ -13,8 +13,8 @@ namespace Diorama
             
             //ParseFile(@"A:\commonobjects\env_co\avoidvignette_dx11.gsc");
             //TryParseFile(@"A:\CHARS\CREATURE\GHOST_75827\GHOST_75827_KRAWLIE_DX11.GHG");
-            TryParseFile(@"A:\CHARS\SUPER_CHARACTER\FACE\FACE_METALBEARD_DX11.GHG");
-            TryParseFile(@"A:\LEVELS\BUILDER\BUILDERGAMEMECHANICS\BUILDERMASTERBUILD\BUILDERMASTERBUILD_DX11.GSC");
+            //TryParseFile(@"A:\CHARS\SUPER_CHARACTER\FACE\FACE_METALBEARD_DX11.GHG");
+            //TryParseFile(@"A:\LEVELS\BUILDER\BUILDERGAMEMECHANICS\BUILDERMASTERBUILD\BUILDERMASTERBUILD_DX11.GSC");
             //TryParseFile("A:\\levels\\builder\\buildergamemechanics\\builderghostreceptor\\builderghostreceptor_dx11.gsc");
             //ParseFile("A:\\levels\\vfx\\vfx_story\\vfx_1wizardofoz\\vfx_1wizardofoza\\vfx_1wizardofoza_dx11.gsc");
             //TryParseFile("A:\\levels\\vfx\\vfx_ipsharedscenes\\vfx_puncheffects\\vfx_puncheffects_dx11.gsc");

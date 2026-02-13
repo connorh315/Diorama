@@ -119,8 +119,18 @@ namespace Diorama.Filetypes.GSC
             uint version = file.ReadUInt(true);
             Debug.Assert(version == 4);
 
-            List<ushort> dummy = NuSerializer.ReadVectorArray<ushort>(file);
-            Debug.Assert(dummy.Count == 0, "cpuskinned not null");
+            if (version < 3)
+            {
+                Debug.Assert(false, "CPUS section not supported");
+            }
+            else if (version == 3)
+            {
+
+            }
+            else
+            {
+                List<NuCpuSkinLod> lods = NuSerializer.ReadVectorArray<NuCpuSkinLod>(file, version);
+            }
         }
 
         protected virtual void ReadDisplayScene()
@@ -373,12 +383,10 @@ namespace Diorama.Filetypes.GSC
             }
 
             byte useSingleLodAnim = file.ReadByte();
-            Debug.Assert(useSingleLodAnim == 0, "usesinglelodanim");
 
             uint numblendshapes = file.ReadUInt(true);
-            Debug.Assert(numblendshapes == 0, "numblendshapes");
 
-            List<ushort> unk = NuSerializer.ReadVectorArray<ushort>(file);
+            List<ushort> unk = NuSerializer.ReadVectorArray<ushort>(file); // pad data
 
             uint unk2 = file.ReadUInt(true);
             Debug.Assert(unk2 == 0);
