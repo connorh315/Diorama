@@ -100,7 +100,7 @@ namespace Diorama.Core.Types
                 return (T)(object)file.ReadLong();
 
             if (typeof(T) == typeof(float))
-                return (T)(object)file.ReadFloat();
+                return (T)(object)file.ReadFloat(true);
 
             if (typeof(T) == typeof(string))
                 return (T)(object)file.ReadPascalString();

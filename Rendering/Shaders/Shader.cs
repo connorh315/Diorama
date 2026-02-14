@@ -74,6 +74,13 @@ namespace Diorama.Rendering.Shaders
             GL.UniformMatrix4(location, true, ref matrix);
         }
 
+        public void SetVector3(string name, Vector3 vec)
+        {
+            Use();
+            int location = GL.GetUniformLocation(Handle, name);
+            GL.Uniform3(location, ref vec);
+        }
+
         private bool disposedValue = false;
 
         protected virtual void Dispose(bool disposing)

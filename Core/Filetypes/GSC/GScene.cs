@@ -19,11 +19,14 @@ namespace Diorama.Core.Filetypes.GSC
 
         internal Dictionary<int, VertexList> vertexLists = new();
         internal Dictionary<int, ushort[]> indicesLists = new();
+        internal Dictionary<int, NuRenderMesh> geometryLists = new();
         internal int referenceCounter = 5;
 
         public NuRenderMesh[] RenderMeshes;
 
         public uint NU20Version;
+
+        public NuDisplayScene DisplayScene;
 
         protected abstract void Parse();
 

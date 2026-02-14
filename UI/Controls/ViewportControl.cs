@@ -30,6 +30,16 @@ namespace Diorama.UI.Controls
 
         private bool isRotating = false;
 
+        public ViewportControl()
+        {
+            Focusable = true;
+        }
+
+        public void LoadScene(string path)
+        {
+            ((ViewportRenderer)renderer).EnqueueScene(path);
+        }
+
         protected override void OnOpenGlInit(GlInterface gl)
         {
             context = new(gl);

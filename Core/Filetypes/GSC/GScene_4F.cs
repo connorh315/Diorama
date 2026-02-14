@@ -135,36 +135,7 @@ namespace Diorama.Core.Filetypes.GSC
 
         protected virtual void ReadDisplayScene()
         {
-            Debug.Assert(file.ReadString(4) == "PSID");
-            uint version = file.ReadUInt(true);
-            Debug.Assert(version == 0x20 || version == 0x21, $"Unsupported DISP version: {version}");
-
-            List<NuDefunctDisplayItem> displayItems = NuSerializer.ReadVectorArray<NuDefunctDisplayItem>(file); // only for versions < 0x22
-            List<NuClipObject> clipObjects = NuSerializer.ReadVectorArray<NuClipObject>(file);
             
-            if (version == 0x21)
-            {
-                List<NuSpecialObject_21> specialObjects = NuSerializer.ReadVectorArray<NuSpecialObject_21>(file);
-            }
-            else
-            {
-                List<NuSpecialObject> specialObjects = NuSerializer.ReadVectorArray<NuSpecialObject>(file);
-            }
-            
-            List<NuSpecialGroupNode> specialGroupNodes = NuSerializer.ReadVectorArray<NuSpecialGroupNode>(file);
-
-            List<NuVec4> boundsCenterAndDistSqrt = NuSerializer.ReadVectorArray<NuVec4>(file);
-            List<NuVec4> boundsExtentsAndRadius = NuSerializer.ReadVectorArray<NuVec4>(file);
-            List<NuSceneInstance> sceneInstances = NuSerializer.ReadVectorArray<NuSceneInstance>(file);
-            List<ushort> sceneInstanceFixups = NuSerializer.ReadVectorArray<ushort>(file); // not sure about this one - needs looking into
-            Debug.Assert(sceneInstanceFixups.Count == 0);
-            List<uint> animMtls = NuSerializer.ReadVectorArray<uint>(file); // not sure about this one - needs looking into
-            List<NuTransformMtx> transformMtxs = NuSerializer.ReadVectorArray<NuTransformMtx>(file);
-            List<NuFaceOnDisplayItem> faceOnDisplayItems = NuSerializer.ReadVectorArray<NuFaceOnDisplayItem>(file); // not sure about this one - needs looking into
-            if (NameTable.Version > 0x52)
-            {
-                List<short> textureAnimListIndexs2 = NuSerializer.ReadLegacyVarArray<short>(file);
-            }
         }
 
         protected virtual void ReadTextureAnim3SceneBlock()
@@ -324,7 +295,9 @@ namespace Diorama.Core.Filetypes.GSC
 
                 float densityDiscDiameter = file.ReadFloat(true);
 
-                referenceCounter += 2;
+                referenceCounter++;
+
+                geometryLists.Add(referenceCounter++, mesh);
 
                 RenderMeshes[part] = mesh;
             }
@@ -346,7 +319,7 @@ namespace Diorama.Core.Filetypes.GSC
             Debug.Assert(cpusCount == 1);
             ReadCpuSkinned();
 
-            ReadDisplayScene();
+            DisplayScene = NuDisplayScene.Read(file, NameTable);
 
             ReadTextureAnim3SceneBlock();
 

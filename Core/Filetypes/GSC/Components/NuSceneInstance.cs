@@ -14,6 +14,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
             int hash = file.ReadInt(true);
             short flags = file.ReadShort(true);
             short clipObjectIndex = file.ReadShort(true);
+            Console.WriteLine(clipObjectIndex);
             float clipDistance = file.ReadFloat(true);
 
             float fadeDistancesCo = file.ReadFloat(true);

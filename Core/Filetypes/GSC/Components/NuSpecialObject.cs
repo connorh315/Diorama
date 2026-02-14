@@ -8,14 +8,6 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class NuSpecialObject_21 : NuSpecialObject
-    {
-        public override List<float> ReadClipData(RawFile file)
-        {
-            return NuSerializer.ReadVectorArray<float>(file);
-        }
-    }
-
     public class NuSpecialObject : IVectorSerializable
     {
         public virtual List<float> ReadClipData(RawFile file)
@@ -23,29 +15,56 @@ namespace Diorama.Core.Filetypes.GSC.Components
             return NuSerializer.ReadLegacyVarArray<float>(file);
         }
 
+        public string Name;
+        public NuMtx Mtx;
+
+        public Vector4 Min;
+        public Vector4 Max;
+        public Vector4 Sphere;
+
+        public uint ClipObjectIndex;
+        public uint Flags;
+
+        public List<float> ClipData;
+
+        public int InstanceIndex;
+        public int AnimIndex;
+
+        public byte WindSpeed;
+        public byte WindScale;
+
+        public short NameIndex;
+
         public void Deserialize(RawFile file, uint parentVersion)
         {
             string name = file.ReadPascalString(); // > 0x1b
 
-            for (int i = 0; i < 16; i++)
-                file.ReadFloat(); // matrix, no object for it yet
+            Mtx = new NuMtx();
+            Mtx.Deserialize(file, 0);
 
-            Vector4 min = new Vector4(file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true));
-            Vector4 max = new Vector4(file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true));
-            Vector4 sphere = new Vector4(file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true));
+            Min = new Vector4(file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true));
+            Max = new Vector4(file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true));
+            Sphere = new Vector4(file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true));
 
-            uint clipObjectIndex = file.ReadUInt(true);
-            uint flags = file.ReadUInt(true);
+            ClipObjectIndex = file.ReadUInt(true);
+            Flags = file.ReadUInt(true);
 
-            List<float> clipData = ReadClipData(file);
+            if (parentVersion == 0x21)
+            {
+                ClipData = NuSerializer.ReadVectorArray<float>(file);
+            }
+            else
+            {
+                ClipData = NuSerializer.ReadLegacyVarArray<float>(file);
+            }
 
-            int instanceIndex = file.ReadInt(true);
-            int animIndex = file.ReadInt(true);
+            InstanceIndex = file.ReadInt(true);
+            AnimIndex = file.ReadInt(true);
 
-            byte windSpeed = file.ReadByte();
-            byte windScale = file.ReadByte();
+            WindSpeed = file.ReadByte();
+            WindScale = file.ReadByte();
 
-            short nameIndex = file.ReadShort(true); // possibly actually "exported"?
+            NameIndex = file.ReadShort(true); // possibly actually "exported"?
         }
     }
 }
