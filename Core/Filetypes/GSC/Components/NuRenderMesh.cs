@@ -1,0 +1,19 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Diorama.Core.Filetypes.GSC.Components
+{
+    public class NuRenderMesh
+    {
+        public VertexList[] VertexBuffers;
+        public ushort[] Indices;
+
+        public uint VerticesBase;
+        public uint VerticesCount;
+        public uint IndicesBase;
+        public uint IndicesCount;
+    }
+}
