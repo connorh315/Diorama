@@ -305,7 +305,7 @@ namespace Diorama.Core.Filetypes.GSC
             Debug.Assert(file.ReadUInt(true) == 0);
             Debug.Assert(file.ReadUInt(true) == 1);
 
-            NuMaterialData[] materials = NuMaterialData.Read(file);
+            Materials = NuMaterialData.Read(file);
 
             List<NuMtlOldReferencedMaterial> embedded_textures = NuSerializer.ReadVectorArray<NuMtlOldReferencedMaterial>(file);
 

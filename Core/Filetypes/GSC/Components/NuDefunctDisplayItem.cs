@@ -27,11 +27,12 @@ namespace Diorama.Core.Filetypes.GSC.Components
     {
         public DisplayCommand Command;
         public uint Index;
+        public byte Id;
 
         public void Deserialize(RawFile file, uint parentVersion)
         {
             Command = (DisplayCommand)file.ReadByte();
-            byte id = file.ReadByte();
+            Id = file.ReadByte();
             Index = file.ReadUInt(true);
         }
     }

@@ -19,9 +19,16 @@ namespace Diorama.Rendering
 
         public float Speed = 3.0f;
 
+        public Matrix4 Projection;
+
         public Camera(Vector3 startPosition)
         {
             Position = startPosition;
+        }
+
+        public void SetWidthHeight(int width, int height)
+        {
+            Projection = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(45.0f), (float)width / height, 0.1f, 1000f);
         }
 
         public void MoveForward(float deltaTime)
@@ -64,6 +71,8 @@ namespace Diorama.Rendering
 
             Front = Vector3.Normalize(front);
         }
+
+        public void ToggleSpeed(bool toggle) => Speed = (toggle ? 20f : 3.0f);
 
         public Matrix4 GetViewMatrix() => Matrix4.LookAt(Position, Position + Front, Up);
     }

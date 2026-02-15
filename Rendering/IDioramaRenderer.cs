@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Diorama.Editor;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,7 +15,7 @@ namespace Diorama.Rendering
 
         void Initialize();
 
-        void Render();
+        void Render(List<EditorScene> scenes);
 
         void Deinitialize();
     }

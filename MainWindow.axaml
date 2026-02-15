@@ -7,5 +7,6 @@
         x:Class="Diorama.MainWindow"
         DragDrop.AllowDrop="True" DragDrop.Drop="Window_DragDrop"
         Title="Diorama">
+  
     <controls:ViewportControl x:Name="MainViewport" />
 </Window>

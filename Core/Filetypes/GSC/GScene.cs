@@ -28,6 +28,8 @@ namespace Diorama.Core.Filetypes.GSC
 
         public NuDisplayScene DisplayScene;
 
+        public NuMaterialData[] Materials;
+
         protected abstract void Parse();
 
         protected abstract VertexList GetVertexList();

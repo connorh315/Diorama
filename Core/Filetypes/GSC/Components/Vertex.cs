@@ -18,8 +18,8 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
         public Vector4 ColorSet1;
 
-        public Vector2 UVSet0;
+        public Vector4 UVSet01;
 
-        public Vector2 UVSet1;
+        public Vector2 UVSet02;
     }
 }

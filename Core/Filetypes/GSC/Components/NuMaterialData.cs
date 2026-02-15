@@ -16,6 +16,9 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
         public uint Version;
 
+        public int Diffuse0Index;
+        public int Diffuse1Index;
+
         public static NuMaterialData[] Read(RawFile file)
         {
             Debug.Assert(file.ReadString(4) == "LTMU");
@@ -486,8 +489,8 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
         public void ReadShaderParams(RawFile file, uint version)
         {
-            int diffuse0 = file.ReadInt(true);
-            int diffuse1 = file.ReadInt(true);
+            Diffuse0Index = file.ReadInt(true);
+            Diffuse1Index = file.ReadInt(true);
             int diffuse2 = file.ReadInt(true);
             int diffuse3 = file.ReadInt(true);
 

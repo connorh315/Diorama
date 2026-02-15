@@ -4,6 +4,7 @@ using Diorama.Core;
 using Diorama.Core.Filetypes.GSC;
 using Diorama.Core.Filetypes.GSC.Components;
 using System.Collections.Concurrent;
+using System.Collections.ObjectModel;
 using System.Diagnostics.Metrics;
 using System.Reflection.PortableExecutable;
 
@@ -23,6 +24,10 @@ namespace Diorama
             => AppBuilder.Configure<App>()
                 .UsePlatformDetect()
                 .WithInterFont()
+                .With(new Win32PlatformOptions
+                {
+                    RenderingMode = new Collection<Win32RenderingMode> { Win32RenderingMode.Wgl }
+                })
                 .LogToTrace();
 
         //    static void Main(string[] args)

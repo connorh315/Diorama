@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Threading;
 
 namespace Diorama
 {
@@ -19,7 +20,14 @@ namespace Diorama
             if (firstFile == null)
                 return;
 
-            MainViewport.LoadScene(firstFile.Path.LocalPath);
+#if DEBUG // When triggering a breakpoint, explorer sort of just freezes until the code continues which is insufferable
+            Dispatcher.UIThread.Invoke(new Action(() =>
+            {
+#endif
+                MainViewport.LoadScene(firstFile.Path.LocalPath);
+#if DEBUG
+            }), DispatcherPriority.Background);
+#endif
         }
     }
 }

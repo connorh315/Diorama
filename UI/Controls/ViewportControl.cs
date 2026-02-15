@@ -23,8 +23,9 @@ namespace Diorama.UI.Controls
     public partial class ViewportControl : OpenGlControlBase, ICustomHitTest
     {
         private AvaloniaTkContext context;
-        private IDioramaRenderer renderer = new ViewportRenderer();
         public AvaloniaKeyboardState Keyboard = new AvaloniaKeyboardState();
+
+        private SceneController sceneController;
         private Stopwatch stopwatch = Stopwatch.StartNew();
         private double lastTime;
 
@@ -33,11 +34,13 @@ namespace Diorama.UI.Controls
         public ViewportControl()
         {
             Focusable = true;
+
+            sceneController = new SceneController(new ViewportRenderer());
         }
 
         public void LoadScene(string path)
         {
-            ((ViewportRenderer)renderer).EnqueueScene(path);
+            sceneController.LoadScene(path);
         }
 
         protected override void OnOpenGlInit(GlInterface gl)
@@ -45,28 +48,32 @@ namespace Diorama.UI.Controls
             context = new(gl);
             GL.LoadBindings(context);
 
-            renderer.Initialize();
+            sceneController.Initialize();
+
+            SetFramebufferSize();
         }
 
         private void Update(double deltaTime)
         {
             if (Keyboard.IsKeyDown(Key.W))
-                renderer.Camera.MoveForward((float)deltaTime);
+                sceneController.Renderer.Camera.MoveForward((float)deltaTime);
 
             if (Keyboard.IsKeyDown(Key.A))
-                renderer.Camera.MoveLeft((float)deltaTime);
+                sceneController.Renderer.Camera.MoveLeft((float)deltaTime);
 
             if (Keyboard.IsKeyDown(Key.S))
-                renderer.Camera.MoveBackward((float)deltaTime);
+                sceneController.Renderer.Camera.MoveBackward((float)deltaTime);
 
             if (Keyboard.IsKeyDown(Key.D))
-                renderer.Camera.MoveRight((float)deltaTime);
+                sceneController.Renderer.Camera.MoveRight((float)deltaTime);
 
             if (Keyboard.IsKeyDown(Key.Space))
-                renderer.Camera.MoveUp((float)deltaTime);
+                sceneController.Renderer.Camera.MoveUp((float)deltaTime);
 
             if (Keyboard.IsKeyDown(Key.LeftCtrl))
-                renderer.Camera.MoveDown((float)deltaTime);
+                sceneController.Renderer.Camera.MoveDown((float)deltaTime);
+
+            sceneController.Renderer.Camera.ToggleSpeed(Keyboard.IsKeyDown(Key.LeftShift));
         }
 
         protected override void OnOpenGlRender(GlInterface gl, int fb)
@@ -79,15 +86,27 @@ namespace Diorama.UI.Controls
 
             Update(deltaTime);
 
+            sceneController.Render();
+
+            Dispatcher.UIThread.Post(RequestNextFrameRendering, DispatcherPriority.Background);
+        }
+
+        protected override void OnSizeChanged(SizeChangedEventArgs e)
+        {
+            base.OnSizeChanged(e);
+
+            if (!sceneController.IsInitialized) return;
+
+            SetFramebufferSize();
+        }
+
+        private void SetFramebufferSize()
+        {
             int fbWidth = (int)(Bounds.Width * this.VisualRoot.RenderScaling);
             int fbHeight = (int)(Bounds.Height * this.VisualRoot.RenderScaling);
 
             GL.Viewport(0, 0, fbWidth, fbHeight); // TODO: Probably could just be called on-change rather than per-frame?
-            renderer.SetFramebufferSize(fbWidth, fbHeight);
-
-            renderer.Render();
-
-            Dispatcher.UIThread.Post(RequestNextFrameRendering, DispatcherPriority.Background);
+            sceneController.Renderer.SetFramebufferSize(fbWidth, fbHeight);
         }
 
         protected override void OnOpenGlDeinit(GlInterface gl)
@@ -110,12 +129,6 @@ namespace Diorama.UI.Controls
         }
 
         public bool HitTest(Point point) => Math.Min(point.X, point.Y) >= 0 && point.X < Bounds.Width && point.Y < Bounds.Height;
-        //{
-         
-        //    Rect correctedBounds = new Rect(0, 0, Bounds.Width - Bounds.X, Bounds.Height - Bounds.Y); // Transforming the control seems to cause the point to be transformed, 
-
-        //    return correctedBounds.Contains(point);
-        //}
 
         private Vector2 windowCenter;
 
@@ -201,7 +214,7 @@ namespace Diorama.UI.Controls
             if (deltaX == 0 && deltaY == 0)
                 return; // ignore warp-generated move
 
-            renderer.Camera.ProcessMouse(deltaX, deltaY);
+            sceneController.Renderer.Camera.ProcessMouse(deltaX, deltaY);
 
             // Recenter immediately
             DioramaPlatform.SetCursorPos((int)windowCenter.X, (int)windowCenter.Y);

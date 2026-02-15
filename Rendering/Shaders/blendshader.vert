@@ -1,12 +1,13 @@
-﻿#version 300 es
+﻿#version 420 core
+
 layout (location = 0) in vec3 aPosition;
 layout (location = 1) in vec3 aNormal;
-layout (location = 2) in vec4 aUv;
-layout (location = 3) in vec4 aColor;
+layout (location = 2) in vec4 aColor;
+layout (location = 5) in vec4 aUv1;
 
 out vec3 FragPos;
 out vec3 Normal;
-out vec2 UV;
+out vec4 UV1;
 out vec4 outColor;
 
 uniform mat4 model;
@@ -21,6 +22,6 @@ void main()
 
     FragPos = worldPos.xyz;
     Normal = mat3(transpose(inverse(model))) * aNormal;
-    UV = aUv.xy;
+    UV1 = aUv1;
     outColor = aColor;
 }

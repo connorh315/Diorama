@@ -14,7 +14,11 @@ namespace Diorama.Core.Filetypes.GSC.Components
     {
         public VertexDefinition[] Definitions;
 
-        public Vertex[] Vertices;
+        public Vertex[] Vertices; // Defunct
+
+        public byte[] VerticesDump;
+
+        public int Stride;
 
         public VertexList(uint vertexCount, uint vertexDefinitionCount)
         {
@@ -34,25 +38,40 @@ namespace Diorama.Core.Filetypes.GSC.Components
             
             VertexList list = new VertexList(vertexCount, vertexDefinitionCount);
 
+            int stride = 0;
             for (int vDef = 0; vDef < vertexDefinitionCount; vDef++)
             {
                 VertexDefinition def = VertexDefinition.Parse(file);
 
                 list.Definitions[vDef] = def;
-
-                //Console.WriteLine($"Vertex Definition {vDef}: Variable={def.Variable}, Type={def.Type}, Offset={def.Offset}");
+                stride += SizeOf(def.Type);
             }
+
+            list.Stride = stride;
 
             byte[] instancingDividers = new byte[6];
             for (int i = 0; i < 6; i++)
                 instancingDividers[i] = file.ReadByte();
 
-            for (int vertexIndex = 0; vertexIndex < vertexCount; vertexIndex++)
-            {
-                list.Vertices[vertexIndex] = list.ReadVertex(file);
-            }
+            list.VerticesDump = file.ReadArray((int)(stride * vertexCount));
 
             return list;
+        }
+
+        private static int SizeOf(VertexDefinitionStorageEnum storage)
+        {
+            return storage switch
+            {
+                VertexDefinitionStorageEnum.vec2float => 8,
+                VertexDefinitionStorageEnum.vec3float => 12,
+                VertexDefinitionStorageEnum.vec4float => 16,
+                VertexDefinitionStorageEnum.vec2half => 4,
+                VertexDefinitionStorageEnum.vec4half => 8,
+                VertexDefinitionStorageEnum.vec4char => 4,
+                VertexDefinitionStorageEnum.vec4mini => 4,
+                VertexDefinitionStorageEnum.color4char => 4,
+                _ => 0 // TODO: Handle materials triggering this
+            };
         }
 
         private Vertex ReadVertex(RawFile file)
@@ -75,7 +94,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
                         vertex.ColorSet1 = ReadVector(file, def.Type);
                         break;
                     case VertexDefinitionVariableEnum.uvSet01:
-                        vertex.UVSet0 = ReadVector(file, def.Type).ToVector2();
+                        vertex.UVSet01 = ReadVector(file, def.Type);
                         break;
                     default:
                         ReadVector(file, def.Type); // discard, no implementation

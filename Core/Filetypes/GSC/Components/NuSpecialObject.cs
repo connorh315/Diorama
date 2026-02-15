@@ -37,7 +37,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
         public void Deserialize(RawFile file, uint parentVersion)
         {
-            string name = file.ReadPascalString(); // > 0x1b
+            Name = file.ReadPascalString(); // > 0x1b
 
             Mtx = new NuMtx();
             Mtx.Deserialize(file, 0);

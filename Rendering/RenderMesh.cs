@@ -1,4 +1,5 @@
-﻿using Diorama.Rendering.Shaders;
+﻿using Diorama.Core.Filetypes.GSC.Components;
+using Diorama.Rendering.Shaders;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using SkiaSharp;
@@ -12,49 +13,77 @@ namespace Diorama.Rendering
 {
     public class RenderMesh
     {
-        public Matrix4 Transform;
-
         private int VAO;
-        private int VBO;
-        private int EBO;
-        private int indexCount;
 
-        public RenderMesh(float[] positions, uint[] indices)
+        public int VerticesBase;
+        public int VerticesCount;
+        public int IndicesBase;
+        public int IndicesCount;
+
+        private VertexAttribPointerType GetType(VertexDefinitionStorageEnum type)
         {
-            indexCount = indices.Length;
+            return type switch
+            {
+                VertexDefinitionStorageEnum.vec2float => VertexAttribPointerType.Float,
+                VertexDefinitionStorageEnum.vec3float => VertexAttribPointerType.Float,
+                VertexDefinitionStorageEnum.vec4float => VertexAttribPointerType.Float,
+                VertexDefinitionStorageEnum.vec2half => VertexAttribPointerType.HalfFloat,
+                VertexDefinitionStorageEnum.vec4half => VertexAttribPointerType.HalfFloat,
+                VertexDefinitionStorageEnum.vec4char => VertexAttribPointerType.Byte,
+                VertexDefinitionStorageEnum.vec4mini => VertexAttribPointerType.UnsignedByte,
+                VertexDefinitionStorageEnum.color4char => VertexAttribPointerType.UnsignedByte,
+                _ => throw new NotSupportedException($"Unknown storage type: {type}")
+            };
+        }
 
+        private bool IsNormalized(VertexDefinitionStorageEnum type) => type == VertexDefinitionStorageEnum.vec4mini || type == VertexDefinitionStorageEnum.color4char;
+
+        public RenderMesh(RenderVertexBuffer[] vBuffers, RenderIndicesBuffer iBuffer)
+        {
             VAO = GL.GenVertexArray();
-            VBO = GL.GenBuffer();
-            EBO = GL.GenBuffer();
 
             GL.BindVertexArray(VAO);
 
-            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
-            GL.BufferData(BufferTarget.ArrayBuffer,
-                positions.Length * sizeof(float),
-                positions,
-                BufferUsageHint.StaticDraw);
+            iBuffer.Use();
 
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, EBO);
-            GL.BufferData(BufferTarget.ElementArrayBuffer,
-                indices.Length * sizeof(uint),
-                indices,
-                BufferUsageHint.StaticDraw);
+            foreach (var vb in vBuffers)
+            {
+                vb.Use();
 
-            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
-            GL.EnableVertexAttribArray(0);
-            GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 3 * sizeof(float));
-            GL.EnableVertexAttribArray(1);
+                foreach (var def in vb.Attributes)
+                {
+                    int location = (int)def.Variable;
+
+
+                    GL.VertexAttribPointer(
+                        location,
+                        def.ComponentCount(),
+                        GetType(def.Type),
+                        IsNormalized(def.Type),
+                        vb.Stride,
+                        def.Offset);
+
+                    GL.EnableVertexAttribArray(location);
+                }
+            }
 
             GL.BindVertexArray(0);
         }
 
-        public void Draw(Shader shader)
+        public void Draw()
         {
-            shader.SetMatrix4("model", Transform);
-
             GL.BindVertexArray(VAO);
-            GL.DrawElements(PrimitiveType.Triangles, indexCount, DrawElementsType.UnsignedInt, 0);
+            GL.DrawElementsBaseVertex(
+                PrimitiveType.Triangles,
+                IndicesCount,
+                DrawElementsType.UnsignedShort,
+                IndicesBase * sizeof(ushort),
+                VerticesBase);
+            //GL.DrawElements(
+            //    PrimitiveType.Triangles,
+            //    IndicesCount,
+            //    DrawElementsType.UnsignedShort,
+            //    IndicesBase * sizeof(ushort));
         }
     }
 }

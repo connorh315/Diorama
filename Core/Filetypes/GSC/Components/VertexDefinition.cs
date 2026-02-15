@@ -46,6 +46,21 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
         public int Offset;
 
+        public int ComponentCount()
+        {
+            return Type switch
+            {
+                VertexDefinitionStorageEnum.vec2float => 2,
+                VertexDefinitionStorageEnum.vec3float => 3,
+                VertexDefinitionStorageEnum.vec4float => 4,
+                VertexDefinitionStorageEnum.vec2half => 2,
+                VertexDefinitionStorageEnum.vec4half => 4,
+                VertexDefinitionStorageEnum.vec4char => 4,
+                VertexDefinitionStorageEnum.vec4mini => 4,
+                VertexDefinitionStorageEnum.color4char => 4
+            };
+        }
+
         public static VertexDefinition Parse(RawFile file)
         {
             VertexDefinition def = new VertexDefinition();

@@ -9,38 +9,65 @@ namespace Diorama.Core.Filetypes.GSC.Components
 {
     public class NuSceneInstance : IVectorSerializable
     {
+        public int Hash;
+        public short Flags;
+        public short ClipObjectIndex;
+        public float ClipDistance;
+        public float FadeDistancesCo;
+        public Vector3 FadeDistances;
+        public float ApproxSize;
+
+        public float FadeAlphaCo;
+        public Vector3 FadeAlpha;
+
+        public NuSceneInstanceLod[] Lods;
+
+        public int[] VertexControlledTint = new int[4];
+
         public void Deserialize(RawFile file, uint parentVersion)
         {
-            int hash = file.ReadInt(true);
-            short flags = file.ReadShort(true);
-            short clipObjectIndex = file.ReadShort(true);
-            Console.WriteLine(clipObjectIndex);
-            float clipDistance = file.ReadFloat(true);
+            Hash = file.ReadInt(true);
+            Flags = file.ReadShort(true);
+            ClipObjectIndex = file.ReadShort(true);
+            //Console.WriteLine(clipObjectIndex);
+            ClipDistance = file.ReadFloat(true);
 
-            float fadeDistancesCo = file.ReadFloat(true);
-            Vector3 fadeDistances = new Vector3(file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true));
-            float approxSize = file.ReadFloat(true);
+            FadeDistancesCo = file.ReadFloat(true);
+            FadeDistances = new Vector3(file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true));
+            ApproxSize = file.ReadFloat(true);
 
-            if ((flags & 2) == 0)
+            if ((Flags & 2) == 0)
             {
-                float fadeAlphaCo = file.ReadFloat(true);
-                Vector3 fadeAlpha = new Vector3(file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true));
+                FadeAlphaCo = file.ReadFloat(true);
+                FadeAlpha = new Vector3(file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true));
             }
             else
             {
+                Lods = new NuSceneInstanceLod[4];
                 for (int lodId = 0; lodId < 4; lodId++)
                 {
-                    byte lodHeirarchical = file.ReadByte();
-                    int highResSceneFixupId = file.ReadInt(true);
-                    int firstInstance = file.ReadInt(true);
-                    int numInstances = file.ReadInt(true);
+                    Lods[lodId] = new NuSceneInstanceLod
+                    {
+                        LodHeirarchical = file.ReadByte(),
+                        HighResSceneFixupId = file.ReadInt(true),
+                        FirstInstance = file.ReadInt(true),
+                        NumInstances = file.ReadInt(true)
+                    };
                 }
             }
 
-            int vertexControlledTint0 = file.ReadInt(true);
-            int vertexControlledTint1 = file.ReadInt(true);
-            int vertexControlledTint2 = file.ReadInt(true);
-            int vertexControlledTint3 = file.ReadInt(true);
+            VertexControlledTint[0] = file.ReadInt(true);
+            VertexControlledTint[1] = file.ReadInt(true);
+            VertexControlledTint[2] = file.ReadInt(true);
+            VertexControlledTint[3] = file.ReadInt(true);
         }
+    }
+
+    public struct NuSceneInstanceLod
+    {
+        public byte LodHeirarchical;
+        public int HighResSceneFixupId;
+        public int FirstInstance;
+        public int NumInstances;
     }
 }
