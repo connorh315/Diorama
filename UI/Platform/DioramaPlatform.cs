@@ -27,6 +27,9 @@ namespace Diorama.UI.Platform
 
         [DllImport("user32.dll")]
         public static extern bool ClientToScreen(IntPtr hWnd, ref POINT point);
+
+        [DllImport("user32.dll")]
+        public static extern bool ShowCursor(bool bShow);
     }
 
     [StructLayout(LayoutKind.Sequential)]

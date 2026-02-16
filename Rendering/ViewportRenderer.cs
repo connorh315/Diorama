@@ -7,6 +7,7 @@ using Diorama.Rendering.Shaders;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.GraphicsLibraryFramework;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -23,26 +24,27 @@ namespace Diorama.Rendering
 
         public Camera Camera { get; private set; }
 
+        private ObjectPicker picker;
+
         public void Initialize()
         {
             GL.ClearColor(0.2f, 0.2f, 0.4f, 1f);
             GL.Enable(EnableCap.DepthTest);
-
-            //GL.Enable(EnableCap.Blend);
-            //GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
-
-            //GL.Enable(EnableCap.CullFace);
-            //GL.CullFace(CullFaceMode.Back);
 
             blendShader = new Shader("blendshader.vert", "blendshader.frag");
             blendShader.SetVector3("color", new Vector3(0.7f, 0.7f, 0.7f));
             blendShader.SetInt("texture0", 0);
             blendShader.SetInt("texture1", 1);
 
+            picker = new ObjectPicker();
+            picker.Initialize();
+
             Camera = new Camera(new Vector3(0.0f, 0.0f, 3.0f));
         }
 
         private Stopwatch stopwatch = Stopwatch.StartNew();
+
+        private int frameCount;
 
         public void Render(List<EditorScene> scenes)
         {
@@ -54,6 +56,18 @@ namespace Diorama.Rendering
                 blendShader.SetMatrix4("view", scene.SceneTransform * Camera.GetViewMatrix());
                 scene.Draw(blendShader);
             }
+
+            frameCount++;
+
+            if (stopwatch.ElapsedMilliseconds >= 1000)
+            {
+                //Console.WriteLine($"FPS: {frameCount}");
+
+                frameCount = 0;
+                stopwatch.Restart();
+            }
+
+            picker.Execute(Camera, scenes);
         }
 
         public int Width, Height;
@@ -63,6 +77,12 @@ namespace Diorama.Rendering
             Height = height;
 
             Camera.SetWidthHeight(width, height);
+            picker.Resize(width, height);
+        }
+
+        public void Pick(int x, int y, Action<EditorSceneObject?>? objectPicked)
+        {
+            picker.RequestPick(x, y, objectPicked);
         }
 
         public void Deinitialize()

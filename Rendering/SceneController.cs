@@ -20,6 +20,8 @@ namespace Diorama.Rendering
 
         public bool IsInitialized = false;
 
+        public EditorSceneObject? Selected { get; set; }
+
         public SceneController(IDioramaRenderer renderer)
         {
             Renderer = renderer;
@@ -69,6 +71,17 @@ namespace Diorama.Rendering
             LoadPendingScenes();
 
             Renderer.Render(Scenes);
+        }
+
+        public void OnClick(int x, int y)
+        {
+            ((ViewportRenderer)Renderer).Pick(x, y, (obj) =>
+            {
+                Dispatcher.UIThread.Invoke(() =>
+                {
+                    Selected = obj;
+                });
+            });
         }
     }
 }

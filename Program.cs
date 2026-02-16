@@ -24,10 +24,10 @@ namespace Diorama
             => AppBuilder.Configure<App>()
                 .UsePlatformDetect()
                 .WithInterFont()
-                .With(new Win32PlatformOptions
-                {
-                    RenderingMode = new Collection<Win32RenderingMode> { Win32RenderingMode.Wgl }
-                })
+                //.With(new Win32PlatformOptions
+                //{
+                //    RenderingMode = new Collection<Win32RenderingMode> { Win32RenderingMode.Wgl }
+                //})
                 .LogToTrace();
 
         //    static void Main(string[] args)
