@@ -28,11 +28,11 @@ namespace Diorama.UI.Controls
 
         private bool isRotating = false;
 
-        public ViewportNewControl()
+        public ViewportNewControl(SceneController controller)
         {
             Focusable = true;
 
-            sceneController = new SceneController(new ViewportRenderer());
+            sceneController = controller;
         }
 
         public void LoadScene(string path)
@@ -64,6 +64,8 @@ namespace Diorama.UI.Controls
             });
         }
 
+        public static bool ShowLightmaps = false;
+
         private void Update(double deltaTime)
         {
             if (Keyboard.IsKeyDown(Key.W))
@@ -83,6 +85,8 @@ namespace Diorama.UI.Controls
 
             if (Keyboard.IsKeyDown(Key.LeftCtrl))
                 sceneController.Renderer.Camera.MoveDown((float)deltaTime);
+
+            //ShowLightmaps = !Keyboard.IsKeyDown(Key.L);
 
             sceneController.Renderer.Camera.ToggleSpeed(Keyboard.IsKeyDown(Key.LeftShift));
         }
@@ -177,6 +181,10 @@ namespace Diorama.UI.Controls
 
         protected override void OnReleaseRightClick()
         {
+            ((Control)this.VisualRoot).Focus();
+
+            Keyboard.Clear();
+
             isRotating = false;
             DioramaPlatform.ShowCursor(true);
 

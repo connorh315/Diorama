@@ -4,19 +4,26 @@ using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Diorama.Editor
 {
-    public class EditorScene
+    public class EditorScene : INotifyPropertyChanged
     {
         public Matrix4 SceneTransform;
 
+        public string Name { get; set; }
+
         public List<RenderTexture> Textures;
         public List<EditorMaterial> Materials;
-        public List<EditorSceneObject> Objects;
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        public ObservableCollection<EditorSceneObject> Objects { get; }
 
         public EditorScene()
         {

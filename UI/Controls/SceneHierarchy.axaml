@@ -1,0 +1,36 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:Diorama.UI.Controls"
+        xmlns:editor="using:Diorama.Editor"
+        xmlns:rendering="using:Diorama.Rendering">
+
+  <!--
+    Additional resources 
+    Using Control Themes:
+         https://docs.avaloniaui.net/docs/basics/user-interface/styling/control-themes
+    Using Theme Variants:
+         https://docs.avaloniaui.net/docs/guides/styles-and-resources/how-to-use-theme-variants
+  -->
+  
+  <Design.PreviewWith>
+    <StackPanel Width="400" Spacing="10">      
+        <StackPanel Background="{DynamicResource SystemRegionBrush}">
+          <controls:SceneHierarchy />
+        </StackPanel>
+    </StackPanel>
+  </Design.PreviewWith>
+ 
+  <ControlTheme x:Key="{x:Type controls:SceneHierarchy}" TargetType="controls:SceneHierarchy">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <TreeView ItemsSource="{Binding Scenes}" SelectedItem="{Binding Selected, Mode=TwoWay}">
+          <TreeView.ItemTemplate>
+            <TreeDataTemplate ItemsSource="{Binding Objects}">
+              <TextBlock Text="{Binding Name}"/>
+            </TreeDataTemplate>
+          </TreeView.ItemTemplate>
+        </TreeView>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+</ResourceDictionary>

@@ -23,6 +23,12 @@ namespace Diorama.UI
             _keysPrevious.Or(_keys);
         }
 
+        public void Clear()
+        { // Important as otherwise keys can get trapped
+            _keys.SetAll(false);
+            _keysPrevious.SetAll(false);
+        }
+
         /// <summary>
         /// Called to set the state of a key when an input event is received.
         /// </summary>

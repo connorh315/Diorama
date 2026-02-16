@@ -7,20 +7,35 @@ using Diorama.Editor;
 using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Diorama.Rendering
 {
-    public class SceneController
+    public class SceneController : INotifyPropertyChanged
     {
-        public List<EditorScene> Scenes = new();
+        public ObservableCollection<EditorScene> Scenes { get; } = new();
         public IDioramaRenderer Renderer;
 
         public bool IsInitialized = false;
 
-        public EditorSceneObject? Selected { get; set; }
+        private EditorSceneObject? selected;
+        public EditorSceneObject? Selected 
+        { 
+            get => selected; 
+            set
+            {
+                if (selected == value)
+                    return;
+
+                selected = value;
+                OnPropertyChanged();
+            }
+        }
 
         public SceneController(IDioramaRenderer renderer)
         {
@@ -35,6 +50,14 @@ namespace Diorama.Rendering
         }
 
         private readonly Queue<string> pendingSceneLoads = new();
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+        protected void OnPropertyChanged(
+        [CallerMemberName] string? propertyName = null)
+        {
+            PropertyChanged?.Invoke(this,
+                new PropertyChangedEventArgs(propertyName));
+        }
 
         public void LoadScene(string filePath)
         {
@@ -70,7 +93,7 @@ namespace Diorama.Rendering
         {
             LoadPendingScenes();
 
-            Renderer.Render(Scenes);
+            Renderer.Render(Scenes.ToList());
         }
 
         public void OnClick(int x, int y)

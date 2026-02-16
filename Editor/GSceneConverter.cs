@@ -18,6 +18,7 @@ namespace Diorama.Editor
             GScene scene = GScene.Parse(filePath);
 
             EditorScene editorScene = new EditorScene();
+            editorScene.Name = Path.GetFileName(filePath);
             editorScene.SceneTransform = Matrix4.CreateScale(1f, 1f, -1f); // All meshes are flipped, so this unflips them
 
             Dictionary<ushort[], RenderIndicesBuffer> convertedIBuffer = new();
@@ -56,6 +57,17 @@ namespace Diorama.Editor
                 meshes[i] = mesh;
             }
 
+            var nxg_textures = NxgTextures.Read(Path.ChangeExtension(filePath, "nxg_textures"));
+            editorScene.Textures = new List<RenderTexture>();
+            if (nxg_textures != null)
+            {
+                for (int i = 0; i < nxg_textures.Textures.Length; i++)
+                {
+                    editorScene.Textures.Add(RenderTexture.FromNuTexture(nxg_textures.Textures[i]));
+                }
+            }
+
+            // TODO: Just do the reference sorting here instead
             EditorMaterial[] materials = new EditorMaterial[scene.Materials.Length];
             for (int i = 0; i < materials.Length; i++)
             {
@@ -70,9 +82,27 @@ namespace Diorama.Editor
                 editorScene.Materials.Add(material);
             }
 
+            List<NuLightmapData> gsceneLightmaps = scene.Lightmaps;
+            EditorLightmap[] lightmaps = new EditorLightmap[scene.Lightmaps.Count];
+            for (int i = 0; i < lightmaps.Length; i++)
+            {
+                NuLightmapData nuLightmap = gsceneLightmaps[i];
+                EditorLightmap lightmap = new EditorLightmap();
+                lightmap.Original = nuLightmap;
+
+                lightmap.AmbientOcclusion = ResolveTexture(editorScene.Textures, nuLightmap.AoTID);
+                lightmap.Offsets[0] = nuLightmap.TexCoordOffset0;
+                lightmap.Offsets[1] = nuLightmap.TexCoordOffset1;
+                lightmap.Scales[0] = nuLightmap.TexCoordScale0;
+                lightmap.Scales[1] = nuLightmap.TexCoordScale1;
+
+                lightmaps[i] = lightmap;
+            }
+
             var display = scene.DisplayScene;
             int matrixId = -1;
             int materialId = -1;
+            int lightmapId = -1;
             Dictionary<int, EditorSceneObject> geometry = new();
 
             for (int commandId = 0; commandId < display.DisplayItems.Count; commandId++)
@@ -82,6 +112,10 @@ namespace Diorama.Editor
                 {
                     case DisplayCommand.Material:
                         materialId = (int)command.Index;
+                        break;
+                    case DisplayCommand.LightMap:
+                        lightmapId = (int)command.Index;
+                        Console.WriteLine(lightmapId);
                         break;
                     case DisplayCommand.MaterialClip:
                         break;
@@ -98,9 +132,16 @@ namespace Diorama.Editor
                         RenderMesh mesh = meshes[command.Index];
 
                         EditorSceneObject obj = new EditorSceneObject();
-                        obj.Transform = mtx;
+                        obj.SetTransform(mtx);
                         obj.Mesh = mesh;
-                        obj.Material = materials[materialId];
+                        if (materialId > -1)
+                        {
+                            obj.Material = materials[materialId];
+                        }
+                        if (lightmapId > 0)
+                        {
+                            obj.Lightmap = lightmaps[lightmapId];
+                        }
 
                         //Meshes.Add(mesh);
                         geometry.Add(commandId, obj);
@@ -109,29 +150,33 @@ namespace Diorama.Editor
                 }
             }
 
-            //for (int i = 0; i < display.SceneInstances.Count; i++)
-            //{
-            //    var instance = display.SceneInstances[i];
-            //    if (instance.ClipObjectIndex > -1)
-            //    {
-            //        var clip = display.ClipObjects[instance.ClipObjectIndex];
-            //        foreach (var el in clip.Elements)
-            //        {
-            //            var mesh = geometry[el.GeometryIndex];
-            //            var geoBounds = display.BoundsCenterAndDistSqrd[i];
-            //            mesh.BoundsCenterAndDistSqrd = new Vector4(geoBounds.X, geoBounds.Y, geoBounds.Z, geoBounds.W);
-            //        }
-            //    }
-            //}
-
-
-            var nxg_textures = NxgTextures.Read(Path.ChangeExtension(filePath, "nxg_textures"));
-            editorScene.Textures = new List<RenderTexture>();
-            if (nxg_textures != null)
+            for (int i = 0; i < display.SceneInstances.Count; i++)
             {
-                for (int i = 0; i < nxg_textures.Textures.Length; i++)
+                var instance = display.SceneInstances[i];
+                if (instance.ClipObjectIndex > -1)
                 {
-                    editorScene.Textures.Add(RenderTexture.FromNuTexture(nxg_textures.Textures[i]));
+                    var clip = display.ClipObjects[instance.ClipObjectIndex];
+                    foreach (var el in clip.Elements)
+                    {
+                        var sceneObject = geometry[el.GeometryIndex];
+                        sceneObject.Name = $"SceneInstance_{i}";
+                        var geoBounds = display.BoundsCenterAndDistSqrd[i];
+                        //mesh.BoundsCenterAndDistSqrd = new Vector4(geoBounds.X, geoBounds.Y, geoBounds.Z, geoBounds.W);
+                    }
+                }
+            }
+
+            for (int i = 0; i < display.SpecialObjects.Count; i++)
+            {
+                var specialObject = display.SpecialObjects[i];
+                if (specialObject.InstanceIndex != -1)
+                {
+                    var clip = display.ClipObjects[(int)specialObject.ClipObjectIndex];
+                    foreach (var el in clip.Elements)
+                    {
+                        var sceneObject = geometry[el.GeometryIndex];
+                        sceneObject.Name = specialObject.Name;
+                    }
                 }
             }
 
@@ -141,6 +186,17 @@ namespace Diorama.Editor
 
                 mat.Diffuse0 = ResolveTexture(editorScene.Textures, mat.Original.Diffuse0Index);
                 mat.Diffuse1 = ResolveTexture(editorScene.Textures, mat.Original.Diffuse1Index);
+
+                mat.Normal0 = ResolveTexture(editorScene.Textures, mat.Original.Normal0Index);
+
+                mat.LightmapUVSet = mat.Original.LightmapUVSet;
+
+                uint abgr = (uint)mat.Original.Colour1;
+                float a = ((abgr >> 24) & 0xFF) / 255f;
+                float b = ((abgr >> 16) & 0xFF) / 255f;
+                float g = ((abgr >> 8) & 0xFF) / 255f;
+                float r = ((abgr >> 0) & 0xFF) / 255f;
+                mat.Colour1 = new Vector4(r, g, b, a);
             }
 
             return editorScene;

@@ -6,7 +6,8 @@
         xmlns:controls="clr-namespace:Diorama.UI.Controls"
         x:Class="Diorama.MainWindow"
         DragDrop.AllowDrop="True" DragDrop.Drop="Window_DragDrop"
-        Title="Diorama">
+        Title="Diorama"
+        Focusable="True">
 
   <Grid>
     <Grid.RowDefinitions>
@@ -18,6 +19,7 @@
       <MenuItem Header="_File">
         
       </MenuItem>
+      <MenuItem Header="Toggle Lightmaps" Click="MenuItem_Click" />
     </Menu>
     
     <Grid Grid.Row="1">
@@ -27,6 +29,11 @@
         <ColumnDefinition Width="2*" />
       </Grid.ColumnDefinitions>
 
+      <StackPanel Grid.Row="0">
+        <ContentControl x:Name="HierarchyHost" Height="400" />
+        <ContentControl x:Name="InspectorHost" Height="400" />
+      </StackPanel>
+      
       <!-- editor panels go here -->
       
       <GridSplitter Grid.Column="1"
@@ -34,7 +41,7 @@
                     Background="#444"
                     ResizeDirection="Columns"
                     HorizontalAlignment="Stretch"/>
-      <controls:ViewportNewControl x:Name="MainViewport" Grid.Column="2"/>
+      <ContentControl x:Name="ViewportHost" Grid.Column="2" />
     
     </Grid>
   </Grid>

@@ -74,6 +74,13 @@ namespace Diorama.Rendering.Shaders
             GL.UniformMatrix4(location, true, ref matrix);
         }
 
+        public void SetVector2(string name, Vector2 vec)
+        {
+            Use();
+            int location = GL.GetUniformLocation(Handle, name);
+            GL.Uniform2(location, ref vec);
+        }
+
         public void SetVector3(string name, Vector3 vec)
         {
             Use();
@@ -81,7 +88,21 @@ namespace Diorama.Rendering.Shaders
             GL.Uniform3(location, ref vec);
         }
 
+        public void SetVector4(string name, Vector4 vec)
+        {
+            Use();
+            int location = GL.GetUniformLocation(Handle, name);
+            GL.Uniform4(location, ref vec);
+        }
+
         public void SetInt(string name, int value)
+        {
+            Use();
+            int location = GL.GetUniformLocation(Handle, name);
+            GL.Uniform1(location, value);
+        }
+
+        public void SetFloat(string name, float value)
         {
             Use();
             int location = GL.GetUniformLocation(Handle, name);

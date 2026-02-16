@@ -109,7 +109,7 @@ namespace Diorama.Core.Filetypes.GSC
 
             if (version >= 3)
             {
-                List<NuLightmapData> lightmapData = NuSerializer.ReadVectorArray<NuLightmapData>(file);
+                Lightmaps = NuSerializer.ReadVectorArray<NuLightmapData>(file);
             }
         }
 

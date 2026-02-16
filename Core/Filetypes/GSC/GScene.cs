@@ -30,6 +30,8 @@ namespace Diorama.Core.Filetypes.GSC
 
         public NuMaterialData[] Materials;
 
+        public List<NuLightmapData> Lightmaps;
+
         protected abstract void Parse();
 
         protected abstract VertexList GetVertexList();

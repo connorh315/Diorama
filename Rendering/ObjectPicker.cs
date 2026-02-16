@@ -112,8 +112,8 @@ namespace Diorama.Rendering
 
         public void Execute(Camera camera, List<EditorScene> scenes)
         {
-            //if (!pendingPick)
-            //    return;
+            if (!pendingPick)
+                return;
 
             pendingPick = false;
 

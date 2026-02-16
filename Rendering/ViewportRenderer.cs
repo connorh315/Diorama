@@ -35,6 +35,7 @@ namespace Diorama.Rendering
             blendShader.SetVector3("color", new Vector3(0.7f, 0.7f, 0.7f));
             blendShader.SetInt("texture0", 0);
             blendShader.SetInt("texture1", 1);
+            blendShader.SetInt("texture2", 2);
 
             picker = new ObjectPicker();
             picker.Initialize();

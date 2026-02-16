@@ -2,14 +2,33 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Threading;
+using Diorama.Rendering;
+using Diorama.UI.Controls;
 
 namespace Diorama
 {
     public partial class MainWindow : Window
     {
+        private SceneController sceneController;
+        
+        private ViewportNewControl MainViewport;
+        private SceneHierarchy Hierarchy;
+        private InspectorPanel Inspector;
+
         public MainWindow()
         {
             InitializeComponent();
+
+            sceneController = new SceneController(new ViewportRenderer());
+
+            MainViewport = new ViewportNewControl(sceneController);
+            ViewportHost.Content = MainViewport;
+
+            Hierarchy = new SceneHierarchy(sceneController);
+            HierarchyHost.Content = Hierarchy;
+
+            Inspector = new InspectorPanel(sceneController);
+            InspectorHost.Content = Inspector;
 
             this.AttachDevTools();
         }
@@ -28,6 +47,11 @@ namespace Diorama
 #if DEBUG
             }), DispatcherPriority.Background);
 #endif
+        }
+
+        private void MenuItem_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            ViewportNewControl.ShowLightmaps = !ViewportNewControl.ShowLightmaps;
         }
     }
 }

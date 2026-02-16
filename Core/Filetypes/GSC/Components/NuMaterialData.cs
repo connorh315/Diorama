@@ -19,6 +19,12 @@ namespace Diorama.Core.Filetypes.GSC.Components
         public int Diffuse0Index;
         public int Diffuse1Index;
 
+        public int Normal0Index;
+
+        public int Colour1;
+
+        public int LightmapUVSet;
+
         public static NuMaterialData[] Read(RawFile file)
         {
             Debug.Assert(file.ReadString(4) == "LTMU");
@@ -268,7 +274,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
             uint dummyX = file.ReadUInt(true); // It's actually called this, I haven't just tried to re-sync the parser
 
             uint numUVSets = file.ReadUInt(true);
-            uint lightmapUVSet = file.ReadUInt(true);
+            LightmapUVSet = file.ReadInt(true);
             uint motionBlurVertexType = file.ReadUInt(true);
             uint motionBlurPixelType = file.ReadUInt(true);
 
@@ -497,7 +503,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
             int specular0 = file.ReadInt(true);
             int specular1 = file.ReadInt(true);
 
-            int normal0 = file.ReadInt(true);
+            Normal0Index = file.ReadInt(true);
             int normal1 = file.ReadInt(true);
 
             int envMap = file.ReadInt(true);
@@ -580,7 +586,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 byte ssOffset = file.ReadByte();
             }
 
-            int colour1 = file.ReadInt(true); // abgr
+            Colour1 = file.ReadInt(true); // abgr
 
             int colour2 = file.ReadInt(true);
             int colour3 = file.ReadInt(true);

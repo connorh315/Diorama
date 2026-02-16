@@ -7,4 +7,13 @@
     <Application.Styles>
         <FluentTheme />
     </Application.Styles>
+    <Application.Resources>
+      <ResourceDictionary>
+        <ResourceDictionary.MergedDictionaries>
+          <ResourceInclude Source="/UI/Controls/SceneHierarchy.axaml"/>
+          <ResourceInclude Source="/UI/Controls/InspectorPanel.axaml"/>
+          <ResourceInclude Source="/UI/Controls/Vec3Input.axaml"/>
+        </ResourceDictionary.MergedDictionaries>
+      </ResourceDictionary>
+    </Application.Resources>
 </Application>

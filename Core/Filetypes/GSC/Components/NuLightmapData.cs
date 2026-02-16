@@ -8,20 +8,34 @@ namespace Diorama.Core.Filetypes.GSC.Components
 {
     public class NuLightmapData : IVectorSerializable
     {
+        public uint Type;
+        public int MeshInstanceId;
+        public int DirectionalTIDs0;
+        public int DirectionalTIDs1;
+        public int DirectionalTIDs2;
+        public int SmoothTID;
+        public int AoTID;
+
+        public float TexCoordOffset0;
+        public float TexCoordOffset1;
+        public float TexCoordScale0;
+        public float TexCoordScale1;
+
+
         public void Deserialize(RawFile file, uint parentVersion)
         {
-            uint type = file.ReadUInt(true);
-            int meshInstanceId = file.ReadInt(true);
-            int directionalTIDs0 = file.ReadInt(true);
-            int directionalTIDs1 = file.ReadInt(true);
-            int directionalTIDs2 = file.ReadInt(true);
-            int smoothTID = file.ReadInt(true);
-            int aoTID = file.ReadInt(true);
+            Type = file.ReadUInt(true);
+            MeshInstanceId = file.ReadInt(true);
+            DirectionalTIDs0 = file.ReadInt(true);
+            DirectionalTIDs1 = file.ReadInt(true);
+            DirectionalTIDs2 = file.ReadInt(true);
+            SmoothTID = file.ReadInt(true);
+            AoTID = file.ReadInt(true);
 
-            float texCoordOffset0 = file.ReadFloat(true);
-            float texCoordOffset1 = file.ReadFloat(true);
-            float texCoordScale0 = file.ReadFloat(true);
-            float texCoordScale1 = file.ReadFloat(true);
+            TexCoordOffset0 = file.ReadFloat(true);
+            TexCoordOffset1 = file.ReadFloat(true);
+            TexCoordScale0 = file.ReadFloat(true);
+            TexCoordScale1 = file.ReadFloat(true);
         }
     }
 }
