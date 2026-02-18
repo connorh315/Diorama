@@ -22,6 +22,8 @@ namespace Diorama.Core.Filetypes.GSC
         internal Dictionary<int, NuRenderMesh> geometryLists = new();
         internal int referenceCounter = 5;
 
+        public byte[] ResourceHeaderBlock;
+
         public NuRenderMesh[] RenderMeshes;
 
         public uint NU20Version;
@@ -42,8 +44,9 @@ namespace Diorama.Core.Filetypes.GSC
         {
             GScene gsc;
 
-            uint resourceHeaderSize = file.ReadUInt(true);
-            file.Seek(resourceHeaderSize, SeekOrigin.Current);
+            int resourceHeaderSize = file.ReadInt(true);
+            byte[] resourceHeaderBlock = file.ReadArray(resourceHeaderSize);
+            //file.Seek(resourceHeaderSize, SeekOrigin.Current);
 
             uint gscSize = file.ReadUInt(true);
 
@@ -58,7 +61,9 @@ namespace Diorama.Core.Filetypes.GSC
                     gsc = new GScene_4F();
                     break;
                 case 0x50:
+                case 0x52:
                 case 0x53:
+                case 0x57:
                     gsc = new GScene_50();
                     break;
                 default:
@@ -67,6 +72,7 @@ namespace Diorama.Core.Filetypes.GSC
 
             gsc.NU20Version = nu20Version;
             gsc.file = file;
+            gsc.ResourceHeaderBlock = resourceHeaderBlock;
 
             gsc.Parse();
 

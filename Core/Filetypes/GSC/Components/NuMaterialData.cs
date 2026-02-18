@@ -21,6 +21,8 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
         public int Normal0Index;
 
+        public byte VertexFlags_VertexControlledTint;
+
         public int Colour1;
 
         public int LightmapUVSet;
@@ -55,6 +57,8 @@ namespace Diorama.Core.Filetypes.GSC.Components
                         materialData = new NuMaterialData_E0();
                         break;
                     case 0xe5:
+                    case 0xe8:
+                    case 0xea:
                     case 0xeb:
                     case 0xec:
                         materialData = new NuMaterialData_E5();
@@ -87,7 +91,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
             ReadShaderParams(file, Version);
             string materialName = file.ReadPascalString(true);
             uint flags = file.ReadUInt(true);
-            Debug.Assert(flags == 4);
+            Debug.Assert(flags == 4, "flags != 4");
 
             file.Seek(0x494, SeekOrigin.Current); // "dummyHashArray" (really this should be 0x498, but the VertexList needs to read the prior int I think?)
             VertexList.Parse(file);
@@ -113,7 +117,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
             ReadShaderParams(file, Version);
             string materialName = file.ReadPascalString(true);
             uint flags = file.ReadUInt(true);
-            Debug.Assert(flags == 4);
+            Debug.Assert(flags == 4, "flags != 4");
             
             file.Seek(0x494, SeekOrigin.Current); // "dummyHashArray"
             VertexList.Parse(file);
@@ -399,7 +403,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
             byte vertexFlags_positionAccuracy = file.ReadByte();
             byte vertexFlags_uvAccuracy = file.ReadByte();
             byte vertexFlags_tangent2 = file.ReadByte();
-            byte vertexFlags_vertexControlledTint = file.ReadByte();
+            VertexFlags_VertexControlledTint = file.ReadByte();
             byte vertexFlags_ZBias = file.ReadByte();
             byte vertexFlags_layer1VertAlbedo = file.ReadByte();
             byte vertexFlags_layer2VertAlbedo = file.ReadByte();
@@ -461,7 +465,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
             if (iVar1 == 2)
             {
                 uint displayMode = file.ReadUInt(true);
-                byte grassLayers = file.ReadByte();
+                //byte grassLayers = file.ReadByte();
             }
             // Only active when iVar1 == 2?
 
@@ -534,6 +538,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
             }
 
             int numTexAuxEntries = file.ReadInt(true); // I think
+            Debug.Assert(numTexAuxEntries < 0x40, "material diverged!");
             for (int i = 0; i < numTexAuxEntries; i++)
             {
                 if (Version < 0xdb)

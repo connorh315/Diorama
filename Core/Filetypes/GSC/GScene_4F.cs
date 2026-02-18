@@ -216,14 +216,19 @@ namespace Diorama.Core.Filetypes.GSC
         {
             ReadInfo();
 
+            if (NU20Version > 0x56)
+            {
+                byte wasGeneratedFromLEDImport = file.ReadByte();
+            }
+
             ReadNameTable();
 
-            uint defunctHasSeperateTextureFiles = file.ReadUInt(true);
-            if (defunctHasSeperateTextureFiles != 0)
+            uint hasTextureHeaderComponent = file.ReadUInt(true);
+            if (hasTextureHeaderComponent != 0)
             {
                 referenceCounter++;
                 TextureHeaders headers = TextureHeaders.Read(file);
-                Debug.Assert(defunctHasSeperateTextureFiles == 1);
+                Debug.Assert(hasTextureHeaderComponent == 1);
             }
 
             ReadSplines();
@@ -361,9 +366,24 @@ namespace Diorama.Core.Filetypes.GSC
 
             List<ushort> unk = NuSerializer.ReadVectorArray<ushort>(file); // pad data
 
-            uint unk2 = file.ReadUInt(true);
-            Debug.Assert(unk2 == 0);
+            if (NameTable.Version > 0x46)
+            {
+                uint sharedScenesSize = file.ReadUInt(true);
+                if (sharedScenesSize != 0)
+                {
+                    for (int i = 0; i < sharedScenesSize; i++)
+                    {
+                        string resourceId = file.ReadPascalString();
+                        string objectId = file.ReadPascalString();
+                    }
+                }
+            }
 
+            if (NameTable.Version > 0x54)
+            {
+                Vector3 worldBoundsCentre = new Vector3(file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true));
+                Vector3 worldBoundsExtents = new Vector3(file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true));
+            }
         }
     }
 }

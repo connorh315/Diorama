@@ -45,7 +45,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
             scene.BoundsExtentsAndRadius = NuSerializer.ReadVectorArray<NuVec4>(file);
             scene.SceneInstances = NuSerializer.ReadVectorArray<NuSceneInstance>(file);
             scene.SceneInstanceFixups = NuSerializer.ReadVectorArray<ushort>(file); // not sure about this one - needs looking into
-            Debug.Assert(scene.SceneInstanceFixups.Count == 0);
+            Debug.Assert(scene.SceneInstanceFixups.Count == 0, "scene instance fixups != 0");
             scene.AnimMtls = NuSerializer.ReadVectorArray<uint>(file); // not sure about this one - needs looking into
             scene.TransformMtxs = NuSerializer.ReadVectorArray<NuTransformMtx>(file);
             scene.FaceOnDisplayItems = NuSerializer.ReadVectorArray<NuFaceOnDisplayItem>(file); // not sure about this one - needs looking into

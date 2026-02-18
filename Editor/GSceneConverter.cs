@@ -115,7 +115,6 @@ namespace Diorama.Editor
                         break;
                     case DisplayCommand.LightMap:
                         lightmapId = (int)command.Index;
-                        Console.WriteLine(lightmapId);
                         break;
                     case DisplayCommand.MaterialClip:
                         break;

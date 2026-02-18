@@ -51,7 +51,7 @@ void main()
     vec2 lmUv = GetLightmapUV() * lm_scale + lm_offset;
     vec4 lm = texture(texture2, lmUv);
 
-    // FragColor = base;
-    FragColor = base * detail * lm * outColor * mesh_color;
+    FragColor = base * detail * lm * mesh_color;
+    //FragColor = base * detail * lm * outColor * mesh_color;
     // FragColor = vec4(1.0);
 }

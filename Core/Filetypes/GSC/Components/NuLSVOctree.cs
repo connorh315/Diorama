@@ -26,8 +26,8 @@ namespace Diorama.Core.Filetypes.GSC.Components
             {
                 Debug.Assert(file.ReadString(4) == "TGLD");
                 uint dlgtVersion = file.ReadUInt(true);
-                Debug.Assert(dlgtVersion == 0x34, "dlgtversion not 34!");
-                List<NuLight> lights = NuSerializer.ReadLegacyVarArray<NuLight>(file);
+                Debug.Assert(dlgtVersion == 0x34 || dlgtVersion == 0x36 || dlgtVersion == 0x37 || dlgtVersion == 0x39, $"dlgtversion not supported: {dlgtVersion}");
+                List<NuLight> lights = NuSerializer.ReadLegacyVarArray<NuLight>(file, dlgtVersion);
                 if (version_4 > 3)
                 {
                     byte is_nxg = file.ReadByte();

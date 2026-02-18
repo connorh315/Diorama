@@ -9,7 +9,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
 {
     public class NuLight : IVectorSerializable
     {
-        public virtual void ReadLightDescCommon(RawFile file)
+        public virtual void ReadLightDescCommon(RawFile file, uint parentVersion)
         {
             string lightDescName = file.ReadPascalString();
             byte enabled = file.ReadByte();
@@ -36,6 +36,19 @@ namespace Diorama.Core.Filetypes.GSC.Components
             float lensFlareCoronaHueShift = file.ReadFloat(true);
 
             int temp = file.ReadInt(true);
+
+            if (parentVersion > 0x36)
+            {
+                byte lensFlareOverride1Index = file.ReadByte();
+                byte lensFlareOverride2Index = file.ReadByte();
+
+                int buffer1 = file.ReadInt(true);
+                Debug.Assert(buffer1 == 0, "dlgt buffer non-zero!");
+
+                int buffer2 = file.ReadInt(true);
+                Debug.Assert(buffer2 == 0, "dlgt buffer non-zero!");
+            }
+
             int zero = file.ReadInt(true); // possibly to do with a buffer?
             Debug.Assert(zero == 0);
             Vector3 emitterSize = new Vector3(file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true));
@@ -60,7 +73,11 @@ namespace Diorama.Core.Filetypes.GSC.Components
             float spotFarClip = file.ReadFloat(true);
             float lightFalloffStartDx9 = file.ReadFloat(true);
             float lightFalloffRangeDx9 = file.ReadFloat(true);
-            // if >= 0x39 then dx11 equivalents
+            if (parentVersion > 0x38)
+            {
+                float lightFalloffStartDx11 = file.ReadFloat(true);
+                float lightFalloffRangeDx11 = file.ReadFloat(true);
+            }
             int tid = file.ReadInt(true);
             float spotFOVY_Degrees = file.ReadFloat(true);
             float spotFOVY_Cos = file.ReadFloat(true);
@@ -77,7 +94,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
             Debug.Assert(zero4 == 0); // another buffer?
         }
 
-        public virtual void ReadLightDesc(RawFile file)
+        public virtual void ReadLightDesc(RawFile file, uint parentVersion)
         {
             byte usedBits = file.ReadByte();
             Debug.Assert(usedBits == 0);
@@ -91,6 +108,11 @@ namespace Diorama.Core.Filetypes.GSC.Components
             float shadowMapRangeInGame4 = file.ReadFloat(true);
             float shadowFalloffStartInGameDx9 = file.ReadFloat(true);
             float shadowFalloffRangeInGameDx9 = file.ReadFloat(true);
+            if (parentVersion > 0x38)
+            {
+                float shadowFallOffStartInGameDx11 = file.ReadFloat(true);
+                float shadowFallOffRangeInGameDx11 = file.ReadFloat(true);
+            }
             float shadowBiasInGame = file.ReadFloat(true);
             int shadowSplitInGame = file.ReadInt(true);
             float shadowMapRangeCutsceneInGame0 = file.ReadFloat(true);
@@ -102,6 +124,11 @@ namespace Diorama.Core.Filetypes.GSC.Components
             byte haveCustomCutsceneShadowRanges = file.ReadByte();
             float shadowFalloffStartCutsceneDx9 = file.ReadFloat(true);
             float shadowFalloffRangeCutsceneDx9 = file.ReadFloat(true);
+            if (parentVersion > 0x38)
+            {
+                float shadowFalloffStartCutsceneDx11 = file.ReadFloat(true);
+                float shadowFalloffRangeCutsceneDx11 = file.ReadFloat(true);
+            }
             float shadowBiasCutscene = file.ReadFloat(true);
             int shadowSplitMethodCutscene = file.ReadInt(true);
 
@@ -127,11 +154,23 @@ namespace Diorama.Core.Filetypes.GSC.Components
             float shadowIntensityFromBaseClass = file.ReadFloat(true);
             byte softShadowsEnabledDx9 = file.ReadByte();
 
-            // stuff for v > 34 goes here
-
-            //
+            if (parentVersion > 0x34)
+            {
+                byte softShadowsEnabledDx11 = file.ReadByte();
+                int shadowMapSizeDividerDx9 = file.ReadInt(true);
+                int shadowMapSizeDividerDx11 = file.ReadInt(true);
+            }
 
             float softShadowsFixedSpreadInGameDx9 = file.ReadFloat(true);
+            if (parentVersion > 0x35)
+            {
+                float softShadowsFixedSpreadInGameDx11 = file.ReadFloat(true);
+            }
+            if (parentVersion > 0x37)
+            {
+                float softShadowsFixedSpreadCutsceneDx9 = file.ReadFloat(true);
+                float softShadowsFixedSpreadCutsceneDx11 = file.ReadFloat(true);
+            }
             float softShadowsSpreadRatio = file.ReadFloat(true);
             int was_softShadowsSampleCount = file.ReadInt(true);
             float softShadowOverlap = file.ReadFloat(true);
@@ -160,8 +199,8 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
         public void Deserialize(RawFile file, uint parentVersion)
         {
-            ReadLightDescCommon(file);
-            ReadLightDesc(file);
+            ReadLightDescCommon(file, parentVersion);
+            ReadLightDesc(file, parentVersion);
 
             NuMtx mtx = new NuMtx();
             mtx.Deserialize(file, parentVersion);

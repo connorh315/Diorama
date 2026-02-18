@@ -22,6 +22,8 @@ namespace Diorama.Editor
 
         public bool IsActive = true;
 
+        public bool DebugDraw = false;
+
         public void SetTransform(Matrix4 m)
         {
             Transform = m;
@@ -65,8 +67,20 @@ namespace Diorama.Editor
 
             shader.SetVector4("mesh_color", Material.Colour1);
 
+
             Material.Diffuse0?.Use();
             Material.Diffuse1?.Use(TextureUnit.Texture1);
+
+            if (DebugDraw)
+            {
+                shader.SetVector4("mesh_color", new Vector4(1, 0, 0, 1));
+                RenderTexture.GetWhiteTexture().Use(TextureUnit.Texture0);
+                RenderTexture.GetWhiteTexture().Use(TextureUnit.Texture1);
+            }
+            else
+            {
+                //return;
+            }
 
             if (Lightmap != null && Lightmap.AmbientOcclusion != null && ViewportNewControl.ShowLightmaps && Material.LightmapUVSet != -1)
             {

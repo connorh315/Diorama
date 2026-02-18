@@ -8,6 +8,8 @@ namespace Diorama.Core
     {
         public Stream fileStream;
 
+        public object Opaque;
+
         private RawFile() { }
 
         public RawFile(Stream stream) { fileStream = stream; }

@@ -57,5 +57,10 @@ namespace Diorama
             _dragging = false;
             e.Pointer.Capture(null);
         }
+
+        protected override void OnPointerEntered(PointerEventArgs e)
+        {
+            this.Cursor = new Cursor(StandardCursorType.SizeWestEast);
+        }
     }
 }
