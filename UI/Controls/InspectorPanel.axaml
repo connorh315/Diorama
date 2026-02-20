@@ -24,6 +24,9 @@
         <StackPanel Margin="5">
           <TextBox Text="{Binding Selected.Name}" />
           <controls:Vec3Input Value="{Binding Selected.Position, Mode=TwoWay}" InputLabel="Position" />
+          <controls:Vec3Input Value="{Binding Selected.BoundsCenterAndDistSqrd.Xyz, Mode=TwoWay}" InputLabel="Position" />
+          <TextBox Text="{Binding Selected.BoundsCenterAndDistSqrd[3]}" />
+          <TextBox Text="{Binding Selected.Mesh.VerticesCount}" />
         </StackPanel>
       </ControlTemplate>
     </Setter>

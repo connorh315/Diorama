@@ -19,7 +19,8 @@ namespace Diorama.Editor
 
             EditorScene editorScene = new EditorScene();
             editorScene.Name = Path.GetFileName(filePath);
-            editorScene.SceneTransform = Matrix4.CreateScale(1f, 1f, -1f); // All meshes are flipped, so this unflips them
+            //editorScene.SceneTransform = Matrix4.CreateScale(1f, 1f, -1f); // All meshes are flipped, so this unflips them
+            editorScene.SceneTransform = Matrix4.Identity;
 
             Dictionary<ushort[], RenderIndicesBuffer> convertedIBuffer = new();
             foreach (var indicesBuffer in scene.indicesLists)
@@ -158,9 +159,60 @@ namespace Diorama.Editor
                     foreach (var el in clip.Elements)
                     {
                         var sceneObject = geometry[el.GeometryIndex];
-                        sceneObject.Name = $"SceneInstance_{i}";
+                        if (sceneObject.Name == null)
+                        {
+                            sceneObject.Name = $"SceneInstance_{i}";
+
+                        }
                         var geoBounds = display.BoundsCenterAndDistSqrd[i];
+                        sceneObject.BoundsCenterAndDistSqrd = new Vector4(geoBounds.X, geoBounds.Y, geoBounds.Z, geoBounds.W);
+                        if (instance.Lods != null)
+                        {
+                            for (int j = 0; j < instance.Lods.Length; j++)
+                            {
+                                var lod = instance.Lods[j];
+                                if (lod.NumInstances == 0) continue;
+
+                                var lodClip = display.ClipObjects[lod.FirstInstance];
+                                foreach (var lodEl in lodClip.Elements)
+                                {
+                                    var lodSceneObject = geometry[lodEl.GeometryIndex];
+                                    lodSceneObject.Name = $"SceneInstance_{i}_LOD_{j}";
+                                    lodSceneObject.BoundsCenterAndDistSqrd = new Vector4(sceneObject.BoundsCenterAndDistSqrd.Xyz, instance.FadeDistances[j] * instance.FadeDistances[j]);
+                                }
+                            }
+                        }
                         //mesh.BoundsCenterAndDistSqrd = new Vector4(geoBounds.X, geoBounds.Y, geoBounds.Z, geoBounds.W);
+                    }
+                }
+
+                if (instance.Lods != null)
+                {
+                    for (int j = 0; j < instance.Lods.Length; j++)
+                    {
+                        var lod = instance.Lods[j];
+                        if (lod.NumInstances == 0) continue;
+
+                        if (instance.ClipObjectIndex != -1)
+                        {
+                            var lodClip = display.ClipObjects[lod.FirstInstance];
+                            foreach (var lodEl in lodClip.Elements)
+                            {
+                                var lodSceneObject = geometry[lodEl.GeometryIndex];
+                                lodSceneObject.Name = $"SceneInstance_{i}_LOD_{j}";
+                                //lodSceneObject.BoundsCenterAndDistSqrd = new Vector4(sceneObject.BoundsCenterAndDistSqrd.Xyz, instance.FadeDistances[j] * instance.FadeDistances[j]);
+                            }
+                        }
+                        else
+                        {
+                            var lodInst = display.SceneInstances[lod.FirstInstance];
+                            var clip = display.ClipObjects[lodInst.ClipObjectIndex];
+                            foreach (var el in clip.Elements)
+                            {
+                                var sceneObject = geometry[el.GeometryIndex];
+                                sceneObject.Name = $"SceneInstance_{i}_LOD";
+                            }
+                        }
                     }
                 }
             }
@@ -174,7 +226,9 @@ namespace Diorama.Editor
                     foreach (var el in clip.Elements)
                     {
                         var sceneObject = geometry[el.GeometryIndex];
+                        Console.WriteLine($"Overrided {sceneObject.Name}");
                         sceneObject.Name = specialObject.Name;
+                        sceneObject.Material = materials[el.MaterialIndex];
                     }
                 }
             }

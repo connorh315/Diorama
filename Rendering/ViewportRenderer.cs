@@ -55,6 +55,7 @@ namespace Diorama.Rendering
             foreach (var scene in scenes)
             {
                 blendShader.SetMatrix4("view", scene.SceneTransform * Camera.GetViewMatrix());
+                //scene.DebugDraw(blendShader, Camera);
                 scene.Draw(blendShader);
             }
 

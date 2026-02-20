@@ -16,7 +16,7 @@ namespace Diorama.Rendering
         private int VAO;
 
         public int VerticesBase;
-        public int VerticesCount;
+        public int VerticesCount { get; set; }
         public int IndicesBase;
         public int IndicesCount;
 

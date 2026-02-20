@@ -13,8 +13,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
         public short Flags;
         public short ClipObjectIndex;
         public float ClipDistance;
-        public float FadeDistancesCo;
-        public Vector3 FadeDistances;
+        public float[] FadeDistances = new float[4];
         public float ApproxSize;
 
         public float FadeAlphaCo;
@@ -32,8 +31,11 @@ namespace Diorama.Core.Filetypes.GSC.Components
             //Console.WriteLine(clipObjectIndex);
             ClipDistance = file.ReadFloat(true);
 
-            FadeDistancesCo = file.ReadFloat(true);
-            FadeDistances = new Vector3(file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true));
+            for (int i = 0; i < 4; i++)
+            {
+                FadeDistances[i] = file.ReadFloat(true);
+            }
+
             ApproxSize = file.ReadFloat(true);
 
             if ((Flags & 2) == 0)

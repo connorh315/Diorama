@@ -39,5 +39,13 @@ namespace Diorama.Editor
                 obj.Draw(shader);
             }
         }
+
+        public void DebugDraw(Shader shader, Camera camera)
+        {
+            foreach (var obj in Objects)
+            {
+                obj.Debug_Draw(shader, camera);
+            }
+        }
     }
 }
