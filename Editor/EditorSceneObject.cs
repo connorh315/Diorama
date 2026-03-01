@@ -23,6 +23,9 @@ namespace Diorama.Editor
         public EditorLightmap Lightmap;
         public RenderMesh Mesh { get; set; }
 
+        public EditorSceneObject[] Lods { get; set; }
+        public float[] FadeDistances { get; set; }
+
         public Vector4 BoundsCenterAndDistSqrd { get; set; }
 
         public bool IsActive = true;

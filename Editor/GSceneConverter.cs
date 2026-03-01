@@ -145,7 +145,7 @@ namespace Diorama.Editor
 
                         //Meshes.Add(mesh);
                         geometry.Add(commandId, obj);
-                        editorScene.Objects.Add(obj);
+                        //editorScene.Objects.Add(obj);
                         break;
                 }
             }
@@ -164,10 +164,15 @@ namespace Diorama.Editor
                             sceneObject.Name = $"SceneInstance_{i}";
 
                         }
+                        editorScene.Objects.Add(sceneObject);
+
                         var geoBounds = display.BoundsCenterAndDistSqrd[i];
+                        sceneObject.FadeDistances = instance.FadeDistances; // TODO: probably dangerous?
                         sceneObject.BoundsCenterAndDistSqrd = new Vector4(geoBounds.X, geoBounds.Y, geoBounds.Z, geoBounds.W);
                         if (instance.Lods != null)
                         {
+                            sceneObject.Lods = new EditorSceneObject[4];
+
                             for (int j = 0; j < instance.Lods.Length; j++)
                             {
                                 var lod = instance.Lods[j];
@@ -186,35 +191,36 @@ namespace Diorama.Editor
                     }
                 }
 
-                if (instance.Lods != null)
-                {
-                    for (int j = 0; j < instance.Lods.Length; j++)
-                    {
-                        var lod = instance.Lods[j];
-                        if (lod.NumInstances == 0) continue;
+                // This whole section needs cleaning up. Omitting for now, will come back to later
+                //if (instance.Lods != null)
+                //{
+                //    for (int j = 0; j < instance.Lods.Length; j++)
+                //    {
+                //        var lod = instance.Lods[j];
+                //        if (lod.NumInstances == 0) continue;
 
-                        if (instance.ClipObjectIndex != -1)
-                        {
-                            var lodClip = display.ClipObjects[lod.FirstInstance];
-                            foreach (var lodEl in lodClip.Elements)
-                            {
-                                var lodSceneObject = geometry[lodEl.GeometryIndex];
-                                lodSceneObject.Name = $"SceneInstance_{i}_LOD_{j}";
-                                //lodSceneObject.BoundsCenterAndDistSqrd = new Vector4(sceneObject.BoundsCenterAndDistSqrd.Xyz, instance.FadeDistances[j] * instance.FadeDistances[j]);
-                            }
-                        }
-                        else
-                        {
-                            var lodInst = display.SceneInstances[lod.FirstInstance];
-                            var clip = display.ClipObjects[lodInst.ClipObjectIndex];
-                            foreach (var el in clip.Elements)
-                            {
-                                var sceneObject = geometry[el.GeometryIndex];
-                                sceneObject.Name = $"SceneInstance_{i}_LOD";
-                            }
-                        }
-                    }
-                }
+                //        if (instance.ClipObjectIndex != -1)
+                //        {
+                //            var lodClip = display.ClipObjects[lod.FirstInstance];
+                //            foreach (var lodEl in lodClip.Elements)
+                //            {
+                //                var lodSceneObject = geometry[lodEl.GeometryIndex];
+                //                lodSceneObject.Name = $"SceneInstance_{i}_LOD_{j}";
+                //                //lodSceneObject.BoundsCenterAndDistSqrd = new Vector4(sceneObject.BoundsCenterAndDistSqrd.Xyz, instance.FadeDistances[j] * instance.FadeDistances[j]);
+                //            }
+                //        }
+                //        else
+                //        {
+                //            var lodInst = display.SceneInstances[lod.FirstInstance];
+                //            var clip = display.ClipObjects[lodInst.ClipObjectIndex];
+                //            foreach (var el in clip.Elements)
+                //            {
+                //                var sceneObject = geometry[el.GeometryIndex];
+                //                sceneObject.Name = $"SceneInstance_{i}_LOD";
+                //            }
+                //        }
+                //    }
+                //}
             }
 
             for (int i = 0; i < display.SpecialObjects.Count; i++)
