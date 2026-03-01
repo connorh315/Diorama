@@ -32,6 +32,7 @@
       <StackPanel Grid.Row="0">
         <ContentControl x:Name="HierarchyHost" Height="400" />
         <ContentControl x:Name="InspectorHost" Height="400" />
+        <ContentControl x:Name="GeometryHost" Height="400" />
       </StackPanel>
       
       <!-- editor panels go here -->

@@ -1,0 +1,58 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:Diorama"
+        xmlns:editor="using:Diorama.Editor">
+
+  <!--
+    Additional resources 
+    Using Control Themes:
+         https://docs.avaloniaui.net/docs/basics/user-interface/styling/control-themes
+    Using Theme Variants:
+         https://docs.avaloniaui.net/docs/guides/styles-and-resources/how-to-use-theme-variants
+  -->
+  
+  <Design.PreviewWith>
+    <StackPanel Width="400" Spacing="10">      
+        <StackPanel Background="{DynamicResource SystemRegionBrush}">
+          <controls:InspectorPanel />
+        </StackPanel>
+    </StackPanel>
+  </Design.PreviewWith>
+ 
+  <ControlTheme x:Key="{x:Type controls:InspectorPanel}" TargetType="controls:InspectorPanel">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+          <StackPanel Margin="5" Spacing="10">
+            <TextBox Text="{Binding Selected.Name}" />
+
+            <Expander Header="Clip Objects" MinWidth="500">
+              <TreeView ItemsSource="{Binding Selected.ClipObjects}" SelectedItem="{Binding SelectedGeometry, Mode=TwoWay}">
+                <TreeView.ItemTemplate>
+                  <TreeDataTemplate>
+                    <TextBlock Text="Clip Object"/>
+                  </TreeDataTemplate>
+                </TreeView.ItemTemplate>
+              </TreeView>
+            </Expander>
+            <Expander Header="LODs" MinWidth="500">
+              <TreeView ItemsSource="{Binding Selected.Lods}" SelectedItem="{Binding SelectedGeometry, Mode=TwoWay}">
+                <TreeView.DataTemplates>
+                  <TreeDataTemplate DataType="editor:EditorLodGroup" ItemsSource="{Binding ClipObjects}">
+                    <TextBlock>
+                      <Run Text="LOD Level"/>
+                      <Run Text="{Binding Index}"/>
+                    </TextBlock>
+                  </TreeDataTemplate>
+                  <TreeDataTemplate DataType="editor:EditorGeometryObject">
+                    <TextBlock Text="Clip Object"/>
+                  </TreeDataTemplate>
+                </TreeView.DataTemplates>
+              </TreeView>
+            </Expander>
+          </StackPanel>
+        </ScrollViewer>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+</ResourceDictionary>

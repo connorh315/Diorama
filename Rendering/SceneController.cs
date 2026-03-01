@@ -37,6 +37,19 @@ namespace Diorama.Rendering
             }
         }
 
+        private EditorGeometryObject? selectedGeometry;
+        public EditorGeometryObject? SelectedGeometry
+        {
+            get => selectedGeometry;
+            set
+            {
+                if (selectedGeometry == value)
+                    return;
+                selectedGeometry = value;
+                OnPropertyChanged();
+            }
+        }
+
         public SceneController(IDioramaRenderer renderer)
         {
             Renderer = renderer;
@@ -102,7 +115,8 @@ namespace Diorama.Rendering
             {
                 Dispatcher.UIThread.Invoke(() =>
                 {
-                    Selected = obj;
+                    SelectedGeometry = obj;
+                    Selected = obj?.Parent;
                 });
             });
         }

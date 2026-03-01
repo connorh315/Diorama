@@ -14,6 +14,7 @@ namespace Diorama
         private ViewportNewControl MainViewport;
         private SceneHierarchy Hierarchy;
         private InspectorPanel Inspector;
+        private ClipObjectPanel Geometry;
 
         public MainWindow()
         {
@@ -29,6 +30,9 @@ namespace Diorama
 
             Inspector = new InspectorPanel(sceneController);
             InspectorHost.Content = Inspector;
+
+            Geometry = new ClipObjectPanel(sceneController);
+            GeometryHost.Content = Geometry;
 
             this.AttachDevTools();
         }

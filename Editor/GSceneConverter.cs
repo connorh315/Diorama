@@ -19,8 +19,8 @@ namespace Diorama.Editor
 
             EditorScene editorScene = new EditorScene();
             editorScene.Name = Path.GetFileName(filePath);
-            //editorScene.SceneTransform = Matrix4.CreateScale(1f, 1f, -1f); // All meshes are flipped, so this unflips them
-            editorScene.SceneTransform = Matrix4.Identity;
+            editorScene.SceneTransform = Matrix4.CreateScale(1f, 1f, -1f); // All meshes are flipped, so this unflips them
+            //editorScene.SceneTransform = Matrix4.Identity;
 
             Dictionary<ushort[], RenderIndicesBuffer> convertedIBuffer = new();
             foreach (var indicesBuffer in scene.indicesLists)
@@ -104,7 +104,7 @@ namespace Diorama.Editor
             int matrixId = -1;
             int materialId = -1;
             int lightmapId = -1;
-            Dictionary<int, EditorSceneObject> geometry = new();
+            Dictionary<int, EditorGeometryObject> geometry = new();
 
             for (int commandId = 0; commandId < display.DisplayItems.Count; commandId++)
             {
@@ -131,8 +131,8 @@ namespace Diorama.Editor
 
                         RenderMesh mesh = meshes[command.Index];
 
-                        EditorSceneObject obj = new EditorSceneObject();
-                        obj.SetTransform(mtx);
+                        EditorGeometryObject obj = new EditorGeometryObject();
+                        obj.Transform = mtx;
                         obj.Mesh = mesh;
                         if (materialId > -1)
                         {
@@ -153,41 +153,50 @@ namespace Diorama.Editor
             for (int i = 0; i < display.SceneInstances.Count; i++)
             {
                 var instance = display.SceneInstances[i];
+                EditorSceneObject sceneObject = new EditorSceneObject();
+                editorScene.Objects.Add(sceneObject);
+                sceneObject.Name = $"SceneInstance_{i}";
+                sceneObject.FadeDistances = instance.FadeDistances; // TODO: probably dangerous?
+
+                var geoBounds = display.BoundsCenterAndDistSqrd[i];
+                sceneObject.BoundsCenterAndDistSqrd = new Vector4(geoBounds.X, geoBounds.Y, geoBounds.Z, geoBounds.W);
+
+                sceneObject.ClipObjects = new();
                 if (instance.ClipObjectIndex > -1)
                 {
                     var clip = display.ClipObjects[instance.ClipObjectIndex];
                     foreach (var el in clip.Elements)
                     {
-                        var sceneObject = geometry[el.GeometryIndex];
-                        if (sceneObject.Name == null)
+                        var geo = geometry[el.GeometryIndex];
+                        sceneObject.ClipObjects.Add(geo);
+                        if (geo.Parent != null)
                         {
-                            sceneObject.Name = $"SceneInstance_{i}";
+                            throw new Exception("This system will not work!"); // The geometry object is referenced by two objects. This means the geometry object is shared and therefore cannot be used in this generalised format as picking will not work + I think various other things
+                        }
+                        geo.Parent = sceneObject;
+                        geometry[el.GeometryIndex].Material = materials[el.MaterialIndex];
+                    }
+                }
+
+                if (instance.Lods != null && instance.ClipObjectIndex != -1)
+                {
+                    sceneObject.Lods = new EditorLodGroup[4];
+
+                    for (int j = 0; j < instance.Lods.Length; j++)
+                    {
+                        var lod = instance.Lods[j];
+                        sceneObject.Lods[j] = new(j);
+
+                        if (lod.NumInstances == 0) continue;
+
+                        var lodClip = display.ClipObjects[lod.FirstInstance];
+                        foreach (var lodEl in lodClip.Elements)
+                        {
+                            var geo = geometry[lodEl.GeometryIndex];
+                            sceneObject.Lods[j].ClipObjects.Add(geo);
+                            geo.Parent = sceneObject;
 
                         }
-                        editorScene.Objects.Add(sceneObject);
-
-                        var geoBounds = display.BoundsCenterAndDistSqrd[i];
-                        sceneObject.FadeDistances = instance.FadeDistances; // TODO: probably dangerous?
-                        sceneObject.BoundsCenterAndDistSqrd = new Vector4(geoBounds.X, geoBounds.Y, geoBounds.Z, geoBounds.W);
-                        if (instance.Lods != null)
-                        {
-                            sceneObject.Lods = new EditorSceneObject[4];
-
-                            for (int j = 0; j < instance.Lods.Length; j++)
-                            {
-                                var lod = instance.Lods[j];
-                                if (lod.NumInstances == 0) continue;
-
-                                var lodClip = display.ClipObjects[lod.FirstInstance];
-                                foreach (var lodEl in lodClip.Elements)
-                                {
-                                    var lodSceneObject = geometry[lodEl.GeometryIndex];
-                                    lodSceneObject.Name = $"SceneInstance_{i}_LOD_{j}";
-                                    lodSceneObject.BoundsCenterAndDistSqrd = new Vector4(sceneObject.BoundsCenterAndDistSqrd.Xyz, instance.FadeDistances[j] * instance.FadeDistances[j]);
-                                }
-                            }
-                        }
-                        //mesh.BoundsCenterAndDistSqrd = new Vector4(geoBounds.X, geoBounds.Y, geoBounds.Z, geoBounds.W);
                     }
                 }
 
@@ -228,14 +237,8 @@ namespace Diorama.Editor
                 var specialObject = display.SpecialObjects[i];
                 if (specialObject.InstanceIndex != -1)
                 {
-                    var clip = display.ClipObjects[(int)specialObject.ClipObjectIndex];
-                    foreach (var el in clip.Elements)
-                    {
-                        var sceneObject = geometry[el.GeometryIndex];
-                        Console.WriteLine($"Overrided {sceneObject.Name}");
-                        sceneObject.Name = specialObject.Name;
-                        sceneObject.Material = materials[el.MaterialIndex];
-                    }
+                    var sceneObject = editorScene.Objects[specialObject.InstanceIndex];
+                    sceneObject.Name = specialObject.Name;
                 }
             }
 

@@ -82,7 +82,7 @@ namespace Diorama.Rendering
             picker.Resize(width, height);
         }
 
-        public void Pick(int x, int y, Action<EditorSceneObject?>? objectPicked)
+        public void Pick(int x, int y, Action<EditorGeometryObject?>? objectPicked)
         {
             picker.RequestPick(x, y, objectPicked);
         }

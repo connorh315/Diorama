@@ -23,7 +23,9 @@ namespace Diorama.Editor
         public EditorLightmap Lightmap;
         public RenderMesh Mesh { get; set; }
 
-        public EditorSceneObject[] Lods { get; set; }
+        public List<EditorGeometryObject> ClipObjects { get; set; }
+
+        public EditorLodGroup[] Lods { get; set; }
         public float[] FadeDistances { get; set; }
 
         public Vector4 BoundsCenterAndDistSqrd { get; set; }
@@ -68,30 +70,13 @@ namespace Diorama.Editor
 
         public void Draw(Shader shader)
         {
-            shader.SetMatrix4("model", Transform);
-
             if (!IsActive)
                 return;
 
-            shader.SetVector4("mesh_color", Material.Colour1);
-
-
-            Material.Diffuse0?.Use();
-            Material.Diffuse1?.Use(TextureUnit.Texture1);
-
-            if (Lightmap != null && Lightmap.AmbientOcclusion != null && ViewportNewControl.ShowLightmaps && Material.LightmapUVSet != -1)
+            foreach (var clip in ClipObjects)
             {
-                Lightmap.AmbientOcclusion.Use(TextureUnit.Texture2);
-                shader.SetVector2("lm_offset", new Vector2(Lightmap.Offsets[0], Lightmap.Offsets[1]));
-                shader.SetVector2("lm_scale", new Vector2(Lightmap.Scales[0], Lightmap.Scales[1]));
-                shader.SetInt("lightmap_uvset", Material.LightmapUVSet);
+                clip.Draw(shader);
             }
-            else
-            {
-                RenderTexture.GetWhiteTexture().Use(TextureUnit.Texture2);
-            }
-
-            Mesh.Draw();
         }
 
         public void Debug_Draw(Shader shader, Camera camera)

@@ -11,8 +11,10 @@
       <ResourceDictionary>
         <ResourceDictionary.MergedDictionaries>
           <ResourceInclude Source="/UI/Controls/SceneHierarchy.axaml"/>
-          <ResourceInclude Source="/UI/Controls/InspectorPanel.axaml"/>
           <ResourceInclude Source="/UI/Controls/Vec3Input.axaml"/>
+          
+          <ResourceInclude Source="/UI/Panels/InspectorPanel.axaml"/>
+          <ResourceInclude Source="/UI/Panels/ClipObjectPanel.axaml"/>
         </ResourceDictionary.MergedDictionaries>
       </ResourceDictionary>
     </Application.Resources>

@@ -29,11 +29,11 @@
           <TextBlock Grid.Column="0" Text="{TemplateBinding InputLabel}" VerticalAlignment="Center" />
           <Grid Grid.Column="1" ColumnDefinitions="15,*,15,*,15,*">
             <controls:DragLabel Grid.Column="0" Text="X" VerticalAlignment="Center" HorizontalAlignment="Center" Value="{Binding X, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"/>
-            <TextBox x:Name="PART_Textbox1" Grid.Column="1" Text="{Binding X, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"/>
+            <TextBox x:Name="PART_Textbox1" Grid.Column="1" Text="{Binding X, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay, StringFormat=F4}" />
             <controls:DragLabel Grid.Column="2" Text="Y" VerticalAlignment="Center" HorizontalAlignment="Center" Value="{Binding Y, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"/>
-            <TextBox x:Name="PART_Textbox2" Grid.Column="3" Text="{Binding Y, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"/>
+            <TextBox x:Name="PART_Textbox2" Grid.Column="3" Text="{Binding Y, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay, StringFormat=F4}"/>
             <controls:DragLabel Grid.Column="4" Text="Z" VerticalAlignment="Center" HorizontalAlignment="Center" Value="{Binding Z, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"/>
-            <TextBox x:Name="PART_Textbox3" Grid.Column="5" Text="{Binding Z, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"/>
+            <TextBox x:Name="PART_Textbox3" Grid.Column="5" Text="{Binding Z, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay, StringFormat=F4}"/>
           </Grid>
         </Grid>
 

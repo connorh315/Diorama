@@ -126,7 +126,7 @@ namespace Diorama.Rendering
             pickingShader.Use();
             pickingShader.SetMatrix4("projection", camera.Projection);
 
-            var idLookup = new Dictionary<int, EditorSceneObject>();
+            var idLookup = new Dictionary<int, EditorGeometryObject>();
             int id = 1;
 
             foreach (var scene in scenes)
@@ -135,14 +135,19 @@ namespace Diorama.Rendering
 
                 foreach (var obj in scene.Objects)
                 {
-                    idLookup[id] = obj;
+                    //idLookup[id] = obj;
 
-                    var col = EncodeId(id);
-                    pickingShader.SetVector3("color", col);
+                    foreach (var geo in obj.ClipObjects)
+                    {
+                        idLookup[id] = geo;
 
-                    obj.Draw(pickingShader);
+                        var col = EncodeId(id);
+                        pickingShader.SetVector3("color", col);
 
-                    id++;
+                        geo.Draw(pickingShader);
+
+                        id++;
+                    }
                 }
             }
 
@@ -165,14 +170,15 @@ namespace Diorama.Rendering
             ObjectPicked = null;
         }
 
-        private EditorSceneObject? ReadPixel(Dictionary<int, EditorSceneObject> lookup)
+        private EditorGeometryObject? ReadPixel(Dictionary<int, EditorGeometryObject> lookup)
         {
             int readY = height - pickY;
+            int readX = pickX;
 
             byte[] pixel = new byte[3];
 
             GL.ReadPixels(
-                pickX,
+                readX,
                 readY,
                 1,
                 1,
@@ -201,8 +207,8 @@ namespace Diorama.Rendering
             return r | (g << 8) | (b << 16);
         }
 
-        private event Action<EditorSceneObject?>? ObjectPicked;
-        public void RequestPick(int mouseX, int mouseY, Action<EditorSceneObject?> objectPicked)
+        private event Action<EditorGeometryObject?>? ObjectPicked;
+        public void RequestPick(int mouseX, int mouseY, Action<EditorGeometryObject?> objectPicked)
         {
             pendingPick = true;
             pickX = mouseX;

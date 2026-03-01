@@ -13,21 +13,20 @@
   <Design.PreviewWith>
     <StackPanel Width="400" Spacing="10">      
         <StackPanel Background="{DynamicResource SystemRegionBrush}">
-          <controls:InspectorPanel />
+          <controls:ClipObjectPanel />
         </StackPanel>
     </StackPanel>
   </Design.PreviewWith>
  
-  <ControlTheme x:Key="{x:Type controls:InspectorPanel}" TargetType="controls:InspectorPanel">
+  <ControlTheme x:Key="{x:Type controls:ClipObjectPanel}" TargetType="controls:ClipObjectPanel">
     <Setter Property="Template">
       <ControlTemplate>
         <StackPanel Margin="5">
-          <TextBox Text="{Binding Selected.Name}" />
-          <controls:Vec3Input Value="{Binding Selected.Position, Mode=TwoWay}" InputLabel="Position" />
-          <controls:Vec3Input Value="{Binding Selected.BoundsCenterAndDistSqrd.Xyz, Mode=TwoWay}" InputLabel="Position" />
-          <TextBox Text="{Binding Selected.BoundsCenterAndDistSqrd[3]}" />
-          <TextBox Text="{Binding Selected.Mesh.VerticesCount}" />
+          <controls:Vec3Input
+              Value="{Binding SelectedGeometry.Position, Mode=TwoWay}"
+              InputLabel="Position" />
         </StackPanel>
+        
       </ControlTemplate>
     </Setter>
   </ControlTheme>
