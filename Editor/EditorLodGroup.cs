@@ -6,17 +6,19 @@ using System.Threading.Tasks;
 
 namespace Diorama.Editor
 {
-    public class EditorLodGroup
+    public class EditorLodGroup : IHierarchySelectable
     {
-        public List<EditorGeometryObject> ClipObjects { get; set; }
+        public string Name => $"LOD Group {Index}";
+
+        public IEnumerable<IHierarchySelectable> Children => ClipObject.Elements;
+
+        public EditorClipObject ClipObject { get; set; }
 
         public int Index { get; set; }
 
         public EditorLodGroup(int index)
         {
             Index = index;
-
-            ClipObjects = new();
         }
     }
 }

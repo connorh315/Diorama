@@ -16,5 +16,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
             Scale = file.ReadFloat(true);
             Min = file.ReadFloat(true);
         }
+
+        public void Serialize(RawFile file, uint parentVersion)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

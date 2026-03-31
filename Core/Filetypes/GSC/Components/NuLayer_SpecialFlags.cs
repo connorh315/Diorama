@@ -18,5 +18,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 byte layer = file.ReadByte();
             }
         }
+
+        public void Serialize(RawFile file, uint parentVersion)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

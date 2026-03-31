@@ -17,14 +17,7 @@ namespace Diorama.Core.Filetypes.GSC
     {
         internal RawFile file;
 
-        internal Dictionary<int, VertexList> vertexLists = new();
-        internal Dictionary<int, ushort[]> indicesLists = new();
-        internal Dictionary<int, NuRenderMesh> geometryLists = new();
-        internal int referenceCounter = 5;
-
         public byte[] ResourceHeaderBlock;
-
-        public NuRenderMesh[] RenderMeshes;
 
         public uint NU20Version;
 
@@ -32,13 +25,35 @@ namespace Diorama.Core.Filetypes.GSC
 
         public NuMaterialData[] Materials;
 
-        public List<NuLightmapData> Lightmaps;
+        //public List<NuLightmapData> Lightmaps;
+        public NuLightmapDataBlock LightmapDataBlock;
 
-        protected abstract void Parse();
+        public NuMeshSceneBlock MeshSceneBlock { get; set; }
 
-        protected abstract VertexList GetVertexList();
+        public byte[] Trailer;
 
-        protected abstract ushort[] GetIndexList();
+        protected abstract void Parse(GSerializationContext ctx);
+
+        public void Write(RawFile file, GSerializationContext ctx)
+        {
+            file.WriteInt(ResourceHeaderBlock.Length, true);
+            file.WriteArray(ResourceHeaderBlock);
+
+            using (RawFileSection nu20Section = new RawFileSection(file, false, true))
+            {
+                file.WriteInt(1, true);
+
+                file.WriteString("02UN");
+                file.WriteUInt(NU20Version, true);
+
+                WriteNu20(file, ctx);
+            }
+
+
+            file.WriteArray(Trailer);
+        }
+
+        public abstract void WriteNu20(RawFile file, GSerializationContext ctx);
 
         public static GScene Parse(RawFile file)
         {
@@ -58,13 +73,11 @@ namespace Diorama.Core.Filetypes.GSC
             switch (nu20Version)
             {
                 case 0x4f:
-                    gsc = new GScene_4F();
-                    break;
                 case 0x50:
                 case 0x52:
                 case 0x53:
                 case 0x57:
-                    gsc = new GScene_50();
+                    gsc = new GScene_4F();
                     break;
                 default:
                     throw new Exception($"Unsupported NU20 version: {nu20Version}");
@@ -74,11 +87,18 @@ namespace Diorama.Core.Filetypes.GSC
             gsc.file = file;
             gsc.ResourceHeaderBlock = resourceHeaderBlock;
 
-            gsc.Parse();
+            GSerializationContext context = new GSerializationContext();
+            gsc.Parse(context);
 
             if (file.Position != resourceHeaderSize + 4 + 4 + gscSize)
             {
                 throw new Exception("Did not read entire file size!");
+            }
+
+            int length = (int)(file.fileStream.Length - file.Position);
+            if (length < 0x100)
+            {
+                gsc.Trailer = file.ReadArray(length);
             }
 
             return gsc;

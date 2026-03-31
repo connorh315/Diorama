@@ -9,12 +9,21 @@ namespace Diorama.Core.Filetypes.GSC.Components
 {
     public class NuFaceOnDisplayItem : IVectorSerializable
     {
+        public uint Type { get; set; }
+        public List<NuFaceOnInstance> Instances { get; set; }
+
         public void Deserialize(RawFile file, uint parentVersion)
         {
             // version < 0x1e has "unusedIsFixedUp"
-            uint type = file.ReadUInt(true);
+            Type = file.ReadUInt(true);
             // version < 0x1f uses legacy array
-            List<NuFaceOnInstance> instances = NuSerializer.ReadVectorArray<NuFaceOnInstance>(file);
+            Instances = NuSerializer.ReadVectorArray<NuFaceOnInstance>(file);
+        }
+
+        public void Serialize(RawFile file, uint parentVersion)
+        {
+            file.WriteUInt(Type, true);
+            NuSerializer.WriteVectorArray(file, Instances);
         }
     }
 }

@@ -34,5 +34,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 FixupTypeAsU8 = file.ReadByte();
             }
         }
+
+        public void Serialize(RawFile file, uint parentVersion)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

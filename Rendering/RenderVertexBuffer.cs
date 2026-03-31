@@ -14,6 +14,8 @@ namespace Diorama.Rendering
         public int Stride;
         public VertexDefinition[] Attributes;
 
+        public VertexList Original;
+
         public void Use()
         {
             GL.BindBuffer(BufferTarget.ArrayBuffer, Handle);
@@ -22,6 +24,8 @@ namespace Diorama.Rendering
         public static RenderVertexBuffer FromBuffer(VertexList buffer)
         {
             RenderVertexBuffer vertexBuffer = new RenderVertexBuffer();
+
+            vertexBuffer.Original = buffer;
 
             vertexBuffer.Stride = buffer.Stride;
 

@@ -22,5 +22,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 Vector3 vec = new Vector3(file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true));
             }
         }
+
+        public void Serialize(RawFile file, uint parentVersion)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

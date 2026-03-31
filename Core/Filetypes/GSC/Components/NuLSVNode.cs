@@ -15,5 +15,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 file.ReadShort(true);
             }
         }
+
+        public void Serialize(RawFile file, uint parentVersion)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

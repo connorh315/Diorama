@@ -15,5 +15,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             List<NuBlendShapeAnimKey> keys = NuSerializer.ReadLegacyVarArray<NuBlendShapeAnimKey>(file, parentVersion);
         }
+
+        public void Serialize(RawFile file, uint parentVersion)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

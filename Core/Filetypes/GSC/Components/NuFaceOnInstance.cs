@@ -9,12 +9,25 @@ namespace Diorama.Core.Filetypes.GSC.Components
 {
     public class NuFaceOnInstance : IVectorSerializable
     {
+        public Vector3 Loc;
+        public float Width;
+        public float Height;
+        public uint Colour;
+
         public void Deserialize(RawFile file, uint parentVersion)
         {
-            Vector3 loc = new Vector3(file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true));
-            float width = file.ReadFloat(true);
-            float height = file.ReadFloat(true);
-            uint colour = file.ReadUInt(true);
+            Loc = file.ReadVector3(true);
+            Width = file.ReadFloat(true);
+            Height = file.ReadFloat(true);
+            Colour = file.ReadUInt(true);
+        }
+
+        public void Serialize(RawFile file, uint parentVersion)
+        {
+            file.WriteVector3(Loc, true);
+            file.WriteFloat(Width, true);
+            file.WriteFloat(Height, true);
+            file.WriteUInt(Colour, true);
         }
     }
 }

@@ -21,5 +21,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 List<short> layerIdTable = NuSerializer.ReadVectorArray<short>(file);
             }
         }
+
+        public void Serialize(RawFile file, uint parentVersion)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -35,5 +35,12 @@ namespace Diorama.Core.Filetypes.GSC.Components
             Id = file.ReadByte();
             Index = file.ReadUInt(true);
         }
+
+        public void Serialize(RawFile file, uint parentVersion)
+        {
+            file.WriteByte((byte)Command);
+            file.WriteByte(Id);
+            file.WriteUInt(Index, true);
+        }
     }
 }

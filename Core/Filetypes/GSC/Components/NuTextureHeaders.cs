@@ -8,13 +8,13 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class TextureHeaders
+    public class NuTextureHeaders
     {
         public List<NuTextureHeader> Headers;
 
-        public static TextureHeaders Read(RawFile file)
+        public static NuTextureHeaders Read(RawFile file)
         {
-            TextureHeaders headers = new TextureHeaders();
+            NuTextureHeaders headers = new NuTextureHeaders();
             
             Debug.Assert(file.ReadString(4) == "HGXT");
             Debug.Assert(file.ReadUInt(true) == 0xc);

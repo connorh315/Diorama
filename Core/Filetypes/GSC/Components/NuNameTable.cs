@@ -11,6 +11,8 @@ namespace Diorama.Core.Filetypes.GSC.Components
     {
         public uint Version;
 
+        public string Names { get; set; }
+
         public static NuNameTable Read(RawFile file)
         {
             NuNameTable table = new NuNameTable();
@@ -21,9 +23,17 @@ namespace Diorama.Core.Filetypes.GSC.Components
             Debug.Assert(table.Version == 0x4f || table.Version == 0x50 || table.Version == 0x52 || table.Version == 0x53 || table.Version == 0x57);
 
             int ntblLength = file.ReadInt(true);
-            string ntblData = file.ReadString(ntblLength);
+            table.Names = file.ReadString(ntblLength);
 
             return table;
+        }
+
+        public void Write(RawFile file)
+        {
+            file.WriteString("LBTN");
+            file.WriteUInt(Version, true);
+            file.WriteInt(Names.Length + 1, true);
+            file.WriteString(Names, 1);
         }
     }
 }

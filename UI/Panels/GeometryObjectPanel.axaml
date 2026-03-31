@@ -13,18 +13,25 @@
   <Design.PreviewWith>
     <StackPanel Width="400" Spacing="10">      
         <StackPanel Background="{DynamicResource SystemRegionBrush}">
-          <controls:ClipObjectPanel />
+          <controls:GeometryObjectPanel />
         </StackPanel>
     </StackPanel>
   </Design.PreviewWith>
  
-  <ControlTheme x:Key="{x:Type controls:ClipObjectPanel}" TargetType="controls:ClipObjectPanel">
+  <ControlTheme x:Key="{x:Type controls:GeometryObjectPanel}" TargetType="controls:GeometryObjectPanel">
     <Setter Property="Template">
       <ControlTemplate>
-        <StackPanel Margin="5">
+        <StackPanel Margin="5" IsVisible="{Binding Controller.SelectedGeometry, Converter={x:Static ObjectConverters.IsNotNull}}">
           <controls:Vec3Input
-              Value="{Binding SelectedGeometry.Position, Mode=TwoWay}"
+              Value="{Binding Controller.SelectedGeometry.Position, Mode=TwoWay}"
               InputLabel="Position" />
+          <controls:Vec3Input
+              Value="{Binding Controller.SelectedGeometry.Rotation, Mode=TwoWay}"
+              InputLabel="Rotation" />
+          <controls:Vec3Input
+              Value="{Binding Controller.SelectedGeometry.Scale, Mode=TwoWay}"
+              InputLabel="Scale" />
+          <Button Content="Replace mesh" x:Name="ReplaceMesh"/>
         </StackPanel>
         
       </ControlTemplate>

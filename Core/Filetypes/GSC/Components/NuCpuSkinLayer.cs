@@ -25,5 +25,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             short layerId = file.ReadShort(true);
         }
+
+        public void Serialize(RawFile file, uint parentVersion)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

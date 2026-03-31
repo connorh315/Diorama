@@ -20,5 +20,13 @@ namespace Diorama.Core.Filetypes.GSC.Components
             Z = file.ReadFloat(true);
             W = file.ReadFloat(true);
         }
+
+        public void Serialize(RawFile file, uint parentVersion)
+        {
+            file.WriteFloat(X, true);
+            file.WriteFloat(Y, true);
+            file.WriteFloat(Z, true);
+            file.WriteFloat(W, true);
+        }
     }
 }

@@ -13,18 +13,18 @@ namespace Diorama.Core.Filetypes.GSC.Components
     {
         public NuBlendShape Next;
 
-        public static NuBlendShape Parse(RawFile file, GScene scene, uint parentVersion)
+        public static NuBlendShape Parse(RawFile file, GSerializationContext ctx, uint parentVersion)
         {
             var shape = new NuBlendShape();
 
             uint id = file.ReadUInt(true);
 
-            scene.referenceCounter += 1;
+            ctx.AddReference(shape);
 
             uint nextShapeExists = file.ReadUInt(true);
             if (nextShapeExists != 0)
             {
-                shape.Next = Parse(file, scene, parentVersion);
+                shape.Next = Parse(file, ctx, parentVersion);
             }
 
             if (parentVersion < 0xae)
@@ -46,7 +46,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
             byte[] buffer = file.ReadArray(bufferSize);
             if (bufferSize != 0)
             {
-                scene.referenceCounter++;
+                ctx.AddReference(buffer);
             }
 
             List<uint> runBatchTableV2 = NuSerializer.ReadVectorArray<uint>(file);

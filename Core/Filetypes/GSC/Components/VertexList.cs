@@ -58,6 +58,26 @@ namespace Diorama.Core.Filetypes.GSC.Components
             return list;
         }
 
+        public void Write(RawFile file)
+        {
+            file.WriteInt(Vertices.Length, true);
+
+            file.WriteString("DXTV");
+            file.WriteInt(0xa9, true);
+
+            file.WriteInt(Definitions.Length, true);
+
+            foreach (var def in Definitions)
+            {
+                def.Write(file);
+            }
+
+            for (int i = 0; i < 6; i++)
+                file.WriteByte(0); // instancing dividers, rarely used
+
+            file.WriteArray(VerticesDump);
+        }
+
         private static int SizeOf(VertexDefinitionStorageEnum storage)
         {
             return storage switch
@@ -72,6 +92,108 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 VertexDefinitionStorageEnum.color4char => 4,
                 _ => 0 // TODO: Handle materials triggering this
             };
+        }
+
+        public void WriteVertex(RawFile file, Vertex vertex)
+        {
+            foreach (VertexDefinition def in Definitions)
+            {
+                switch (def.Variable)
+                {
+                    case VertexDefinitionVariableEnum.position:
+                        WriteVector(file, new Vector4(vertex.Position, 1f), def.Type);
+                        break;
+                    case VertexDefinitionVariableEnum.normal:
+                        WriteVector(file, new Vector4(vertex.Normal, 1f), def.Type);
+                        break;
+                    case VertexDefinitionVariableEnum.colorSet0:
+                        WriteVector(file, vertex.ColorSet0, def.Type);
+                        break;
+                    case VertexDefinitionVariableEnum.colorSet1:
+                        WriteVector(file, vertex.ColorSet1, def.Type);
+                        break;
+                    case VertexDefinitionVariableEnum.uvSet01:
+                        WriteVector(file, vertex.UVSet01, def.Type);
+                        break;
+                    default:
+                        WriteVector(file, Vector4.Zero, def.Type); // discard, no implementation
+                        break;
+                }
+            }
+        }
+
+        public void WriteVector(RawFile file, Vector4 vec, VertexDefinitionStorageEnum storage)
+        {
+            switch (storage)
+            {
+                case VertexDefinitionStorageEnum.vec2float:
+                    file.WriteFloat(vec.X, false);
+                    file.WriteFloat(vec.Y, false);
+                    break;
+                case VertexDefinitionStorageEnum.vec3float:
+                    file.WriteFloat(vec.X, false);
+                    file.WriteFloat(vec.Y, false);
+                    file.WriteFloat(vec.Z, false);
+                    break;
+                case VertexDefinitionStorageEnum.vec4float:
+                    file.WriteFloat(vec.X, false);
+                    file.WriteFloat(vec.Y, false);
+                    file.WriteFloat(vec.Z, false);
+                    file.WriteFloat(vec.W, false);
+                    break;
+                case VertexDefinitionStorageEnum.vec2half:
+                    file.WriteHalf((Half)vec.X, false);
+                    file.WriteHalf((Half)vec.Y, false);
+                    break;
+                case VertexDefinitionStorageEnum.vec4half:
+                    file.WriteHalf((Half)vec.X, false);
+                    file.WriteHalf((Half)vec.Y, false);
+                    file.WriteHalf((Half)vec.Z, false);
+                    file.WriteHalf((Half)vec.W, false);
+                    break;
+                case VertexDefinitionStorageEnum.vec4mini:
+                    file.WriteByte((byte)((vec.X + 1f) * 127.5f));
+                    file.WriteByte((byte)((vec.Y + 1f) * 127.5f));
+                    file.WriteByte((byte)((vec.Z + 1f) * 127.5f));
+                    file.WriteByte((byte)((vec.W + 1f) * 127.5f));
+                    break;
+                case VertexDefinitionStorageEnum.color4char:
+                    file.WriteByte((byte)(vec.X * 255));
+                    file.WriteByte((byte)(vec.Y * 255));
+                    file.WriteByte((byte)(vec.Z * 255));
+                    file.WriteByte((byte)(vec.W * 255));
+                    break;
+            }
+        }
+
+        public static VertexList FromVertices(List<Vertex> vertices, VertexDefinition[] definitions)
+        {
+            VertexList list = new VertexList((uint)vertices.Count, (uint)definitions.Length);
+
+            int stride = 0;
+            for (int i = 0; i < definitions.Length; i++)
+            {
+                var def = definitions[i];
+                list.Definitions[i] = def;
+
+                stride += SizeOf(def.Type);
+            }
+            list.Stride = stride;
+
+            byte[] buffer;
+            using (RawFile file = new RawFile(new MemoryStream()))
+            {
+                foreach (var vertex in vertices)
+                {
+                    list.WriteVertex(file, vertex);
+                }
+
+                buffer = ((MemoryStream)file.fileStream).ToArray();
+            }
+
+            list.VerticesDump = buffer;
+
+            return list;
         }
 
         private Vertex ReadVertex(RawFile file)

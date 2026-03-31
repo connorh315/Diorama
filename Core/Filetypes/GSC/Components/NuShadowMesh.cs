@@ -22,5 +22,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 List<NuVec4> verts = NuSerializer.ReadLegacyVarArray<NuVec4>(file);
             }
         }
+
+        public void Serialize(RawFile file, uint parentVersion)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

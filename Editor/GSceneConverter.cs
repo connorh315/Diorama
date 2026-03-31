@@ -1,4 +1,6 @@
-﻿using Diorama.Core.Filetypes.GSC;
+﻿
+using Diorama.Core;
+using Diorama.Core.Filetypes.GSC;
 using Diorama.Core.Filetypes.GSC.Components;
 using Diorama.Core.Filetypes.TEXTURES;
 using Diorama.Rendering;
@@ -17,34 +19,42 @@ namespace Diorama.Editor
         {
             GScene scene = GScene.Parse(filePath);
 
+            //var newPath = filePath.Replace(".GSC", "_converted.GSC");
+            //using (RawFile newFile = new RawFile(newPath))
+            //{
+            //    GSerializationContext ctx = new GSerializationContext();
+            //    scene.Write(newFile, ctx);
+            //}
+
             EditorScene editorScene = new EditorScene();
             editorScene.Name = Path.GetFileName(filePath);
             editorScene.SceneTransform = Matrix4.CreateScale(1f, 1f, -1f); // All meshes are flipped, so this unflips them
             //editorScene.SceneTransform = Matrix4.Identity;
 
             Dictionary<ushort[], RenderIndicesBuffer> convertedIBuffer = new();
-            foreach (var indicesBuffer in scene.indicesLists)
-            {
-                var uploaded = RenderIndicesBuffer.FromBuffer(indicesBuffer.Value);
-                convertedIBuffer.Add(indicesBuffer.Value, uploaded);
-            }
-
             Dictionary<VertexList, RenderVertexBuffer> convertedVBuffer = new();
-            foreach (var verticesBuffer in scene.vertexLists)
-            {
-                var uploaded = RenderVertexBuffer.FromBuffer(verticesBuffer.Value);
-                convertedVBuffer.Add(verticesBuffer.Value, uploaded);
-            }
 
-            RenderMesh[] meshes = new RenderMesh[scene.RenderMeshes.Length];
-            for (int i = 0; i < scene.RenderMeshes.Length; i++)
+            RenderMesh[] meshes = new RenderMesh[scene.MeshSceneBlock.Meshes.Length];
+            for (int i = 0; i < scene.MeshSceneBlock.Meshes.Length; i++)
             {
-                NuRenderMesh nuMesh = scene.RenderMeshes[i];
+                NuRenderMesh nuMesh = scene.MeshSceneBlock.Meshes[i];
 
                 RenderVertexBuffer[] vBuffers = new RenderVertexBuffer[nuMesh.VertexBuffers.Length];
                 for (int j = 0; j < vBuffers.Length; j++)
                 {
-                    vBuffers[j] = convertedVBuffer[nuMesh.VertexBuffers[j]];
+                    var buffer = nuMesh.VertexBuffers[j];
+                    if (!convertedVBuffer.ContainsKey(buffer))
+                    {
+                        convertedVBuffer.Add(buffer, RenderVertexBuffer.FromBuffer(buffer));
+                    }
+
+                    vBuffers[j] = convertedVBuffer[buffer];
+                }
+
+                var indices = nuMesh.Indices;
+                if (!convertedIBuffer.ContainsKey(indices))
+                {
+                    convertedIBuffer.Add(indices, RenderIndicesBuffer.FromBuffer(indices));
                 }
 
                 RenderIndicesBuffer iBuffer = convertedIBuffer[nuMesh.Indices];
@@ -83,8 +93,8 @@ namespace Diorama.Editor
                 editorScene.Materials.Add(material);
             }
 
-            List<NuLightmapData> gsceneLightmaps = scene.Lightmaps;
-            EditorLightmap[] lightmaps = new EditorLightmap[scene.Lightmaps.Count];
+            List<NuLightmapData> gsceneLightmaps = scene.LightmapDataBlock.Lightmaps;
+            EditorLightmap[] lightmaps = new EditorLightmap[scene.LightmapDataBlock.Lightmaps.Count];
             for (int i = 0; i < lightmaps.Length; i++)
             {
                 NuLightmapData nuLightmap = gsceneLightmaps[i];
@@ -150,6 +160,21 @@ namespace Diorama.Editor
                 }
             }
 
+            List<EditorClipObject> allClipObjects = new();
+            foreach (var displayClip in display.ClipObjects)
+            {
+                EditorClipObject clip = new EditorClipObject();
+                foreach (var el in displayClip.Elements)
+                {
+                    var geo = geometry[el.GeometryIndex];
+                    clip.Elements.Add(geo);
+                    geo.Parent = clip; // TODO: Remove
+                    geo.Material = materials[el.MaterialIndex];
+                }
+                allClipObjects.Add(clip);
+            }
+
+
             for (int i = 0; i < display.SceneInstances.Count; i++)
             {
                 var instance = display.SceneInstances[i];
@@ -161,21 +186,10 @@ namespace Diorama.Editor
                 var geoBounds = display.BoundsCenterAndDistSqrd[i];
                 sceneObject.BoundsCenterAndDistSqrd = new Vector4(geoBounds.X, geoBounds.Y, geoBounds.Z, geoBounds.W);
 
-                sceneObject.ClipObjects = new();
                 if (instance.ClipObjectIndex > -1)
                 {
-                    var clip = display.ClipObjects[instance.ClipObjectIndex];
-                    foreach (var el in clip.Elements)
-                    {
-                        var geo = geometry[el.GeometryIndex];
-                        sceneObject.ClipObjects.Add(geo);
-                        if (geo.Parent != null)
-                        {
-                            throw new Exception("This system will not work!"); // The geometry object is referenced by two objects. This means the geometry object is shared and therefore cannot be used in this generalised format as picking will not work + I think various other things
-                        }
-                        geo.Parent = sceneObject;
-                        geometry[el.GeometryIndex].Material = materials[el.MaterialIndex];
-                    }
+                    sceneObject.ClipObject = allClipObjects[instance.ClipObjectIndex];
+                    sceneObject.ClipObject.Parent = sceneObject;
                 }
 
                 if (instance.Lods != null && instance.ClipObjectIndex != -1)
@@ -189,15 +203,11 @@ namespace Diorama.Editor
 
                         if (lod.NumInstances == 0) continue;
 
-                        var lodClip = display.ClipObjects[lod.FirstInstance];
-                        foreach (var lodEl in lodClip.Elements)
-                        {
-                            var geo = geometry[lodEl.GeometryIndex];
-                            sceneObject.Lods[j].ClipObjects.Add(geo);
-                            geo.Parent = sceneObject;
-
-                        }
+                        var lodClip = allClipObjects[lod.FirstInstance];
+                        sceneObject.Lods[j].ClipObject = lodClip;
                     }
+
+                    sceneObject.UseLodGroups = true;
                 }
 
                 // This whole section needs cleaning up. Omitting for now, will come back to later

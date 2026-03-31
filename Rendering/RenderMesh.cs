@@ -20,6 +20,8 @@ namespace Diorama.Rendering
         public int IndicesBase;
         public int IndicesCount;
 
+        public RenderVertexBuffer[] VertexBuffers;
+
         private VertexAttribPointerType GetType(VertexDefinitionStorageEnum type)
         {
             return type switch
@@ -45,6 +47,8 @@ namespace Diorama.Rendering
             GL.BindVertexArray(VAO);
 
             iBuffer.Use();
+
+            VertexBuffers = vBuffers;
 
             foreach (var vb in vBuffers)
             {

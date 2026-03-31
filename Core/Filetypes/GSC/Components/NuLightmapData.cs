@@ -37,5 +37,21 @@ namespace Diorama.Core.Filetypes.GSC.Components
             TexCoordScale0 = file.ReadFloat(true);
             TexCoordScale1 = file.ReadFloat(true);
         }
+
+        public void Serialize(RawFile file, uint parentVersion)
+        {
+            file.WriteUInt(Type, true);
+            file.WriteInt(MeshInstanceId, true);
+            file.WriteInt(DirectionalTIDs0, true);
+            file.WriteInt(DirectionalTIDs1, true);
+            file.WriteInt(DirectionalTIDs2, true);
+            file.WriteInt(SmoothTID, true);
+            file.WriteInt(AoTID, true);
+
+            file.WriteFloat(TexCoordOffset0, true);
+            file.WriteFloat(TexCoordOffset1, true);
+            file.WriteFloat(TexCoordScale0, true);
+            file.WriteFloat(TexCoordScale1, true);
+        }
     }
 }

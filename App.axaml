@@ -14,7 +14,7 @@
           <ResourceInclude Source="/UI/Controls/Vec3Input.axaml"/>
           
           <ResourceInclude Source="/UI/Panels/InspectorPanel.axaml"/>
-          <ResourceInclude Source="/UI/Panels/ClipObjectPanel.axaml"/>
+          <ResourceInclude Source="/UI/Panels/GeometryObjectPanel.axaml"/>
         </ResourceDictionary.MergedDictionaries>
       </ResourceDictionary>
     </Application.Resources>

@@ -24,5 +24,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             byte parentJointIdx = file.ReadByte();
         }
+
+        public void Serialize(RawFile file, uint parentVersion)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

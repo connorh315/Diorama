@@ -17,5 +17,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
             short numRigids = file.ReadShort(true);
             short numSkins = file.ReadShort(true);
         }
+
+        public void Serialize(RawFile file, uint parentVersion)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

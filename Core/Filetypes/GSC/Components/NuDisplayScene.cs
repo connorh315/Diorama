@@ -56,5 +56,27 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             return scene;
         }
+
+        public void Write(RawFile file, NuNameTable nameTable)
+        {
+            file.WriteString("PSID");
+            file.WriteUInt(Version, true);
+
+            NuSerializer.WriteVectorArray(file, DisplayItems);
+            NuSerializer.WriteVectorArray(file, ClipObjects);
+            NuSerializer.WriteVectorArray(file, SpecialObjects, Version);
+            NuSerializer.WriteVectorArray(file, SpecialGroupNodes, Version);
+            NuSerializer.WriteVectorArray(file, BoundsCenterAndDistSqrd);
+            NuSerializer.WriteVectorArray(file, BoundsExtentsAndRadius);
+            NuSerializer.WriteVectorArray(file, SceneInstances);
+            NuSerializer.WriteVectorArray(file, SceneInstanceFixups);
+            NuSerializer.WriteVectorArray(file, AnimMtls);
+            NuSerializer.WriteVectorArray(file, TransformMtxs);
+            NuSerializer.WriteVectorArray(file, FaceOnDisplayItems);
+            if (nameTable.Version > 0x52)
+            {
+                NuSerializer.WriteLegacyVarArray(file, TextureAnimListIndexs2);
+            }
+        }
     }
 }

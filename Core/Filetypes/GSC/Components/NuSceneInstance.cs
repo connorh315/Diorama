@@ -41,7 +41,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
             if ((Flags & 2) == 0)
             {
                 FadeAlphaCo = file.ReadFloat(true);
-                FadeAlpha = new Vector3(file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true));
+                FadeAlpha = file.ReadVector3(true);
             }
             else
             {
@@ -62,6 +62,42 @@ namespace Diorama.Core.Filetypes.GSC.Components
             VertexControlledTint[1] = file.ReadInt(true);
             VertexControlledTint[2] = file.ReadInt(true);
             VertexControlledTint[3] = file.ReadInt(true);
+        }
+
+        public void Serialize(RawFile file, uint parentVersion)
+        {
+            file.WriteInt(Hash, true);
+            file.WriteShort(Flags, true);
+            file.WriteShort(ClipObjectIndex, true);
+            file.WriteFloat(ClipDistance, true);
+
+            for (int i = 0; i < 4; i++)
+            {
+                file.WriteFloat(FadeDistances[i], true);
+            }
+
+            file.WriteFloat(ApproxSize, true);
+
+            if ((Flags & 2) == 0)
+            {
+                file.WriteFloat(FadeAlphaCo, true);
+                file.WriteVector3(FadeAlpha, true);
+            }
+            else
+            {
+                for (int lodId = 0; lodId < 4; lodId++)
+                {
+                    file.WriteByte(Lods[lodId].LodHeirarchical);
+                    file.WriteInt(Lods[lodId].HighResSceneFixupId, true);
+                    file.WriteInt(Lods[lodId].FirstInstance, true);
+                    file.WriteInt(Lods[lodId].NumInstances, true);
+                }
+            }
+
+            for (int i = 0; i < 4; i++)
+            {
+                file.WriteInt(VertexControlledTint[i], true);
+            }
         }
     }
 

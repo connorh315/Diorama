@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -68,6 +69,13 @@ namespace Diorama.Core.Filetypes.GSC.Components
             def.Type = (VertexDefinitionStorageEnum)file.ReadByte();
             def.Offset = file.ReadByte();
             return def;
+        }
+
+        public void Write(RawFile file)
+        {
+            file.WriteByte((byte)Variable);
+            file.WriteByte((byte)Type);
+            file.WriteByte((byte)Offset);
         }
     }
 }

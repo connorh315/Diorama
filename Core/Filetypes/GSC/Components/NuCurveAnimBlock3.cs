@@ -29,5 +29,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
             byte undefined3 = file.ReadByte();
             byte undefined4 = file.ReadByte();
         }
+
+        public void Serialize(RawFile file, uint parentVersion)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

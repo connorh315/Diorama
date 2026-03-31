@@ -26,14 +26,7 @@ namespace Diorama.Core.Types
                 if (isVectorSerializable)
                 {
                     var obj = new T();
-                    if (parentVersion != 0)
-                    {
-                        ((IVectorSerializable)obj).Deserialize(file, parentVersion);
-                    }
-                    else
-                    {
-                        ((IVectorSerializable)obj).Deserialize(file, parentVersion);
-                    }
+                    ((IVectorSerializable)obj).Deserialize(file, parentVersion);
                     list.Add(obj);
                 }
                 else
@@ -43,6 +36,27 @@ namespace Diorama.Core.Types
             }
 
             return list;
+        }
+
+        public static void WriteVectorArray<T>(RawFile file, List<T> items, uint parentVersion = 0)
+        {
+            file.WriteString("ROTV");
+            file.WriteInt(items.Count, true);
+
+            bool isVectorSerializable =
+                typeof(IVectorSerializable).IsAssignableFrom(typeof(T));
+
+            for (int i = 0; i < items.Count; i++)
+            {
+                if (isVectorSerializable)
+                {
+                    ((IVectorSerializable)items[i]).Serialize(file, parentVersion);
+                }
+                else
+                {
+                    WritePrimitive(file, items[i]);
+                }
+            }
         }
 
         public static List<T> ReadLegacyVarArray<T>(RawFile file, uint parentVersion = 0)
@@ -59,14 +73,7 @@ namespace Diorama.Core.Types
                 if (isVectorSerializable)
                 {
                     var obj = new T();
-                    if (parentVersion != 0)
-                    {
-                        ((IVectorSerializable)obj).Deserialize(file, parentVersion);
-                    }
-                    else
-                    {
-                        ((IVectorSerializable)obj).Deserialize(file, parentVersion);
-                    }
+                    ((IVectorSerializable)obj).Deserialize(file, parentVersion);
                     list.Add(obj);
                 }
                 else
@@ -76,6 +83,26 @@ namespace Diorama.Core.Types
             }
 
             return list;
+        }
+
+        public static void WriteLegacyVarArray<T>(RawFile file, List<T> items, uint parentVersion = 0)
+        {
+            file.WriteInt(items.Count, true);
+
+            bool isVectorSerializable =
+                            typeof(IVectorSerializable).IsAssignableFrom(typeof(T));
+
+            for (int i = 0; i < items.Count; i++)
+            {
+                if (isVectorSerializable)
+                {
+                    ((IVectorSerializable)items[i]).Serialize(file, parentVersion);
+                }
+                else
+                {
+                    WritePrimitive(file, items[i]);
+                }
+            }
         }
 
         // TODO: Boxing + unboxing is bad
@@ -111,6 +138,28 @@ namespace Diorama.Core.Types
             }
 
             throw new NotSupportedException($"Unsupported vector type: {typeof(T)}");
+        }
+
+        static void WritePrimitive<T>(RawFile file, T value)
+        {
+            switch (value)
+            {
+                case byte v: file.WriteByte(v); break;
+                case short v: file.WriteShort(v); break;
+                case ushort v: file.WriteUShort(v); break;
+                case int v: file.WriteInt(v); break;
+                case uint v: file.WriteUInt(v); break;
+                case long v: file.WriteLong(v); break;
+                case float v: file.WriteFloat(v, true); break;
+                case string v: file.WritePascalString(v); break;
+                case Vector3 v:
+                    file.WriteFloat(v.X, true);
+                    file.WriteFloat(v.Y, true);
+                    file.WriteFloat(v.Z, true);
+                    break;
+                default:
+                    throw new NotSupportedException($"Unsupported type: {typeof(T)}");
+            }
         }
     }
 }

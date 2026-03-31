@@ -23,30 +23,31 @@ namespace Diorama.Rendering
 
         public bool IsInitialized = false;
 
-        private EditorSceneObject? selected;
-        public EditorSceneObject? Selected 
-        { 
-            get => selected; 
-            set
+        public EditorSceneObject? SelectedSceneObject =>
+            SelectedHierarchyObject switch
             {
-                if (selected == value)
-                    return;
+                EditorSceneObject obj => obj,
+                EditorGeometryObject geo => geo.Parent.Parent,
+                _ => null
+            };
 
-                selected = value;
-                OnPropertyChanged();
-            }
-        }
+        public EditorGeometryObject? SelectedGeometry =>
+            SelectedHierarchyObject as EditorGeometryObject;
 
-        private EditorGeometryObject? selectedGeometry;
-        public EditorGeometryObject? SelectedGeometry
+        private IHierarchySelectable? selectedHierarchyObject;
+        public IHierarchySelectable? SelectedHierarchyObject
         {
-            get => selectedGeometry;
+            get => selectedHierarchyObject;
             set
             {
-                if (selectedGeometry == value)
+                if (selectedHierarchyObject == value)
                     return;
-                selectedGeometry = value;
+
+                selectedHierarchyObject = value;
+
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(SelectedSceneObject));
+                OnPropertyChanged(nameof(SelectedGeometry));
             }
         }
 
@@ -62,7 +63,7 @@ namespace Diorama.Rendering
             Renderer.Initialize();
         }
 
-        private readonly Queue<string> pendingSceneLoads = new();
+        private readonly Queue<Action> glQueue = new();
 
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void OnPropertyChanged(
@@ -72,39 +73,44 @@ namespace Diorama.Rendering
                 new PropertyChangedEventArgs(propertyName));
         }
 
-        public void LoadScene(string filePath)
+        public void EnqueueGL(Action action)
         {
-            lock (pendingSceneLoads)
+            lock (glQueue)
             {
-                pendingSceneLoads.Enqueue(filePath);
+                glQueue.Enqueue(action);
             }
         }
 
-        private void LoadPendingScenes()
+        private void ExecuteGLQueue()
         {
             while (true)
             {
-                string path;
+                Action action;
 
-                lock (pendingSceneLoads)
+                lock (glQueue)
                 {
-                    if (pendingSceneLoads.Count == 0)
+                    if (glQueue.Count == 0)
                         return;
 
-                    path = pendingSceneLoads.Dequeue();
+                    action = glQueue.Dequeue();
                 }
 
-                if (Path.GetExtension(path).ToLower() == ".gsc")
-                {
-                    Scenes.Add(GSceneConverter.FromGScene(path));
-                }
+                action();
             }
+        }
 
+        public void AddScene(string path)
+        {
+            if (Path.GetExtension(path).ToLower() == ".gsc")
+            {
+                Scenes.Add(GSceneConverter.FromGScene(path));
+
+            }
         }
 
         public void Render()
         {
-            LoadPendingScenes();
+            ExecuteGLQueue();
 
             Renderer.Render(Scenes.ToList());
         }
@@ -115,8 +121,7 @@ namespace Diorama.Rendering
             {
                 Dispatcher.UIThread.Invoke(() =>
                 {
-                    SelectedGeometry = obj;
-                    Selected = obj?.Parent;
+                    SelectedHierarchyObject = obj;
                 });
             });
         }

@@ -14,5 +14,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
             ushort y = file.ReadUShort(true);
             ushort z = file.ReadUShort(true);
         }
+
+        public void Serialize(RawFile file, uint parentVersion)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

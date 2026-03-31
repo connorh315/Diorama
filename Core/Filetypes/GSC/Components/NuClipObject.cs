@@ -29,5 +29,15 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 };
             }
         }
+
+        public void Serialize(RawFile file, uint parentVersion)
+        {
+            file.WriteUShort((ushort)Elements.Length, true);
+            for (int i = 0; i < Elements.Length; i++)
+            {
+                file.WriteInt(Elements[i].GeometryIndex, true);
+                file.WriteInt(Elements[i].MaterialIndex, true);
+            }
+        }
     }
 }

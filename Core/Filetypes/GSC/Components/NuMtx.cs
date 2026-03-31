@@ -17,5 +17,13 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 mtx[i] = file.ReadFloat(true);
             }
         }
+
+        public void Serialize(RawFile file, uint parentVersion)
+        {
+            for (int i = 0; i < 16; i++)
+            {
+                file.WriteFloat(mtx[i], true);
+            }
+        }
     }
 }

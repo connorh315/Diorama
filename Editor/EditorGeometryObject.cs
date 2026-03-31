@@ -11,9 +11,12 @@ using System.Threading.Tasks;
 
 namespace Diorama.Editor
 {
-    public class EditorGeometryObject
+    public class EditorGeometryObject : IHierarchySelectable
     {
-        public EditorSceneObject Parent { get; set; }
+        public string Name => "Geometry Object";
+        public IEnumerable<IHierarchySelectable> Children => Enumerable.Empty<IHierarchySelectable>();
+
+        public EditorClipObject Parent { get; set; }
         
         public EditorMaterial Material;
         public EditorLightmap Lightmap;
@@ -28,8 +31,9 @@ namespace Diorama.Editor
             {
                 transform = value;
                 position = Transform.ExtractTranslation();
-                Rotation = Transform.ExtractRotation();
-                Scale = Transform.ExtractScale();
+                rotation = Transform.ExtractRotation();
+                eulerRotation = rotation.ToEulerAngles();
+                scale = Transform.ExtractScale();
             }
         }
 
@@ -44,17 +48,39 @@ namespace Diorama.Editor
             }
         }
 
-        public Quaternion Rotation { get; set; }
-        public Vector3 Scale { get; set; }
+
+        private Quaternion rotation;
+        private Vector3 eulerRotation;
+        
+        public Vector3 Rotation
+        {
+            get => eulerRotation;
+            set
+            {
+                eulerRotation = value;
+                rotation = Quaternion.FromEulerAngles(eulerRotation); // stupid thing
+                TransformChanged();
+            }
+        }
+
+        private Vector3 scale;
+        public Vector3 Scale
+        {
+            get => scale;
+            set
+            {
+                scale = value;
+                TransformChanged();
+            }
+        }
 
         private void TransformChanged()
         {
             var translation = Matrix4.CreateTranslation(Position);
-            var quat = Rotation;
-            var rotation = Matrix4.CreateFromQuaternion(quat);
+            Matrix4.CreateFromQuaternion(in rotation, out Matrix4 rot);
             var scale = Matrix4.CreateScale(Scale);
 
-            Transform = scale * rotation * translation;
+            transform = scale * rot * translation;
         }
 
         public void Draw(Shader shader)

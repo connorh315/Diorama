@@ -15,5 +15,9 @@ namespace Diorama.Core.Filetypes.GSC.Components
             List<float> frames = NuSerializer.ReadLegacyVarArray<float>(file);
             List<byte> states = NuSerializer.ReadLegacyVarArray<byte>(file);
         }
+        public void Serialize(RawFile file, uint parentVersion)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

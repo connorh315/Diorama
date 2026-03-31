@@ -38,11 +38,6 @@ namespace Diorama.UI.Controls
             sceneController = new SceneController(new ViewportRenderer());
         }
 
-        public void LoadScene(string path)
-        {
-            sceneController.LoadScene(path);
-        }
-
         protected override void OnOpenGlInit(GlInterface gl)
         {
             context = new(gl);

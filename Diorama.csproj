@@ -29,6 +29,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="UI\Panels\GeometryObjectPanel.axaml.cs">
+      <DependentUpon>GeometryObjectPanel.axaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="Rendering\Shaders\blendshader.frag">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

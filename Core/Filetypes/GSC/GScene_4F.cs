@@ -13,105 +13,52 @@ namespace Diorama.Core.Filetypes.GSC
 {
     public class GScene_4F : GScene
     {
-        protected override VertexList GetVertexList()
-        {
-            int reference = 0;
-            int offset = 0;
-            uint vertexReference = file.ReadUInt(true);
-            if ((vertexReference & 0xc0000000) != 0)
-            {
-                // Reference to existing vertex list
-                reference = (int)(vertexReference & 0xffff);
-                uint unk = file.ReadUInt(true);
-                offset = file.ReadInt(true);
-            }
-            else
-            {
-                // New vertex list
-                uint unknown = file.ReadUInt(true); // 0x502??
-                reference = referenceCounter++;
-                VertexList list = VertexList.Parse(file);
-                vertexLists.Add(reference, list);
-                offset = file.ReadInt(true);
-                Debug.Assert(offset == 0);
-            }
-
-            if (!vertexLists.ContainsKey(reference))
-            {
-                Console.WriteLine();
-            }
-
-            return vertexLists[reference];
-        }
-
-        protected override ushort[] GetIndexList()
-        {
-            int reference = 0;
-            uint indexReference = file.ReadUInt(true);
-            if ((indexReference & 0xc0000000) != 0)
-            {
-                reference = (int)(indexReference & 0xffff);
-                int unknown = file.ReadInt(true);
-                return indicesLists[reference];
-            }
-            else
-            {
-                file.ReadUInt(true); // unknown
-                uint indicesCount = file.ReadUInt(true);
-                uint unknown3 = file.ReadUInt(true);
-
-                ushort[] indexBuffer = new ushort[indicesCount];
-                for (int idx = 0; idx < indicesCount; idx++)
-                {
-                    indexBuffer[idx] = file.ReadUShort(false);
-                }
-
-                reference = referenceCounter++;
-                indicesLists.Add(reference, indexBuffer);
-            }
-
-            if (!indicesLists.ContainsKey(reference))
-            {
-                Console.WriteLine();
-            }
-
-            return indicesLists[reference];
-        }
-
-        protected virtual void ReadInfo()
-        {
-            Debug.Assert(file.ReadString(4) == "OFNI");
-
-            uint infoStringCount = file.ReadUInt(true);
-            for (int i = 0; i < infoStringCount; i++)
-            {
-                string infoString = file.ReadPascalString(true, 256);
-                //Console.WriteLine($"Info String {i}: {infoString}");
-            }
-        }
+        public NuSceneInfo SceneInfo { get; set; }
 
         public NuNameTable NameTable { get; set; }
-        protected virtual void ReadNameTable()
-        {
-            NameTable = NuNameTable.Read(file);
-        }
 
-        protected virtual void ReadSplines()
-        {
-            List<NuSpline> splines = NuSerializer.ReadVectorArray<NuSpline>(file);
-        }
+        public NuTextureHeaders TextureHeaders { get; set; }
 
-        protected virtual void ReadLightmapData()
-        {
-            Debug.Assert(file.ReadString(4) == "TDML");
-            uint version = file.ReadUInt(true);
-            Debug.Assert(version == 3); 
+        public List<NuSpline> Splines { get; set; }
 
-            if (version >= 3)
-            {
-                Lightmaps = NuSerializer.ReadVectorArray<NuLightmapData>(file);
-            }
-        }
+        public List<NuVfxLocator> VfxLocators { get; set; }
+
+        public List<NuMtlOldReferencedMaterial> EmbeddedTextures { get; set; }
+
+        public byte[] UnkData { get; set; }
+
+        public List<NuCpuSkinLod> CpuSkinLods { get; set; }
+
+        public NuTextureAnim3SceneBlock TextureAnim3SceneBlock { get; set; }
+
+        public float PlaybackFPS;
+
+        public NuAnimSceneBlock AnimSceneBlock { get; set; }
+
+        public NuBlendCharShapeBlock BlendCharShapeBlock { get; set; }
+
+        public NuOccluderBlock OccluderBlock { get; set; }
+
+        public NuOctreeBlock OctreeBlock { get; set; }
+
+        public List<NuCharacterData> CharacterData { get; set; }
+
+        public uint OldWiiMeshSceneBlockLinkArrayCount;
+
+        public NuMetadataBlock Metadata { get; set; }
+
+        public uint TexHdrSceneBlock { get; set; }
+
+        public byte UseSingleLodAnim { get; set; }
+
+        public uint NumBlendShapes { get; set; }
+
+        public List<ushort> Padding { get; set; }
+
+        public List<(string, string)> SharedScenes { get; set; }
+
+        public Vector3 WorldBoundsCentre;
+        public Vector3 WorldBoundsExtents;
 
         protected virtual void ReadCpuSkinned()
         {
@@ -129,196 +76,49 @@ namespace Diorama.Core.Filetypes.GSC
             }
             else
             {
-                List<NuCpuSkinLod> lods = NuSerializer.ReadVectorArray<NuCpuSkinLod>(file, version);
+                CpuSkinLods = NuSerializer.ReadVectorArray<NuCpuSkinLod>(file, version);
             }
         }
 
-        protected virtual void ReadDisplayScene()
+        protected override void Parse(GSerializationContext ctx)
         {
-            
-        }
-
-        protected virtual void ReadTextureAnim3SceneBlock()
-        {
-            Debug.Assert(file.ReadString(4) == "BNAT");
-            uint version = file.ReadUInt(true);
-            Debug.Assert(version == 5);
-
-            List<NuTexAnim3Header> texAnim3Headers = NuSerializer.ReadLegacyVarArray<NuTexAnim3Header>(file);
-        }
-
-        protected virtual void ReadAnimSceneBlock()
-        {
-            Debug.Assert(file.ReadString(4) == "3ALA");
-            uint version = file.ReadUInt(true);
-            Debug.Assert(version == 3 || version == 4, "ala3 vesrion!");
-            
-            if (version == 3)
-            {
-                List<NuInstAnim> nuinstanim = NuSerializer.ReadLegacyVarArray<NuInstAnim>(file); // 1wizardofozc2_tech_dx11.gsc
-            }
-            else if (version == 4)
-            {
-                List<NuInstAnim_4> nuinstanim = NuSerializer.ReadLegacyVarArray<NuInstAnim_4>(file);
-            }
-
-            List<NuStateAnim> nustateanim = NuSerializer.ReadLegacyVarArray<NuStateAnim>(file);
-
-            List<NuAnimHeader> nuanimheader = NuSerializer.ReadLegacyVarArray<NuAnimHeader>(file);
-        }
-
-        protected virtual void ReadBlendShapeCharList()
-        {
-            Debug.Assert(file.ReadString(4) == "BCSB");
-            uint version = file.ReadUInt(true);
-
-            List<NuBlendShapeAnimList> nublendshapeanimlist = NuSerializer.ReadLegacyVarArray<NuBlendShapeAnimList>(file, version);
-        }
-
-        protected virtual void ReadOccluderList()
-        {
-            Debug.Assert(file.ReadString(4) == "BCCO");
-            uint version = file.ReadUInt(true);
-            if (version >= 3)
-            {
-                List<ushort> nuoccluder = NuSerializer.ReadVectorArray<ushort>(file);
-                Debug.Assert(nuoccluder.Count == 0, "occluderlist != 0");
-            }
-        }
-
-        protected virtual void ReadLSVOctreeBlock()
-        {
-            Debug.Assert(file.ReadString(4) == "5LVI");
-            uint version = file.ReadUInt(true);
-            if (version >= 3)
-            {
-                List<NuLSVOctree> nulsvoctree = NuSerializer.ReadVectorArray<NuLSVOctree>(file);
-                Debug.Assert(nulsvoctree.Count == 0);
-            }
-            else
-            {
-                List<NuLSVOctree> nulsvoctree = NuSerializer.ReadLegacyVarArray<NuLSVOctree>(file);
-            }
-        }
-
-        protected virtual void ReadMetaData()
-        {
-            Debug.Assert(file.ReadString(4) == "ATEM");
-            uint version = file.ReadUInt(true);
-
-            if (version >= 0x46)
-            {
-                List<NuDynamicString> metaStrings = NuSerializer.ReadVectorArray<NuDynamicString>(file);
-            }
-        }
-
-        protected override void Parse()
-        {
-            ReadInfo();
+            SceneInfo = NuSceneInfo.Read(file, NU20Version);
 
             if (NU20Version > 0x56)
             {
                 byte wasGeneratedFromLEDImport = file.ReadByte();
             }
 
-            ReadNameTable();
+            NameTable = NuNameTable.Read(file);
 
             uint hasTextureHeaderComponent = file.ReadUInt(true);
             if (hasTextureHeaderComponent != 0)
             {
-                referenceCounter++;
-                TextureHeaders headers = TextureHeaders.Read(file);
+                TextureHeaders = NuTextureHeaders.Read(file);
+                ctx.AddReference(TextureHeaders);
                 Debug.Assert(hasTextureHeaderComponent == 1);
             }
 
-            ReadSplines();
+            Splines = NuSerializer.ReadVectorArray<NuSpline>(file, NU20Version);
 
-            List<NuVfxLocator> vfxLocators = NuSerializer.ReadVectorArray<NuVfxLocator>(file);
+            VfxLocators = NuSerializer.ReadVectorArray<NuVfxLocator>(file);
 
             Debug.Assert(file.ReadUInt(true) == 1); // possibly number of MESHes?
 
-            Debug.Assert(file.ReadString(4) == "HSEM");
-
-            uint meshVersion = file.ReadUInt(true);
-            Debug.Assert(meshVersion == 0xaf);
-
-            uint partCount = file.ReadUInt(true);
-            RenderMeshes = new NuRenderMesh[partCount];
-            for (int part = 0; part < partCount; part++)
-            {
-                Debug.Assert(file.ReadUInt(true) == 1); // unknown
-
-                NuRenderMesh mesh = new NuRenderMesh();
-
-                uint vertexBufferCount = file.ReadUInt(true);
-                mesh.VertexBuffers = new VertexList[vertexBufferCount];
-                for (int vList = 0; vList < vertexBufferCount; vList++)
-                {
-                    mesh.VertexBuffers[vList] = GetVertexList();
-                }
-
-                uint fastBlendVbsCount = file.ReadUInt(true);
-                for (int fastVList = 0; fastVList < fastBlendVbsCount; fastVList++)
-                {
-                    GetVertexList();
-                }
-                if (fastBlendVbsCount != 0)
-                {
-                    referenceCounter += 1;
-                }
-
-                mesh.Indices = GetIndexList();
-                mesh.IndicesBase = file.ReadUInt(true);
-                mesh.IndicesCount = file.ReadUInt(true);
-                mesh.VerticesBase = file.ReadUInt(true);
-
-                ushort primitiveType = file.ReadUShort(true);
-                Debug.Assert(primitiveType == 0, "Unknown primitive type");
-
-                mesh.VerticesCount = file.ReadUInt(true);
-
-                int vbInstBitsAsU32 = file.ReadInt(true);
-
-                List<byte> skinMtxMap = NuSerializer.ReadLegacyVarArray<byte>(file);
-                if (skinMtxMap.Count != 0)
-                {
-                    referenceCounter++;
-                }
-                //Debug.Assert(skinMtxMap.Count == 0); // legacy array?
-
-                int nuBlendShape = file.ReadInt(true); // i think
-                if (nuBlendShape != 0)
-                {
-                    NuBlendShape.Parse(file, this, meshVersion);
-                }
-                //Debug.Assert(defunctOptFlags == 0);
-
-                uint defunctOptFlags = file.ReadUInt(true);
-
-                Vector4 centreExtents0 = new Vector4(file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true));
-                Vector4 centreExtents1 = new Vector4(file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true));
-
-                float densityDiscDiameter = file.ReadFloat(true);
-
-                referenceCounter++;
-
-                geometryLists.Add(referenceCounter++, mesh);
-
-                RenderMeshes[part] = mesh;
-            }
+            MeshSceneBlock = NuMeshSceneBlock.Parse(file, ctx);
 
             Debug.Assert(file.ReadUInt(true) == 0);
             Debug.Assert(file.ReadUInt(true) == 1);
 
             Materials = NuMaterialData.Read(file);
 
-            List<NuMtlOldReferencedMaterial> embedded_textures = NuSerializer.ReadVectorArray<NuMtlOldReferencedMaterial>(file);
+            EmbeddedTextures = NuSerializer.ReadVectorArray<NuMtlOldReferencedMaterial>(file);
 
-            file.Seek(0x9, SeekOrigin.Current); // TODO: What is this data?
-
+            UnkData = file.ReadArray(9);
+            
             uint lightmapCount = file.ReadUInt(true);
             Debug.Assert(lightmapCount == 1);
-            ReadLightmapData();
+            LightmapDataBlock = NuLightmapDataBlock.Parse(file);
 
             uint cpusCount = file.ReadUInt(true);
             Debug.Assert(cpusCount == 1);
@@ -326,48 +126,50 @@ namespace Diorama.Core.Filetypes.GSC
 
             DisplayScene = NuDisplayScene.Read(file, NameTable);
 
-            ReadTextureAnim3SceneBlock();
+            TextureAnim3SceneBlock = NuTextureAnim3SceneBlock.Parse(file);
 
-            float playbackFPS = file.ReadFloat(true);
+            PlaybackFPS = file.ReadFloat(true);
 
             Debug.Assert(file.ReadUInt(true) == 1);
-            ReadAnimSceneBlock();
+            AnimSceneBlock = NuAnimSceneBlock.Parse(file);
 
             Debug.Assert(file.ReadUInt(true) == 0); // possibly portal instances? (SNIP)
 
-            ReadBlendShapeCharList();
+            BlendCharShapeBlock = NuBlendCharShapeBlock.Parse(file);
 
-            ReadOccluderList();
+            OccluderBlock = NuOccluderBlock.Parse(file);
 
-            ReadLSVOctreeBlock();
+            OctreeBlock = NuOctreeBlock.Parse(file);
 
             if (NameTable.Version < 0x14)
             {
-                List<NuCharacterData> nucharacterdata = NuSerializer.ReadLegacyVarArray<NuCharacterData>(file);
+                CharacterData = NuSerializer.ReadLegacyVarArray<NuCharacterData>(file);
             }
             else
             {
-                List<NuCharacterData> nucharacterdata = NuSerializer.ReadVectorArray<NuCharacterData>(file);
+                CharacterData = NuSerializer.ReadVectorArray<NuCharacterData>(file);
             }
 
-            uint oldWiiMeshSceneBlockLinkArrayCount = file.ReadUInt(true);
+            OldWiiMeshSceneBlockLinkArrayCount = file.ReadUInt(true);
 
-            ReadMetaData();
+            Metadata = NuMetadataBlock.Parse(file);
 
             if (NameTable.Version < 0x51)
             {
-                uint texhdrsceneblock = file.ReadUInt(true);
-                Debug.Assert(texhdrsceneblock == 0);
+                TexHdrSceneBlock = file.ReadUInt(true);
+                Debug.Assert(TexHdrSceneBlock == 0);
             }
 
-            byte useSingleLodAnim = file.ReadByte();
+            UseSingleLodAnim = file.ReadByte();
 
-            uint numblendshapes = file.ReadUInt(true);
+            NumBlendShapes = file.ReadUInt(true);
 
-            List<ushort> unk = NuSerializer.ReadVectorArray<ushort>(file); // pad data
+            Padding = NuSerializer.ReadVectorArray<ushort>(file); // pad data
 
             if (NameTable.Version > 0x46)
             {
+                SharedScenes = new();
+
                 uint sharedScenesSize = file.ReadUInt(true);
                 if (sharedScenesSize != 0)
                 {
@@ -375,14 +177,132 @@ namespace Diorama.Core.Filetypes.GSC
                     {
                         string resourceId = file.ReadPascalString();
                         string objectId = file.ReadPascalString();
+                        SharedScenes.Add((resourceId, objectId));
                     }
                 }
             }
 
             if (NameTable.Version > 0x54)
             {
-                Vector3 worldBoundsCentre = new Vector3(file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true));
-                Vector3 worldBoundsExtents = new Vector3(file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true));
+                WorldBoundsCentre = file.ReadVector3(true);
+                WorldBoundsExtents = file.ReadVector3(true);
+            }
+        }
+
+        public override void WriteNu20(RawFile file, GSerializationContext ctx)
+        {
+            SceneInfo.Write(file, NU20Version);
+
+            NameTable.Write(file);
+
+            if (TextureHeaders != null)
+            {
+                throw new NotSupportedException("cannot write texture headers");
+            }
+            else
+            {
+                file.WriteInt(0);
+            }
+
+            NuSerializer.WriteVectorArray(file, Splines, NU20Version);
+            if (Splines.Count != 0)
+            {
+                throw new NotSupportedException("cannot write splines");
+            }
+
+            NuSerializer.WriteVectorArray(file, VfxLocators);
+            if (VfxLocators.Count != 0)
+            {
+                throw new NotSupportedException("cannot write vfx locators");
+            }
+
+            file.WriteInt(1, true);
+            MeshSceneBlock.Write(file, ctx);
+
+            file.WriteInt(0, true);
+            file.WriteInt(1, true);
+
+            file.WriteString("LTMU");
+            file.WriteUInt(Materials[0].Version, true);
+            file.WriteInt(Materials.Length, true);
+
+            foreach (var mat in Materials)
+            {
+                mat.Write(file);
+            }
+
+            NuSerializer.WriteVectorArray(file, EmbeddedTextures);
+
+            file.WriteArray(UnkData);
+
+            file.WriteInt(1, true);
+            LightmapDataBlock.Write(file);
+
+            file.WriteInt(1, true); // cpu skinned marker
+            file.WriteString("SUPC");
+            file.WriteInt(4, true); // TODO: pull this properly
+            NuSerializer.WriteVectorArray(file, CpuSkinLods);
+            if (CpuSkinLods.Count != 0)
+            {
+                throw new NotSupportedException("cannot write cpu skin lods");
+            }
+
+            DisplayScene.Write(file, NameTable);
+
+            TextureAnim3SceneBlock.Write(file);
+
+            file.WriteFloat(PlaybackFPS, true);
+
+            file.WriteInt(1, true);
+            AnimSceneBlock.Write(file);
+
+            file.WriteInt(0, true); // portal instances?
+
+            BlendCharShapeBlock.Write(file);
+
+            OccluderBlock.Write(file);
+
+            OctreeBlock.Write(file);
+
+            if (NameTable.Version < 0x14)
+            {
+                NuSerializer.WriteLegacyVarArray(file, CharacterData);
+            }
+            else
+            {
+                NuSerializer.WriteVectorArray(file, CharacterData);
+            }
+
+            file.WriteUInt(OldWiiMeshSceneBlockLinkArrayCount, true);
+
+            Metadata.Write(file);
+
+            if (NameTable.Version < 0x51)
+            {
+                file.WriteUInt(TexHdrSceneBlock, true);
+            }
+
+            file.WriteByte(UseSingleLodAnim);
+
+            file.WriteUInt(NumBlendShapes, true);
+
+            NuSerializer.WriteVectorArray(file, Padding);
+
+            if (NameTable.Version > 0x46)
+            {
+                file.WriteInt(SharedScenes.Count, true);
+
+                for (int i = 0; i < SharedScenes.Count; i++)
+                {
+                    file.WritePascalString(SharedScenes[i].Item1);
+                    file.WritePascalString(SharedScenes[i].Item2);
+                }
+            }
+
+            if (NameTable.Version > 0x54)
+            {
+                file.WriteVector3(WorldBoundsCentre, true);
+                file.WriteVector3(WorldBoundsExtents, true);
             }
         }
     }

@@ -10,6 +10,8 @@ namespace Diorama.Core
     {
         void Deserialize(RawFile file, uint parentVersion);
 
+        void Serialize(RawFile file, uint parentVersion);
+
         //void Deserialize(RawFile file, uint parentVersion) => Deserialize(file, 0);
     }
 }

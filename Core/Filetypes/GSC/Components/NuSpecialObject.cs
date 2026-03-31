@@ -42,9 +42,9 @@ namespace Diorama.Core.Filetypes.GSC.Components
             Mtx = new NuMtx();
             Mtx.Deserialize(file, 0);
 
-            Min = new Vector4(file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true));
-            Max = new Vector4(file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true));
-            Sphere = new Vector4(file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true));
+            Min = file.ReadVector4(true);
+            Max = file.ReadVector4(true);
+            Sphere = file.ReadVector4(true);
 
             ClipObjectIndex = file.ReadUInt(true);
             Flags = file.ReadUInt(true);
@@ -65,6 +65,37 @@ namespace Diorama.Core.Filetypes.GSC.Components
             WindScale = file.ReadByte();
 
             NameIndex = file.ReadShort(true); // possibly actually "exported"?
+        }
+
+        public void Serialize(RawFile file, uint parentVersion)
+        {
+            file.WritePascalString(Name, 1);
+
+            Mtx.Serialize(file, 0);
+
+            file.WriteVector4(Min, true);
+            file.WriteVector4(Max, true);
+            file.WriteVector4(Sphere, true);
+
+            file.WriteUInt(ClipObjectIndex, true);
+            file.WriteUInt(Flags, true);
+
+            if (parentVersion == 0x21)
+            {
+                NuSerializer.WriteVectorArray(file, ClipData, 0);
+            }
+            else
+            {
+                NuSerializer.WriteLegacyVarArray(file, ClipData, 0);
+            }
+
+            file.WriteInt(InstanceIndex, true);
+            file.WriteInt(AnimIndex, true);
+
+            file.WriteByte(WindSpeed);
+            file.WriteByte(WindScale);
+
+            file.WriteShort(NameIndex, true);
         }
     }
 }

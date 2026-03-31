@@ -67,5 +67,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             file.Seek(keysNeeded * curveGroupSize, SeekOrigin.Current);
         }
+
+        public void Serialize(RawFile file, uint parentVersion)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

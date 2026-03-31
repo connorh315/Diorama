@@ -3,6 +3,7 @@ using BrickVault.Types;
 using Diorama.Core;
 using Diorama.Core.Filetypes.GSC;
 using Diorama.Core.Filetypes.GSC.Components;
+using Diorama.Editor;
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.Diagnostics.Metrics;
@@ -158,31 +159,41 @@ namespace Diorama
         static void ParseRawFile(RawFile file)
         {
             GScene gsc = GScene.Parse(file);
+
+            var display = gsc.DisplayScene;
+            Dictionary<int, bool> used = new();
+            for (int i = 0; i < display.SceneInstances.Count; i++)
+            {
+                var instance = display.SceneInstances[i];
+
+                if (instance.ClipObjectIndex > -1)
+                {
+                    if (used.ContainsKey(instance.ClipObjectIndex))
+                    {
+                        Console.WriteLine("not unique!");
+                    }
+                    used.Add(instance.ClipObjectIndex, true);
+                }
+            }
         }
 
         static void ParseFile(string path, bool shouldExport = true)
         {
             GScene file = GScene.Parse(path);
 
-            for (int meshId = 0; meshId < file.RenderMeshes.Length; meshId++)
+            var display = file.DisplayScene;
+            Dictionary<int, bool> used = new();
+            for (int i = 0; i < display.SceneInstances.Count; i++)
             {
-                NuRenderMesh mesh = file.RenderMeshes[meshId];
-                List<string> lines = new List<string>();
-                for (int i = 0; i < mesh.VertexBuffers.Length; i++)
-                {
-                    VertexList vList = mesh.VertexBuffers[i];
-                    for (uint j = mesh.VerticesBase; j < mesh.VerticesBase + mesh.VerticesCount; j++)
-                    {
-                        Vertex v = vList.Vertices[j];
-                        lines.Add($"v {v.Position.X:F6} {v.Position.Y:F6} {v.Position.Z:F6}");
-                    }
-                    break;
-                }
+                var instance = display.SceneInstances[i];
 
-                WriteObjFacesFromTriangleStrip(lines, mesh.Indices, mesh.IndicesBase, mesh.IndicesCount, mesh.VerticesBase, mesh.VerticesCount);
-                if (shouldExport)
+                if (instance.ClipObjectIndex > -1)
                 {
-                    File.WriteAllLines($@"A:\output{meshId}.obj", lines);
+                    if (used.ContainsKey(instance.ClipObjectIndex))
+                    {
+                        Console.WriteLine("not unique!");
+                    }
+                    used.Add(instance.ClipObjectIndex, true);
                 }
             }
         }

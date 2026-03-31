@@ -19,5 +19,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
             }
             // version > 3
         }
+
+        public void Serialize(RawFile file, uint parentVersion)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Numerics;
 using System.Text;
 
 namespace Diorama.Core
@@ -100,6 +101,11 @@ namespace Diorama.Core
         public byte[] ReadArray(int size)
         {
             return ReadBlock(size, false);
+        }
+
+        public void WriteArray(byte[] toWrite)
+        {
+            WriteBlock(toWrite, false);
         }
 
         public void WriteByte(byte value) => fileStream.WriteByte(value);
@@ -282,6 +288,31 @@ namespace Diorama.Core
             }
         }
 
+        public Vector3 ReadVector3(bool bigEndian = false)
+        {
+            return new Vector3(ReadFloat(bigEndian), ReadFloat(bigEndian), ReadFloat(bigEndian));
+        }
+
+        public void WriteVector3(Vector3 toWrite, bool bigEndian = false)
+        {
+            WriteFloat(toWrite.X, bigEndian);
+            WriteFloat(toWrite.Y, bigEndian);
+            WriteFloat(toWrite.Z, bigEndian);
+        }
+
+        public Vector4 ReadVector4(bool bigEndian = false)
+        {
+            return new Vector4(ReadFloat(bigEndian), ReadFloat(bigEndian), ReadFloat(bigEndian), ReadFloat(bigEndian));
+        }
+
+        public void WriteVector4(Vector4 toWrite, bool bigEndian = false)
+        {
+            WriteFloat(toWrite.X, bigEndian);
+            WriteFloat(toWrite.Y, bigEndian);
+            WriteFloat(toWrite.Z, bigEndian);
+            WriteFloat(toWrite.W, bigEndian);
+        }
+
         /// <summary>
         /// Create a blank space that will be filled later
         /// </summary>
@@ -317,12 +348,15 @@ namespace Diorama.Core
 
         public bool IncludeMarkerSize = false;
 
-        public RawFileSection(RawFile file, bool includeMarkerSize = true)
+        public bool Endianness;
+
+        public RawFileSection(RawFile file, bool includeMarkerSize = true, bool endianness = false)
         {
             MarkerPosition = file.Position;
             file.WritePadding(4); // Reserve space for length
             File = file;
             IncludeMarkerSize = includeMarkerSize;
+            Endianness = endianness;
         }
 
         public void Dispose()
@@ -330,7 +364,7 @@ namespace Diorama.Core
             long currentPosition = File.Position;
             int length = (int)SectionSize;
             File.Seek(MarkerPosition, SeekOrigin.Begin);
-            File.WriteInt(IncludeMarkerSize ? length + 4 : length);
+            File.WriteInt(IncludeMarkerSize ? length + 4 : length, Endianness);
             File.Seek(currentPosition, SeekOrigin.Begin);
         }
     }

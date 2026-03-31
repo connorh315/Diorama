@@ -52,5 +52,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             //Console.WriteLine(BitConverter.ToString(bytes).Replace("-", " "));
         }
+
+        public void Serialize(RawFile file, uint parentVersion)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

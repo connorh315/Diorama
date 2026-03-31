@@ -205,5 +205,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
             NuMtx mtx = new NuMtx();
             mtx.Deserialize(file, parentVersion);
         }
+
+        public void Serialize(RawFile file, uint parentVersion)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

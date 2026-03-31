@@ -14,5 +14,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
             string sourceGsc = file.ReadPascalString();
             string materialName = file.ReadPascalString();
         }
+
+        public void Serialize(RawFile file, uint parentVersion)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

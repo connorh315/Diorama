@@ -37,7 +37,10 @@ namespace Diorama.UI.Controls
 
         public void LoadScene(string path)
         {
-            sceneController.LoadScene(path);
+            sceneController.EnqueueGL(() =>
+            {
+                sceneController.AddScene(path);
+            });
         }
 
         protected override void Initialize()
@@ -57,7 +60,7 @@ namespace Diorama.UI.Controls
             int fbWidth = ScaleCoordinate((int)Bounds.Width);
             int fbHeight = ScaleCoordinate((int)Bounds.Height);
 
-            Enqueue_Command(() =>
+            sceneController.EnqueueGL(() =>
             {
                 GL.Viewport(0, 0, fbWidth, fbHeight);
                 sceneController.Renderer.SetFramebufferSize(fbWidth, fbHeight);
@@ -136,7 +139,7 @@ namespace Diorama.UI.Controls
             int x = ScaleCoordinate((int)point.X);
             int y = ScaleCoordinate((int)point.Y);
 
-            Enqueue_Command(() =>
+            sceneController.EnqueueGL(() =>
             {
                 sceneController.OnClick(x, y);
             });

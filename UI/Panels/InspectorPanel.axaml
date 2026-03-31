@@ -24,32 +24,8 @@
       <ControlTemplate>
         <ScrollViewer VerticalScrollBarVisibility="Auto">
           <StackPanel Margin="5" Spacing="10">
-            <TextBox Text="{Binding Selected.Name}" />
-
-            <Expander Header="Clip Objects" MinWidth="500">
-              <TreeView ItemsSource="{Binding Selected.ClipObjects}" SelectedItem="{Binding SelectedGeometry, Mode=TwoWay}">
-                <TreeView.ItemTemplate>
-                  <TreeDataTemplate>
-                    <TextBlock Text="Clip Object"/>
-                  </TreeDataTemplate>
-                </TreeView.ItemTemplate>
-              </TreeView>
-            </Expander>
-            <Expander Header="LODs" MinWidth="500">
-              <TreeView ItemsSource="{Binding Selected.Lods}" SelectedItem="{Binding SelectedGeometry, Mode=TwoWay}">
-                <TreeView.DataTemplates>
-                  <TreeDataTemplate DataType="editor:EditorLodGroup" ItemsSource="{Binding ClipObjects}">
-                    <TextBlock>
-                      <Run Text="LOD Level"/>
-                      <Run Text="{Binding Index}"/>
-                    </TextBlock>
-                  </TreeDataTemplate>
-                  <TreeDataTemplate DataType="editor:EditorGeometryObject">
-                    <TextBlock Text="Clip Object"/>
-                  </TreeDataTemplate>
-                </TreeView.DataTemplates>
-              </TreeView>
-            </Expander>
+            <TextBox Text="{Binding SelectedSceneObject.Name}" />
+            
           </StackPanel>
         </ScrollViewer>
       </ControlTemplate>

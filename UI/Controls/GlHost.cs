@@ -20,7 +20,6 @@ namespace Diorama.UI.Controls
         private Thread? _renderThread;
         private bool _running;
 
-        private ConcurrentQueue<Action> _glQueue = new();
 
         private IntPtr _originalWndProc;
         private Win32.WndProcDelegate? _wndProcDelegate;
@@ -138,11 +137,6 @@ namespace Diorama.UI.Controls
             Win32.DestroyWindow(_hwnd);
         }
 
-        public void Enqueue_Command(Action action)
-        {
-            _glQueue.Enqueue(action);
-        }
-
         private void StartRenderThread()
         {
             _running = true;
@@ -197,11 +191,6 @@ namespace Diorama.UI.Controls
         {
             while (_running)
             {
-                while (_glQueue.TryDequeue(out var cmd))
-                {
-                    cmd();
-                }
-
                 Render();
 
                 Win32.SwapBuffers(hdc);

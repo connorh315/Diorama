@@ -23,12 +23,21 @@
   <ControlTheme x:Key="{x:Type controls:SceneHierarchy}" TargetType="controls:SceneHierarchy">
     <Setter Property="Template">
       <ControlTemplate>
-        <TreeView ItemsSource="{Binding Scenes}" SelectedItem="{Binding Selected, Mode=TwoWay}">
-          <TreeView.ItemTemplate>
-            <TreeDataTemplate ItemsSource="{Binding Objects}">
+        <TreeView AutoScrollToSelectedItem="True" ItemsSource="{Binding Scenes}" SelectedItem="{Binding SelectedHierarchyObject, Mode=TwoWay}">
+          <TreeView.DataTemplates>
+            <TreeDataTemplate DataType="editor:EditorScene" ItemsSource="{Binding Objects}">
               <TextBlock Text="{Binding Name}"/>
             </TreeDataTemplate>
-          </TreeView.ItemTemplate>
+            <TreeDataTemplate DataType="editor:EditorSceneObject" ItemsSource="{Binding Children}">
+              <TextBlock Text="{Binding Name}"/>
+            </TreeDataTemplate>
+            <TreeDataTemplate DataType="editor:EditorLodGroup" ItemsSource="{Binding Children}">
+              <TextBlock Text="{Binding Name}"/>
+            </TreeDataTemplate>
+            <TreeDataTemplate DataType="editor:EditorGeometryObject">
+              <TextBlock Text="{Binding Name}"/>
+            </TreeDataTemplate>
+          </TreeView.DataTemplates>
         </TreeView>
       </ControlTemplate>
     </Setter>

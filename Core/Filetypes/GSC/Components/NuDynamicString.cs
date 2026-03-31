@@ -14,5 +14,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
         {
             Value = file.ReadPascalString();
         }
+
+        public void Serialize(RawFile file, uint parentVersion)
+        {
+            file.WritePascalString(Value, 1);
+        }
     }
 }
