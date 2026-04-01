@@ -96,6 +96,16 @@ namespace Diorama.Editor
             mesh.VerticesBase = 0;
             mesh.VerticesCount = vertices.Count;
 
+            var nuMesh = originalMesh.OriginalMesh;
+            nuMesh.VertexBuffers = vertexLists;
+            nuMesh.Indices = indices.ToArray();
+            nuMesh.IndicesBase = 0;
+            nuMesh.IndicesCount = (uint)indices.Count;
+            nuMesh.VerticesBase = 0;
+            nuMesh.VerticesCount = (uint)vertices.Count;
+
+            mesh.OriginalMesh = nuMesh;
+
             return mesh;
         }
     }

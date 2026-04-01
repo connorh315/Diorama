@@ -1,9 +1,11 @@
 ﻿using Avalonia.Input;
 using Avalonia.Threading;
+using Diorama.Core;
 using Diorama.Core.Filetypes.GSC;
 using Diorama.Core.Filetypes.GSC.Components;
 using Diorama.Core.Filetypes.TEXTURES;
 using Diorama.Editor;
+using Diorama.UI;
 using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
@@ -13,6 +15,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace Diorama.Rendering
 {
@@ -51,9 +54,32 @@ namespace Diorama.Rendering
             }
         }
 
+        public ICommand SaveSceneCommand { get; }
+
+        public ICommand RemoveSceneCommand { get; }
+
         public SceneController(IDioramaRenderer renderer)
         {
             Renderer = renderer;
+
+            SaveSceneCommand = new RelayCommand<EditorScene>((EditorScene? sender) =>
+            {
+                string path = sender.OriginalScene.Path.Replace(".GSC", "_1.GSC");
+
+                using (RawFile file = new RawFile(path))
+                {
+                    GSerializationContext ctx = new GSerializationContext();
+                    sender.OriginalScene.Write(file, ctx);
+                }
+            });
+
+            RemoveSceneCommand = new RelayCommand<EditorScene>((EditorScene? sender) =>
+            {
+                if (sender != null)
+                {
+                    Scenes.Remove(sender);
+                }
+            });
         }
 
         public void Initialize()
@@ -101,10 +127,10 @@ namespace Diorama.Rendering
 
         public void AddScene(string path)
         {
-            if (Path.GetExtension(path).ToLower() == ".gsc")
+            string ext = Path.GetExtension(path).ToLower();
+            if (ext == ".gsc" || ext == ".ghg")
             {
                 Scenes.Add(GSceneConverter.FromGScene(path));
-
             }
         }
 

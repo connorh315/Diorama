@@ -17,7 +17,7 @@
 
     <Menu Grid.Row="0" BorderBrush="#ff404040" BorderThickness="0,0,0,1">
       <MenuItem Header="_File">
-        
+        <MenuItem Header="Open" Click="OpenFile_Click"/>
       </MenuItem>
       <MenuItem Header="Toggle Lightmaps" Click="MenuItem_Click" />
     </Menu>

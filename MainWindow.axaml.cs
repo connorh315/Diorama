@@ -57,5 +57,13 @@ namespace Diorama
         {
             ViewportNewControl.ShowLightmaps = !ViewportNewControl.ShowLightmaps;
         }
+
+        private void OpenFile_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+        }
+
+        private void SaveFile_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+        }
     }
 }

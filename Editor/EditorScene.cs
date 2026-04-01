@@ -1,6 +1,7 @@
-﻿using Diorama.Rendering;
+﻿using Diorama.Core.Filetypes.GSC;
+using Diorama.Rendering;
 using Diorama.Rendering.Shaders;
-using OpenTK.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,8 @@ namespace Diorama.Editor
 {
     public class EditorScene : INotifyPropertyChanged
     {
+        public GScene OriginalScene;
+
         public Matrix4 SceneTransform;
 
         public string Name { get; set; }
@@ -32,12 +35,14 @@ namespace Diorama.Editor
             Objects = new();
         }
 
-        public void Draw(Shader shader)
+        public void Draw(Shader shader, Camera camera)
         {
             foreach (var obj in Objects)
             {
-                obj.Draw(shader);
+                obj.Draw(shader, camera);
             }
+
+            GL.BindVertexArray(0);
         }
 
         public void DebugDraw(Shader shader, Camera camera)

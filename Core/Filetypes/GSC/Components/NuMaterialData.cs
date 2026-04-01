@@ -319,6 +319,9 @@ namespace Diorama.Core.Filetypes.GSC.Components
         public int discreteLightType;
         public int discreteLightShadingModel;
         public byte discreteLightSoftShadows;
+
+        public (int, int, byte)[] DiscreteLight2;
+
         public int sceneZAccess;
         public int shadowZAccess;
         public int pcfMethod;
@@ -900,13 +903,14 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             if (Version < 0xdd)
             {
-                throw new NotSupportedException("version < 0xdd not supported for write");
-                //for (int i = 0; i < 4; i++)
-                //{
-                //    file.WriteInt(discreteLight2Type[i], true);
-                //    file.WriteInt(discreteLight2ShadingModel[i], true);
-                //    file.WriteByte(discreteLight2SoftShadows[i]);
-                //}
+                for (int i = 0; i < 4; i++)
+                {
+                    // Type, ShadingModel, SoftShadows
+                    (int type, int shadingModel, byte softShadows) = DiscreteLight2[i];
+                    file.WriteInt(type, true);
+                    file.WriteInt(shadingModel, true);
+                    file.WriteByte(softShadows);
+                }
             }
 
             if (refraction == 2 || iVar1 != 2)
@@ -1169,11 +1173,11 @@ namespace Diorama.Core.Filetypes.GSC.Components
             discreteLightSoftShadows = file.ReadByte();
             if (Version < 0xdd)
             {
+                DiscreteLight2 = new (int, int, byte)[4];
+
                 for (int i = 0; i < 4; i++)
                 {
-                    int discreteLight2Type = file.ReadInt(true); // TODO: Should be an int!
-                    int discreteLight2ShadingModel = file.ReadInt(true); // TODO: Should be an int!
-                    byte discreteLight2SoftShadows = file.ReadByte();
+                    DiscreteLight2[i] = (file.ReadInt(true), file.ReadInt(true), file.ReadByte());
                 }
             }
 

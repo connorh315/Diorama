@@ -2,12 +2,12 @@
 
 namespace Diorama.UI
 {
-    public class RelayCommand : ICommand
+    public class RelayCommand<T> : ICommand
     {
-        private readonly Action execute;
-        private readonly Func<bool>? canExecute;
+        private readonly Action<T?> execute;
+        private readonly Func<T?, bool>? canExecute;
 
-        public RelayCommand(Action execute, Func<bool>? canExecute = null)
+        public RelayCommand(Action<T?> execute, Func<T?, bool>? canExecute = null)
         {
             this.execute = execute;
             this.canExecute = canExecute;
@@ -15,12 +15,12 @@ namespace Diorama.UI
 
         public bool CanExecute(object? parameter)
         {
-            return canExecute?.Invoke() ?? true;
+            return canExecute?.Invoke((T?)parameter) ?? true;
         }
 
         public void Execute(object? parameter)
         {
-            execute();
+            execute((T?)parameter);
         }
 
         public event EventHandler? CanExecuteChanged;

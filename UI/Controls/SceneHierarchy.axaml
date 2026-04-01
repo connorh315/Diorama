@@ -26,13 +26,24 @@
         <TreeView AutoScrollToSelectedItem="True" ItemsSource="{Binding Scenes}" SelectedItem="{Binding SelectedHierarchyObject, Mode=TwoWay}">
           <TreeView.DataTemplates>
             <TreeDataTemplate DataType="editor:EditorScene" ItemsSource="{Binding Objects}">
-              <TextBlock Text="{Binding Name}"/>
+              <TextBlock Text="{Binding Name}">
+                <TextBlock.ContextMenu>
+                  <ContextMenu>
+                    <MenuItem Header="Save GScene" Command="{Binding $parent[TreeView].DataContext.SaveSceneCommand}" CommandParameter="{Binding}"/>
+                    <MenuItem Header="Remove Scene" Command="{Binding $parent[TreeView].DataContext.RemoveSceneCommand}" CommandParameter="{Binding}"/>
+                  </ContextMenu>
+                </TextBlock.ContextMenu>  
+              </TextBlock>
             </TreeDataTemplate>
             <TreeDataTemplate DataType="editor:EditorSceneObject" ItemsSource="{Binding Children}">
               <TextBlock Text="{Binding Name}"/>
             </TreeDataTemplate>
             <TreeDataTemplate DataType="editor:EditorLodGroup" ItemsSource="{Binding Children}">
-              <TextBlock Text="{Binding Name}"/>
+              <StackPanel Orientation="Horizontal">
+                <TextBlock Text="{Binding Name}" TextDecorations="Underline" VerticalAlignment="Center" Width="150" IsVisible="{Binding IsActive}"/>
+                <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Width="150" IsVisible="{Binding !IsActive}"/>
+                <TextBox Text="{Binding FadeDistance}" VerticalAlignment="Center" ToolTip.Tip="This can, and likely will, be overridden if this is used as an attachment/in animations"/>
+              </StackPanel>
             </TreeDataTemplate>
             <TreeDataTemplate DataType="editor:EditorGeometryObject">
               <TextBlock Text="{Binding Name}"/>

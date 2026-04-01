@@ -137,8 +137,10 @@ namespace Diorama.Rendering
                 {
                     //idLookup[id] = obj;
 
-                    if (obj.ClipObject == null) continue;
-                    foreach (var geo in obj.ClipObject.Elements)
+                    var activeClipObject = obj.GetActiveClipObject(camera);
+
+                    if (activeClipObject == null) continue;
+                    foreach (var geo in activeClipObject.Elements)
                     {
                         idLookup[id] = geo;
 

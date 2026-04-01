@@ -1,5 +1,6 @@
 using Avalonia.Controls.Primitives;
 using Diorama.Rendering;
+using System.Windows.Input;
 
 namespace Diorama;
 

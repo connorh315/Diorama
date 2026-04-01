@@ -15,6 +15,8 @@ namespace Diorama.Core.Filetypes.GSC
 {
     public abstract class GScene
     {
+        public string Path;
+
         internal RawFile file;
 
         public byte[] ResourceHeaderBlock;
@@ -53,7 +55,7 @@ namespace Diorama.Core.Filetypes.GSC
             file.WriteArray(Trailer);
         }
 
-        public abstract void WriteNu20(RawFile file, GSerializationContext ctx);
+        internal abstract void WriteNu20(RawFile file, GSerializationContext ctx);
 
         public static GScene Parse(RawFile file)
         {
@@ -89,6 +91,7 @@ namespace Diorama.Core.Filetypes.GSC
 
             GSerializationContext context = new GSerializationContext();
             gsc.Parse(context);
+            gsc.Path = gsc.file.FileLocation;
 
             if (file.Position != resourceHeaderSize + 4 + 4 + gscSize)
             {

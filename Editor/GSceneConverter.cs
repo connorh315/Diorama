@@ -4,6 +4,7 @@ using Diorama.Core.Filetypes.GSC;
 using Diorama.Core.Filetypes.GSC.Components;
 using Diorama.Core.Filetypes.TEXTURES;
 using Diorama.Rendering;
+using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
@@ -19,17 +20,10 @@ namespace Diorama.Editor
         {
             GScene scene = GScene.Parse(filePath);
 
-            //var newPath = filePath.Replace(".GSC", "_converted.GSC");
-            //using (RawFile newFile = new RawFile(newPath))
-            //{
-            //    GSerializationContext ctx = new GSerializationContext();
-            //    scene.Write(newFile, ctx);
-            //}
-
             EditorScene editorScene = new EditorScene();
+            editorScene.OriginalScene = scene;
             editorScene.Name = Path.GetFileName(filePath);
             editorScene.SceneTransform = Matrix4.CreateScale(1f, 1f, -1f); // All meshes are flipped, so this unflips them
-            //editorScene.SceneTransform = Matrix4.Identity;
 
             Dictionary<ushort[], RenderIndicesBuffer> convertedIBuffer = new();
             Dictionary<VertexList, RenderVertexBuffer> convertedVBuffer = new();
@@ -38,6 +32,7 @@ namespace Diorama.Editor
             for (int i = 0; i < scene.MeshSceneBlock.Meshes.Length; i++)
             {
                 NuRenderMesh nuMesh = scene.MeshSceneBlock.Meshes[i];
+
 
                 RenderVertexBuffer[] vBuffers = new RenderVertexBuffer[nuMesh.VertexBuffers.Length];
                 for (int j = 0; j < vBuffers.Length; j++)
@@ -57,6 +52,8 @@ namespace Diorama.Editor
                     convertedIBuffer.Add(indices, RenderIndicesBuffer.FromBuffer(indices));
                 }
 
+                
+
                 RenderIndicesBuffer iBuffer = convertedIBuffer[nuMesh.Indices];
 
                 RenderMesh mesh = new RenderMesh(vBuffers, iBuffer);
@@ -64,6 +61,8 @@ namespace Diorama.Editor
                 mesh.VerticesCount = (int)nuMesh.VerticesCount;
                 mesh.IndicesBase = (int)nuMesh.IndicesBase;
                 mesh.IndicesCount = (int)nuMesh.IndicesCount;
+
+                mesh.OriginalMesh = nuMesh;
 
                 meshes[i] = mesh;
             }
@@ -200,46 +199,17 @@ namespace Diorama.Editor
                     {
                         var lod = instance.Lods[j];
                         sceneObject.Lods[j] = new(j);
+                        sceneObject.Lods[j].FadeDistance = instance.FadeDistances[j];
 
                         if (lod.NumInstances == 0) continue;
 
                         var lodClip = allClipObjects[lod.FirstInstance];
                         sceneObject.Lods[j].ClipObject = lodClip;
+                        lodClip.Parent = sceneObject;
                     }
 
                     sceneObject.UseLodGroups = true;
                 }
-
-                // This whole section needs cleaning up. Omitting for now, will come back to later
-                //if (instance.Lods != null)
-                //{
-                //    for (int j = 0; j < instance.Lods.Length; j++)
-                //    {
-                //        var lod = instance.Lods[j];
-                //        if (lod.NumInstances == 0) continue;
-
-                //        if (instance.ClipObjectIndex != -1)
-                //        {
-                //            var lodClip = display.ClipObjects[lod.FirstInstance];
-                //            foreach (var lodEl in lodClip.Elements)
-                //            {
-                //                var lodSceneObject = geometry[lodEl.GeometryIndex];
-                //                lodSceneObject.Name = $"SceneInstance_{i}_LOD_{j}";
-                //                //lodSceneObject.BoundsCenterAndDistSqrd = new Vector4(sceneObject.BoundsCenterAndDistSqrd.Xyz, instance.FadeDistances[j] * instance.FadeDistances[j]);
-                //            }
-                //        }
-                //        else
-                //        {
-                //            var lodInst = display.SceneInstances[lod.FirstInstance];
-                //            var clip = display.ClipObjects[lodInst.ClipObjectIndex];
-                //            foreach (var el in clip.Elements)
-                //            {
-                //                var sceneObject = geometry[el.GeometryIndex];
-                //                sceneObject.Name = $"SceneInstance_{i}_LOD";
-                //            }
-                //        }
-                //    }
-                //}
             }
 
             for (int i = 0; i < display.SpecialObjects.Count; i++)
@@ -249,6 +219,7 @@ namespace Diorama.Editor
                 {
                     var sceneObject = editorScene.Objects[specialObject.InstanceIndex];
                     sceneObject.Name = specialObject.Name;
+                    sceneObject.SpecialObject = specialObject;
                 }
             }
 

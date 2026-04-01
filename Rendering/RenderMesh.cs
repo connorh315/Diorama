@@ -20,6 +20,8 @@ namespace Diorama.Rendering
         public int IndicesBase;
         public int IndicesCount;
 
+        public NuRenderMesh OriginalMesh;
+
         public RenderVertexBuffer[] VertexBuffers;
 
         private VertexAttribPointerType GetType(VertexDefinitionStorageEnum type)

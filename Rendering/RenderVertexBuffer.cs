@@ -32,6 +32,7 @@ namespace Diorama.Rendering
             vertexBuffer.Attributes = buffer.Definitions;
 
             vertexBuffer.Handle = GL.GenBuffer();
+            Console.WriteLine(vertexBuffer.Handle);
             GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBuffer.Handle);
             GL.BufferData(
                 BufferTarget.ArrayBuffer,

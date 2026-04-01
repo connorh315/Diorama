@@ -56,7 +56,7 @@ namespace Diorama.Rendering
             {
                 blendShader.SetMatrix4("view", scene.SceneTransform * Camera.GetViewMatrix());
                 //scene.DebugDraw(blendShader, Camera);
-                scene.Draw(blendShader);
+                scene.Draw(blendShader, Camera);
             }
 
             frameCount++;

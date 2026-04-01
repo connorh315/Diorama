@@ -189,7 +189,7 @@ namespace Diorama.Core.Filetypes.GSC
             }
         }
 
-        public override void WriteNu20(RawFile file, GSerializationContext ctx)
+        internal override void WriteNu20(RawFile file, GSerializationContext ctx)
         {
             SceneInfo.Write(file, NU20Version);
 
