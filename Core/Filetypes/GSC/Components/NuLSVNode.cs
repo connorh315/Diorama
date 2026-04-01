@@ -6,19 +6,16 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class NuLSVNode : IVectorSerializable
+    public class NuLSVNode : ISchemaSerializable
     {
-        public void Deserialize(RawFile file, uint parentVersion)
+        public short[] Values = new short[8];
+
+        public void Handle(SchemaSerializer schema, uint parentVersion)
         {
             for (int i = 0; i < 8; i++)
             {
-                file.ReadShort(true);
+                schema.HandleShort(ref Values[i]);
             }
-        }
-
-        public void Serialize(RawFile file, uint parentVersion)
-        {
-            throw new NotImplementedException();
         }
     }
 }

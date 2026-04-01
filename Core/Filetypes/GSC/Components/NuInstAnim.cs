@@ -6,56 +6,56 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class NuInstAnim_4 : NuInstAnim
+    public class NuInstAnim : ISchemaSerializable
     {
-        public override void ReadFlags(RawFile file)
+        public NuMtx Mtx = new NuMtx();
+
+        public float TFactor;
+        public float TFirst;
+        public float TInterval;
+        public float LocalTime;
+
+        public ushort NumFrames;
+        public uint NumTextAnims;
+        public ushort TextureAnimListIdx;
+        public ushort GroupNode;
+
+        public uint Undefined1; // TODO
+        public uint Undefined2;
+        public uint Undefined3;
+
+        public uint AnimIdx;
+        public uint StateAnimIdx;
+
+        public ushort InstanceIdx;
+        public ushort BsobjIx;
+
+        public void Handle(SchemaSerializer schema, uint parentVersion)
         {
-            ushort numframes = file.ReadUShort(true);
-            uint numTextAnims = file.ReadUInt(true);
-            ushort textureAnimListIdx = file.ReadUShort(true);
-            ushort groupNode = file.ReadUShort(true);
+            Mtx.Handle(schema, parentVersion);
 
-            base.ReadFlags(file);
-        }
-    }
+            schema.HandleFloat(ref TFactor);
+            schema.HandleFloat(ref TFirst);
+            schema.HandleFloat(ref TInterval);
+            schema.HandleFloat(ref LocalTime);
 
-    public class NuInstAnim : IVectorSerializable
-    {
-        public NuMtx Mtx;
+            if (parentVersion > 3)
+            {
+                schema.HandleUShort(ref NumFrames);
+                schema.HandleUInt(ref NumTextAnims);
+                schema.HandleUShort(ref TextureAnimListIdx);
+                schema.HandleUShort(ref GroupNode);
+            }
 
-        public virtual void ReadFlags(RawFile file)
-        {
-            uint unk1 = file.ReadUInt(true); // TODO
-            uint unk2 = file.ReadUInt(true);
-            uint unk3 = file.ReadUInt(true);
+            schema.HandleUInt(ref Undefined1); // TODO
+            schema.HandleUInt(ref Undefined2);
+            schema.HandleUInt(ref Undefined3);
 
-            uint animIdx = file.ReadUInt(true);
-            uint stateAnimIdx = file.ReadUInt(true);
+            schema.HandleUInt(ref AnimIdx);
+            schema.HandleUInt(ref StateAnimIdx);
 
-            ushort instanceIdx = file.ReadUShort(true);
-            ushort bsobj_ix = file.ReadUShort(true);
-        }
-
-        public void Deserialize(RawFile file, uint parentVersion)
-        {
-            Mtx = new NuMtx();
-            Mtx.Deserialize(file, parentVersion);
-
-            float tFactor = file.ReadFloat(true);
-            float tFirst = file.ReadFloat(true);
-            float tInterval = file.ReadFloat(true);
-            float LocalTime = file.ReadFloat(true);
-
-            ReadFlags(file);
-
-            //byte[] bytes = file.ReadArray(34);
-
-            //Console.WriteLine(BitConverter.ToString(bytes).Replace("-", " "));
-        }
-
-        public void Serialize(RawFile file, uint parentVersion)
-        {
-            throw new NotImplementedException();
+            schema.HandleUShort(ref InstanceIdx);
+            schema.HandleUShort(ref BsobjIx);
         }
     }
 }

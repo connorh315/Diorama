@@ -6,20 +6,15 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class Ani3_ScaleMin : IVectorSerializable
+    public class Ani3_ScaleMin : ISchemaSerializable
     {
-        public float Scale { get; set; }
-        public float Min { get; set; }
+        public float Scale;
+        public float Min;
 
-        public void Deserialize(RawFile file, uint parentVersion)
+        public void Handle(SchemaSerializer schema, uint parentVersion)
         {
-            Scale = file.ReadFloat(true);
-            Min = file.ReadFloat(true);
-        }
-
-        public void Serialize(RawFile file, uint parentVersion)
-        {
-            throw new NotImplementedException();
+            schema.HandleFloat(ref Scale);
+            schema.HandleFloat(ref Min);
         }
     }
 }

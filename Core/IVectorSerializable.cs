@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core
 {
-    interface IVectorSerializable
+    public interface IVectorSerializable
     {
         void Deserialize(RawFile file, uint parentVersion);
 

@@ -5,49 +5,66 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using static BrickVault.Types.DATFile;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class NuLSVOctree : IVectorSerializable
+    public class NuLSVOctree : ISchemaSerializable
     {
-        public void Deserialize(RawFile file, uint parentVersion)
+        public uint Version;
+
+        public Vector3 Vec1;
+        public Vector3 Vec2;
+
+        public byte MaxDepth;
+
+        public List<NuLSVSample> Samples;
+        public List<NuLSVNode> Nodes;
+
+        public uint DlgtVersion;
+
+        public List<NuLight> Lights;
+
+        public byte IsNxg;
+        public byte IsDx11;
+
+        public List<ushort> LsvCompact;
+
+        public void Handle(SchemaSerializer schema, uint parentVersion)
         {
-            Debug.Assert(file.ReadString(4) == "4LVI");
-            uint version_4 = file.ReadUInt(true); // 0xa
+            schema.Expect("4LVI");
+            schema.HandleUInt(ref Version);
 
-            Vector3 vec1 = new Vector3(file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true));
-            Vector3 vec2 = new Vector3(file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true));
+            schema.HandleVector3(ref Vec1);
+            schema.HandleVector3(ref Vec2);
 
-            byte maxDepth = file.ReadByte();
-            List<NuLSVSample> samples = NuSerializer.ReadLegacyVarArray<NuLSVSample>(file);
-            List<NuLSVNode> nodes = NuSerializer.ReadLegacyVarArray<NuLSVNode>(file);
+            schema.HandleByte(ref MaxDepth);
 
-            if (version_4 > 2)
+            schema.HandleSchemaVarArray(ref Samples);
+            schema.HandleSchemaVarArray(ref Nodes);
+
+            if (Version > 2)
             {
-                Debug.Assert(file.ReadString(4) == "TGLD");
-                uint dlgtVersion = file.ReadUInt(true);
-                Debug.Assert(dlgtVersion == 0x34 || dlgtVersion == 0x36 || dlgtVersion == 0x37 || dlgtVersion == 0x39, $"dlgtversion not supported: {dlgtVersion}");
-                List<NuLight> lights = NuSerializer.ReadLegacyVarArray<NuLight>(file, dlgtVersion);
-                if (version_4 > 3)
-                {
-                    byte is_nxg = file.ReadByte();
-                    if (version_4 > 9)
-                    {
-                        byte is_dx11 = file.ReadByte();
-                    }
-                    if (version_4 > 4)
-                    {
-                        List<ushort> lsv_compact = NuSerializer.ReadLegacyVarArray<ushort>(file);
-                        Debug.Assert(lsv_compact.Count == 0, "lsv_compact not implemented!");
+                schema.Expect("TGLD");
+                schema.HandleUInt(ref DlgtVersion);
+                Debug.Assert(DlgtVersion == 0x34 || DlgtVersion == 0x36 || DlgtVersion == 0x37 || DlgtVersion == 0x39, $"dlgtversion not supported: {DlgtVersion}");
 
+                schema.HandleSchemaVarArray(ref Lights, DlgtVersion);
+
+                if (Version > 3)
+                {
+                    schema.HandleByte(ref IsNxg);
+                    if (Version > 9)
+                    {
+                        schema.HandleByte(ref IsDx11);
+                    }
+                    if (Version > 4)
+                    {
+                        schema.HandleLegacyVarArray(ref LsvCompact);
+                        Debug.Assert(LsvCompact.Count == 0, "lsv_compact not implemented!");
                     }
                 }
             }
-        }
-
-        public void Serialize(RawFile file, uint parentVersion)
-        {
-            throw new NotImplementedException();
         }
     }
 }

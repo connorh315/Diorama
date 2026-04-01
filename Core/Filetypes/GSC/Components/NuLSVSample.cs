@@ -7,25 +7,28 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class NuLSVSample : IVectorSerializable
+    public class NuLSVSample : ISchemaSerializable
     {
-        public void Deserialize(RawFile file, uint parentVersion)
+        public int LightId1;
+        public float ShadowFactor1;
+        
+        public int LightId2;
+        public float ShadowFactor2;
+
+        public Vector3[] Vectors = new Vector3[9];
+
+        public void Handle(SchemaSerializer schema, uint parentVersion)
         {
-            int lightId1 = file.ReadInt(true);
-            float shadowFactor1 = file.ReadFloat(true);
+            schema.HandleInt(ref LightId1);
+            schema.HandleFloat(ref ShadowFactor1);
 
-            int lightId2 = file.ReadInt(true);
-            float shadowFactor2 = file.ReadFloat(true);
+            schema.HandleInt(ref LightId2);
+            schema.HandleFloat(ref ShadowFactor2);
 
-            for (int i= 0; i < 9; i++)
+            for (int i = 0; i < 9; i++)
             {
-                Vector3 vec = new Vector3(file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true));
+                schema.HandleVector3(ref Vectors[i]);
             }
-        }
-
-        public void Serialize(RawFile file, uint parentVersion)
-        {
-            throw new NotImplementedException();
         }
     }
 }

@@ -7,70 +7,101 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class NuAnimHeader : IVectorSerializable
+    public class NuAnimHeader : ISchemaSerializable
     {
-        public byte Version;
+        public uint Version;
 
-        public void Deserialize(RawFile file, uint parentVersion)
+        public ushort NumNodes;
+        public ushort NumFrames;
+        public ushort CurveGroupSize;
+        public ushort OriginalNumFramesOld;
+        public ushort NumCurves;
+        public ushort FirstFrameOld;
+        public byte EndFrames;
+        public byte NumShortIntegers;
+        public byte FixedUp;
+        public byte MiscFlags;
+        public ushort TotalNumFrames;
+        public float ConstantBase;
+        public float ConstantScale;
+
+        public float CompressionRatio;
+        public float FirstFrame;
+
+        public uint KeysNeeded = 0;
+
+        public List<ushort> KeyItems;
+
+        public List<float> FConstants;
+        public int BufferSize;
+
+        public List<ushort> Constants;
+        public List<ushort> KeyTypes;
+        public List<Ani3_ScaleMin> CurveScaleMins;
+        public List<byte> TangentKeys;
+        public List<byte> CurveSetFlags;
+
+        public byte[] Buffer;
+
+        public byte[] CurveGroupKeys;
+
+        public void Handle(SchemaSerializer schema, uint parentVersion)
         {
-            uint version = file.ReadUInt(true);
-            //Debug.Assert(version.Substring(0, 3) == "ANI");
-            Version = (byte)version;
+            schema.HandleUInt(ref Version);
+            byte major = (byte)(Version);
 
-            ushort numNodes = file.ReadUShort(true);
-            ushort numFrames = file.ReadUShort(true);
-            ushort curveGroupSize = file.ReadUShort(true);
-            ushort originalNumFramesOld = file.ReadUShort(true);
-            ushort numCurves = file.ReadUShort(true);
-            ushort firstFrameOld = file.ReadUShort(true);
-            byte endFrames = file.ReadByte();
-            byte numShortIntegers = file.ReadByte();
-            byte fixedUp = file.ReadByte();
-            byte miscFlags = file.ReadByte();
-            ushort totalNumFrames = file.ReadUShort(true);
-            float constantBase = file.ReadFloat(true);
-            float constantScale = file.ReadFloat(true);
-            if ((miscFlags & 0x80) != 0)
+            schema.HandleUShort(ref NumNodes);
+            schema.HandleUShort(ref NumFrames);
+            schema.HandleUShort(ref CurveGroupSize);
+            schema.HandleUShort(ref OriginalNumFramesOld);
+            schema.HandleUShort(ref NumCurves);
+            schema.HandleUShort(ref FirstFrameOld);
+            schema.HandleByte(ref EndFrames);
+            schema.HandleByte(ref NumShortIntegers);
+            schema.HandleByte(ref FixedUp);
+            schema.HandleByte(ref MiscFlags);
+            schema.HandleUShort(ref TotalNumFrames);
+            schema.HandleFloat(ref ConstantBase);
+            schema.HandleFloat(ref ConstantScale);
+            
+            if ((MiscFlags & 0x80) != 0)
             {
-                float compressionRatio = file.ReadFloat(true);
-                float firstFrame = file.ReadFloat(true);
+                schema.HandleFloat(ref CompressionRatio);
+                schema.HandleFloat(ref FirstFrame);
             }
 
-            uint keysNeeded = 0;
-            if (Version <= 'A')
+            if (major <= 'A')
             {
-                List<short> keyItems = NuSerializer.ReadLegacyVarArray<short>(file); // no keys needed
+                schema.HandleLegacyVarArray(ref KeyItems);
                 //Debug.Assert(1 == 0, "ANIA unknown!");
             }
             else
             {
-                keysNeeded = file.ReadUInt(true);
+                schema.HandleUInt(ref KeysNeeded);
             }
 
-            if (Version > 'C')
+            if (major > 'C')
             {
-                List<float> fConstants = NuSerializer.ReadLegacyVarArray<float>(file);
-                uint bufferSize = file.ReadUInt(true); // not sure on this
-                Debug.Assert(bufferSize == 0, "ANIC+ buffer size > 0 not seen before!");
+                schema.HandleLegacyVarArray(ref FConstants);
+                schema.HandleInt(ref BufferSize);
+
+                Debug.Assert(BufferSize == 0, "ANIC+ buffer size > 0 not seen before!");
             }
 
-            List<short> constants = NuSerializer.ReadLegacyVarArray<short>(file);
-            List<short> keyTypes = NuSerializer.ReadLegacyVarArray<short>(file);
-            List<Ani3_ScaleMin> curveScaleMins = NuSerializer.ReadLegacyVarArray<Ani3_ScaleMin>(file);
-            List<byte> tangentKeys = NuSerializer.ReadLegacyVarArray<byte>(file);
-            List<byte> curveSetFlags = NuSerializer.ReadLegacyVarArray<byte>(file);
+            schema.HandleLegacyVarArray(ref Constants);
+            schema.HandleLegacyVarArray(ref KeyTypes);
+            schema.HandleSchemaVarArray(ref CurveScaleMins);
+            schema.HandleLegacyVarArray(ref TangentKeys);
+            schema.HandleLegacyVarArray(ref CurveSetFlags);
 
-            if (Version > 'D')
+            if (major > 'D')
             {
-                byte[] buffer = file.ReadArray(file.ReadInt(true)); // 4-byte size prepended buffer
+                int bufferSize = Buffer.Length;
+                schema.HandleInt(ref bufferSize);
+                schema.HandleArray(ref Buffer, bufferSize);
             }
 
-            file.Seek(keysNeeded * curveGroupSize, SeekOrigin.Current);
-        }
-
-        public void Serialize(RawFile file, uint parentVersion)
-        {
-            throw new NotImplementedException();
+            schema.HandleArray(ref CurveGroupKeys, (int)(KeysNeeded * CurveGroupSize));
         }
     }
 }

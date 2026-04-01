@@ -126,7 +126,7 @@ namespace Diorama.Core.Filetypes.GSC
 
             DisplayScene = NuDisplayScene.Read(file, NameTable);
 
-            TextureAnim3SceneBlock = NuTextureAnim3SceneBlock.Parse(file);
+            TextureAnim3SceneBlock = GComponentFactory.Parse<NuTextureAnim3SceneBlock>(file);
 
             PlaybackFPS = file.ReadFloat(true);
 
@@ -139,7 +139,9 @@ namespace Diorama.Core.Filetypes.GSC
 
             OccluderBlock = NuOccluderBlock.Parse(file);
 
-            OctreeBlock = NuOctreeBlock.Parse(file);
+            //OctreeBlock = NuOctreeBlock.Parse(file);
+
+            OctreeBlock = GComponentFactory.Parse<NuOctreeBlock>(file);
 
             if (NameTable.Version < 0x14)
             {
@@ -191,6 +193,8 @@ namespace Diorama.Core.Filetypes.GSC
 
         internal override void WriteNu20(RawFile file, GSerializationContext ctx)
         {
+            SchemaSerializer schema = new SchemaSerializer(file, true);
+
             SceneInfo.Write(file, NU20Version);
 
             NameTable.Write(file);
@@ -249,7 +253,7 @@ namespace Diorama.Core.Filetypes.GSC
 
             DisplayScene.Write(file, NameTable);
 
-            TextureAnim3SceneBlock.Write(file);
+            TextureAnim3SceneBlock.Handle(schema, NU20Version);
 
             file.WriteFloat(PlaybackFPS, true);
 
@@ -262,7 +266,7 @@ namespace Diorama.Core.Filetypes.GSC
 
             OccluderBlock.Write(file);
 
-            OctreeBlock.Write(file);
+            OctreeBlock.Handle(schema, NU20Version);
 
             if (NameTable.Version < 0x14)
             {

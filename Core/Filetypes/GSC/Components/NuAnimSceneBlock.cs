@@ -22,18 +22,12 @@ namespace Diorama.Core.Filetypes.GSC.Components
             block.Version = file.ReadUInt(true);
             Debug.Assert(block.Version == 3 || block.Version == 4, "ala3 vesrion!");
 
-            if (block.Version == 3)
-            {
-                block.NuInstAnim = NuSerializer.ReadLegacyVarArray<NuInstAnim>(file); // 1wizardofozc2_tech_dx11.gsc
-            }
-            else if (block.Version == 4)
-            {
-                List<NuInstAnim_4> nuinstanim = NuSerializer.ReadLegacyVarArray<NuInstAnim_4>(file); // TODO: Implement
-            }
+            SchemaSerializer temp = new SchemaSerializer(file, false);
+            temp.HandleSchemaVarArray(ref block.NuInstAnim, block.Version);
 
-            block.NuStateAnim = NuSerializer.ReadLegacyVarArray<NuStateAnim>(file);
+            temp.HandleSchemaVarArray(ref block.NuStateAnim);
 
-            block.NuAnimHeader = NuSerializer.ReadLegacyVarArray<NuAnimHeader>(file);
+            temp.HandleSchemaVarArray(ref block.NuAnimHeader);
 
             return block;
         }
@@ -42,17 +36,13 @@ namespace Diorama.Core.Filetypes.GSC.Components
         {
             file.WriteString("3ALA");
             file.WriteUInt(Version, true);
-            if (Version == 3)
-            {
-                NuSerializer.WriteLegacyVarArray(file, NuInstAnim);
-            }
-            else if (Version == 4)
-            {
-                throw new NotImplementedException("Version 4 NuInstAnim writing not implemented yet");
-            }
 
-            NuSerializer.WriteLegacyVarArray(file, NuStateAnim);
-            NuSerializer.WriteLegacyVarArray(file, NuAnimHeader);
+            SchemaSerializer temp = new SchemaSerializer(file, true);
+            temp.HandleSchemaVarArray(ref NuInstAnim, Version);
+
+            temp.HandleSchemaVarArray(ref NuStateAnim);
+
+            temp.HandleSchemaVarArray(ref NuAnimHeader);
         }
     }
 }

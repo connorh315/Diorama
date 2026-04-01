@@ -7,39 +7,23 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class NuOctreeBlock
+    public class NuOctreeBlock : ISchemaSerializable
     {
         public uint Version;
         public List<NuLSVOctree> LSVOctree;
 
-        public static NuOctreeBlock Parse(RawFile file)
+        public void Handle(SchemaSerializer schema, uint parentVersion)
         {
-            NuOctreeBlock block = new NuOctreeBlock();
-            Debug.Assert(file.ReadString(4) == "5LVI");
-            block.Version = file.ReadUInt(true);
-            if (block.Version >= 3)
-            {
-                block.LSVOctree = NuSerializer.ReadVectorArray<NuLSVOctree>(file);
-                Debug.Assert(block.LSVOctree.Count == 0);
-            }
-            else
-            {
-                block.LSVOctree = NuSerializer.ReadLegacyVarArray<NuLSVOctree>(file);
-            }
-            return block;
-        }
+            schema.Expect("5LVI");
+            schema.HandleUInt(ref Version);
 
-        public void Write(RawFile file)
-        {
-            file.WriteString("5LVI");
-            file.WriteUInt(Version, true);
             if (Version >= 3)
             {
-                NuSerializer.WriteVectorArray(file, LSVOctree);
+                schema.HandleSchemaVector(ref LSVOctree);
             }
             else
             {
-                NuSerializer.WriteLegacyVarArray(file, LSVOctree);
+                schema.HandleSchemaVarArray(ref LSVOctree);
             }
         }
     }

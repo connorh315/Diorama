@@ -6,33 +6,51 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class NuCurveAnimBlock3 : IVectorSerializable
+    public class NuCurveAnimBlock3 : ISchemaSerializable
     {
-        public void Deserialize(RawFile file, uint parentVersion)
-        {
-            int iResult = file.ReadInt(true);
-            short firstFrame = file.ReadShort(true);
-            short numFrames = file.ReadShort(true);
-            byte animActive = file.ReadByte();
-            byte postAnimCycling = file.ReadByte();
-            byte preAnimCycling = file.ReadByte();
-            byte updateFlag = file.ReadByte();
-            byte attributeId = file.ReadByte();
-            
-            // if version > 4
-            byte usesSpriteSheet = file.ReadByte();
-            byte SSFaceon = file.ReadByte();
+        public int IResult;
 
-            // no names on these 4 bytes
-            byte undefined1 = file.ReadByte();
-            byte undefined2 = file.ReadByte();
-            byte undefined3 = file.ReadByte();
-            byte undefined4 = file.ReadByte();
-        }
+        public short FirstFrame;
+        public short NumFrames;
 
-        public void Serialize(RawFile file, uint parentVersion)
+        public byte AnimActive;
+        public byte PostAnimCycling;
+        public byte PreAnimCycling;
+        public byte UpdateFlag;
+        public byte AttributeId;
+
+        // Version > 4
+        public byte UsesSpriteSheet;
+        public byte SSFaceOn;
+
+        // Unknown bytes
+        public byte Undefined1;
+        public byte Undefined2;
+        public byte Undefined3;
+        public byte Undefined4;
+
+        public void Handle(SchemaSerializer schema, uint parentVersion)
         {
-            throw new NotImplementedException();
+            schema.HandleInt(ref IResult);
+
+            schema.HandleShort(ref FirstFrame);
+            schema.HandleShort(ref NumFrames);
+
+            schema.HandleByte(ref AnimActive);
+            schema.HandleByte(ref PostAnimCycling);
+            schema.HandleByte(ref PreAnimCycling);
+            schema.HandleByte(ref UpdateFlag);
+            schema.HandleByte(ref AttributeId);
+
+            // Version > 4
+            schema.HandleByte(ref UsesSpriteSheet);
+            schema.HandleByte(ref SSFaceOn);
+
+            // Unknown bytes
+            schema.HandleByte(ref Undefined1);
+            schema.HandleByte(ref Undefined2);
+            schema.HandleByte(ref Undefined3);
+            schema.HandleByte(ref Undefined4);
         }
     }
 }

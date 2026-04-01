@@ -7,17 +7,17 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class NuStateAnim : IVectorSerializable
+    public class NuStateAnim : ISchemaSerializable
     {
-        public void Deserialize(RawFile file, uint parentVersion)
+        public ushort EndFrame;
+        public List<float> Frames;
+        public List<byte> States;
+
+        public void Handle(SchemaSerializer schema, uint parentVersion)
         {
-            ushort endFrame = file.ReadUShort(true);
-            List<float> frames = NuSerializer.ReadLegacyVarArray<float>(file);
-            List<byte> states = NuSerializer.ReadLegacyVarArray<byte>(file);
-        }
-        public void Serialize(RawFile file, uint parentVersion)
-        {
-            throw new NotImplementedException();
+            schema.HandleUShort(ref EndFrame);
+            schema.HandleLegacyVarArray(ref Frames);
+            schema.HandleLegacyVarArray(ref States);
         }
     }
 }
