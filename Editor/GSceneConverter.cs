@@ -38,6 +38,7 @@ namespace Diorama.Editor
                 for (int j = 0; j < vBuffers.Length; j++)
                 {
                     var buffer = nuMesh.VertexBuffers[j];
+
                     if (!convertedVBuffer.ContainsKey(buffer))
                     {
                         convertedVBuffer.Add(buffer, RenderVertexBuffer.FromBuffer(buffer));

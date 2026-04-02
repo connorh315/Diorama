@@ -20,6 +20,8 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
         public int Stride;
 
+        public byte[] InstancingDividers = new byte[6];
+
         public VertexList(uint vertexCount, uint vertexDefinitionCount)
         {
             Vertices = new Vertex[vertexCount];
@@ -49,9 +51,8 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             list.Stride = stride;
 
-            byte[] instancingDividers = new byte[6];
             for (int i = 0; i < 6; i++)
-                instancingDividers[i] = file.ReadByte();
+                list.InstancingDividers[i] = file.ReadByte();
 
             list.VerticesDump = file.ReadArray((int)(stride * vertexCount));
 
@@ -73,7 +74,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
             }
 
             for (int i = 0; i < 6; i++)
-                file.WriteByte(0); // instancing dividers, rarely used
+                file.WriteByte(InstancingDividers[i]); // instancing dividers, rarely used
 
             file.WriteArray(VerticesDump);
         }

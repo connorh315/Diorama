@@ -90,11 +90,11 @@ namespace Diorama.Core
             }
         }
 
-        public void HandlePascalString(ref string v)
+        public void HandlePascalString(ref string v, int padding = 0)
         {
             if (Writing)
             {
-                File.WritePascalString(v);
+                File.WritePascalString(v, padding);
             }
             else
             {

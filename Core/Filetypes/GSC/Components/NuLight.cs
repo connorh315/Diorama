@@ -99,7 +99,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
         public void HandleLightDescCommon(SchemaSerializer schema, uint parentVersion)
         {
-            schema.HandlePascalString(ref LightDescName);
+            schema.HandlePascalString(ref LightDescName, 1);
 
             schema.HandleByte(ref Enabled);
 
@@ -608,20 +608,6 @@ namespace Diorama.Core.Filetypes.GSC.Components
             float stencilShadowExtrusionMaxLength = file.ReadFloat(true);
             byte usesLightRestrictionBox = file.ReadByte();
         }
-
-        //public void Deserialize(RawFile file, uint parentVersion)
-        //{
-        //    ReadLightDescCommon(file, parentVersion);
-        //    ReadLightDesc(file, parentVersion);
-
-        //    NuMtx mtx = new NuMtx();
-        //    mtx.Deserialize(file, parentVersion);
-        //}
-
-        //public void Serialize(RawFile file, uint parentVersion)
-        //{
-        //    throw new NotImplementedException();
-        //}
 
         public NuMtx Mtx = new NuMtx();
 

@@ -15,10 +15,9 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
         public NuRenderMesh[] Meshes { get; set; }
 
-        protected VertexList GetVertexList(RawFile file, GSerializationContext ctx)
+        protected VertexList GetVertexList(RawFile file, GSerializationContext ctx, ref int offset)
         {
             int reference = 0;
-            int offset = 0;
             uint vertexReference = file.ReadUInt(true);
             if ((vertexReference & 0xc0000000) != 0)
             {
@@ -84,16 +83,19 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
                 uint vertexBufferCount = file.ReadUInt(true);
                 mesh.VertexBuffers = new VertexList[vertexBufferCount];
+                mesh.VertexBufferOffsets = new int[vertexBufferCount];
+
                 for (int vList = 0; vList < vertexBufferCount; vList++)
                 {
-                    mesh.VertexBuffers[vList] = meshBlock.GetVertexList(file, ctx);
+                    mesh.VertexBuffers[vList] = meshBlock.GetVertexList(file, ctx, ref mesh.VertexBufferOffsets[vList]); // Not really sure what the "offset" field is / what it's for
                 }
 
                 uint fastBlendVbsCount = file.ReadUInt(true);
                 VertexList[] fastBlendVbs = new VertexList[fastBlendVbsCount];
                 for (int fastVList = 0; fastVList < fastBlendVbsCount; fastVList++)
                 {
-                    fastBlendVbs[fastVList] = meshBlock.GetVertexList(file, ctx);
+                    int offset = 0;
+                    fastBlendVbs[fastVList] = meshBlock.GetVertexList(file, ctx, ref offset); // TODO: Properly implement VertexBufferOffsets
                 }
                 if (fastBlendVbsCount != 0)
                 {
@@ -165,14 +167,14 @@ namespace Diorama.Core.Filetypes.GSC.Components
                     {
                         file.WriteUInt((uint)(reference | 0xc0000000), true);
                         file.WriteUInt(1, true);
-                        file.WriteUInt(0, true); // Could really do with finding out what this actually is
+                        file.WriteInt(mesh.VertexBufferOffsets[vList], true); // Could really do with finding out what this actually is
                     }
                     else
                     {
                         file.WriteUInt((uint)1, true);
                         file.WriteUInt(0x502, true);
                         buffer.Write(file);
-                        file.WriteUInt(0, true);
+                        file.WriteInt(mesh.VertexBufferOffsets[vList], true);
                     }
                 }
 
