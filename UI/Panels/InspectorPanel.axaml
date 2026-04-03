@@ -24,7 +24,7 @@
       <ControlTemplate>
         <ScrollViewer VerticalScrollBarVisibility="Auto">
           <StackPanel Margin="5" Spacing="10">
-            <TextBox Text="{Binding SelectedSceneObject.Name}" />
+            <TextBox Text="{Binding SelectedSceneObject.Name}" IsEnabled="{Binding SelectedSceneObject.CanEditName}"/>
             
           </StackPanel>
         </ScrollViewer>

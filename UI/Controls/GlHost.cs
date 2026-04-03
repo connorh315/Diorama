@@ -50,8 +50,6 @@ namespace Diorama.UI.Controls
 
         private void SubclassChildWindow()
         {
-            Console.WriteLine(_hwnd);
-
             _wndProcDelegate = CustomWndProc;
 
             _originalWndProc = Win32.SetWindowLongPtr(

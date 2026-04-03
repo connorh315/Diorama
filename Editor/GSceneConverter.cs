@@ -68,14 +68,22 @@ namespace Diorama.Editor
                 meshes[i] = mesh;
             }
 
-            var nxg_textures = NxgTextures.Read(Path.ChangeExtension(filePath, "nxg_textures"));
             editorScene.Textures = new List<RenderTexture>();
-            if (nxg_textures != null)
+
+            try
             {
-                for (int i = 0; i < nxg_textures.Textures.Length; i++)
+                var nxg_textures = NxgTextures.Read(Path.ChangeExtension(filePath, "nxg_textures"));
+                if (nxg_textures != null)
                 {
-                    editorScene.Textures.Add(RenderTexture.FromNuTexture(nxg_textures.Textures[i]));
+                    for (int i = 0; i < nxg_textures.Textures.Length; i++)
+                    {
+                        editorScene.Textures.Add(RenderTexture.FromNuTexture(nxg_textures.Textures[i]));
+                    }
                 }
+            }
+            catch (FileNotFoundException)
+            {
+                Console.WriteLine("No texture sheet found for scene, using blank textures");
             }
 
             // TODO: Just do the reference sorting here instead
@@ -281,7 +289,7 @@ namespace Diorama.Editor
 
         static RenderTexture ResolveTexture(List<RenderTexture> textures, int index)
         {
-            if (index < 0)
+            if (index < 0 || textures.Count <= (index))
                 return RenderTexture.GetWhiteTexture();
 
             return textures[index];

@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using Diorama.Rendering;
 using Diorama.UI.Controls;
@@ -35,6 +36,8 @@ namespace Diorama
             GeometryHost.Content = Geometry;
 
             this.AttachDevTools();
+
+            Title = "Diorama - v0.1.0";
         }
 
         private void Window_DragDrop(object sender, DragEventArgs e)
@@ -60,6 +63,30 @@ namespace Diorama
 
         private void OpenFile_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
+            OpenFileMenu();
+        }
+
+        private async void OpenFileMenu()
+        {
+            if (StorageProvider == null)
+                throw new Exception("Unable to access filesystem");
+
+            var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            {
+                Title = "Open StreamInfo File",
+                AllowMultiple = false,
+                FileTypeFilter = new[]
+                {
+                    new FilePickerFileType("GScene files") { Patterns = new[] { "*.GSC", "*.GHG" } }
+                }
+            });
+
+            if (files.Count > 0)
+            {
+                string filePath = files[0].Path.LocalPath;
+
+                MainViewport.LoadScene(filePath);
+            }
         }
 
         private void SaveFile_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

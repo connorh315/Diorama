@@ -49,7 +49,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
             ClipObjectIndex = file.ReadUInt(true);
             Flags = file.ReadUInt(true);
 
-            if (parentVersion > 0x21)
+            if (parentVersion > 0x20)
             {
                 ClipData = NuSerializer.ReadVectorArray<float>(file);
             }

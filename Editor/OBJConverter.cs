@@ -71,7 +71,8 @@ namespace Diorama.Editor
                             {
                                 Position = positions[v],
                                 Normal = vn >= 0 ? normals[vn] : Vector3.Zero,
-                                UVSet01 = vt >= 0 ? new Vector4(uvs[vt], 0, 0) : Vector4.Zero
+                                UVSet01 = vt >= 0 ? new Vector4(uvs[vt], 0, 0) : Vector4.Zero,
+                                ColorSet0 = Vector4.One
                             };
 
                             index = vertices.Count;

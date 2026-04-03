@@ -64,7 +64,11 @@ namespace Diorama.Rendering
 
             SaveSceneCommand = new RelayCommand<EditorScene>((EditorScene? sender) =>
             {
-                string path = sender.OriginalScene.Path.Replace(".GSC", "_1.GSC");
+                string path = sender.OriginalScene.Path;
+
+#if DEBUG
+                path = sender.OriginalScene.Path.Replace(".GSC", "_1.GSC");
+#endif
 
                 using (RawFile file = new RawFile(path))
                 {

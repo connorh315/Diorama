@@ -8,6 +8,10 @@ namespace Diorama
 {
     public class Settings
     {
+#if DEBUG
         public static string DatLocation = @"F:\PS4Games\CUSA01176\data";
+#else
+        public static string DatLocation = @"";
+#endif
     }
 }

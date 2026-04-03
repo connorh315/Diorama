@@ -35,7 +35,11 @@ public class GeometryObjectPanel : TemplatedControl
             new FilePickerOpenOptions
             {
                 Title = "Replace Mesh",
-                AllowMultiple = false
+                AllowMultiple = false,
+                FileTypeFilter = new[]
+                {
+                    new FilePickerFileType("OBJ files") { Patterns = new[] { "*.OBJ" } }
+                }
             });
 
         var path = files.FirstOrDefault()?.Path.LocalPath;

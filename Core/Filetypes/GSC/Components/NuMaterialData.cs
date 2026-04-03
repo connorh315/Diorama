@@ -1284,7 +1284,12 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             schema.HandleInt(ref numTexAuxEntries);
 
-            Console.WriteLine($"Reading through {numTexAuxEntries}");
+            if (numTexAuxEntries > 40)
+            {
+                throw new Exception("bad numTexAuxEntries!");
+            }
+
+            //Console.WriteLine($"Reading through {numTexAuxEntries}");
 
             if (!schema.Writing)
             {

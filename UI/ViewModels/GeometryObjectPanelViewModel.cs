@@ -25,7 +25,7 @@ namespace Diorama.UI.ViewModels
 
         public void ReplaceMesh(string path)
         {
-            if (path == string.Empty || Controller.SelectedGeometry == null) return;
+            if (string.IsNullOrEmpty(path) || Controller.SelectedGeometry == null) return;
 
             var selectedGeo = Controller.SelectedGeometry;
 

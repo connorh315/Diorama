@@ -42,6 +42,11 @@ namespace Diorama.Core.Filetypes.TEXTURES
 
             textures.Path = filePath;
 
+            if (!File.Exists(filePath))
+            {
+                throw new FileNotFoundException("Unable to find texture sheet at path: " + filePath);
+            }
+
             using (RawFile file = new RawFile(filePath))
             {
                 uint header = file.ReadUInt(true);

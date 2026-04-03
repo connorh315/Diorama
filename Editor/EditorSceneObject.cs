@@ -35,6 +35,8 @@ namespace Diorama.Editor
             }
         }
 
+        public bool CanEditName { get => SpecialObject != null; }
+
         public EditorClipObject ClipObject { get; set; }
 
         public EditorLodGroup[] Lods { get; set; }
