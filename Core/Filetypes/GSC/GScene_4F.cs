@@ -80,13 +80,15 @@ namespace Diorama.Core.Filetypes.GSC
             }
         }
 
+        public byte WasGeneratedFromLEDImport;
+
         protected override void Parse(GSerializationContext ctx)
         {
             SceneInfo = NuSceneInfo.Read(file, NU20Version);
 
             if (NU20Version > 0x56)
             {
-                byte wasGeneratedFromLEDImport = file.ReadByte();
+                WasGeneratedFromLEDImport = file.ReadByte();
             }
 
             NameTable = NuNameTable.Read(file);
@@ -110,11 +112,13 @@ namespace Diorama.Core.Filetypes.GSC
             Debug.Assert(file.ReadUInt(true) == 0);
             Debug.Assert(file.ReadUInt(true) == 1);
 
-            Materials = NuMaterialData.Read(file);
+            MaterialBlock = GComponentFactory.Parse<NuMaterialDataBlock>(file, NU20Version);
 
-            EmbeddedTextures = NuSerializer.ReadVectorArray<NuMtlOldReferencedMaterial>(file);
+            //Materials = NuMaterialData.Read(file);
 
-            UnkData = file.ReadArray(9);
+            //EmbeddedTextures = NuSerializer.ReadVectorArray<NuMtlOldReferencedMaterial>(file);
+
+            //UnkData = file.ReadArray(9);
             
             uint lightmapCount = file.ReadUInt(true);
             Debug.Assert(lightmapCount == 1);
@@ -197,6 +201,11 @@ namespace Diorama.Core.Filetypes.GSC
 
             SceneInfo.Write(file, NU20Version);
 
+            if (NU20Version > 0x56)
+            {
+                file.WriteByte(WasGeneratedFromLEDImport);
+            }
+
             NameTable.Write(file);
 
             if (TextureHeaders != null)
@@ -226,18 +235,20 @@ namespace Diorama.Core.Filetypes.GSC
             file.WriteInt(0, true);
             file.WriteInt(1, true);
 
-            file.WriteString("LTMU");
-            file.WriteUInt(Materials[0].Version, true);
-            file.WriteInt(Materials.Length, true);
+            MaterialBlock.Handle(schema, NU20Version);
 
-            foreach (var mat in Materials)
-            {
-                mat.Write(file);
-            }
+            //file.WriteString("LTMU");
+            //file.WriteUInt(Materials[0].Version, true);
+            //file.WriteInt(Materials.Length, true);
 
-            NuSerializer.WriteVectorArray(file, EmbeddedTextures);
+            //foreach (var mat in Materials)
+            //{
+            //    mat.Write(file);
+            //}
 
-            file.WriteArray(UnkData);
+            //NuSerializer.WriteVectorArray(file, EmbeddedTextures);
+
+            //file.WriteArray(UnkData);
 
             file.WriteInt(1, true);
             LightmapDataBlock.Write(file);

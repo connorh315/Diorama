@@ -13,7 +13,8 @@ namespace Diorama.Core.Types
         public static List<T> ReadVectorArray<T>(RawFile file, uint parentVersion = 0)
             where T : new()
         {
-            Debug.Assert(file.ReadString(4) == "ROTV");
+            string marker = file.ReadString(4);
+            Debug.Assert(marker == "ROTV" || marker == "\0\0\0");
 
             int count = file.ReadInt(true);
             var list = new List<T>();

@@ -18,6 +18,18 @@ namespace Diorama.Core
             Writing = writing;
         }
 
+        public void HandleLong(ref long v)
+        {
+            if (Writing)
+            {
+                File.WriteLong(v, true);
+            }
+            else
+            {
+                v = File.ReadLong(true);
+            }
+        }
+
         public void HandleFloat(ref float v)
         {
             if (Writing)
@@ -140,7 +152,8 @@ namespace Diorama.Core
             }
             else
             {
-                Debug.Assert(File.ReadString(4) == "ROTV");
+                string magic = File.ReadString(4);
+                Debug.Assert(magic == "ROTV" || magic == "\0\0\0");
                 int count = File.ReadInt(true);
                 arr = new List<T>();
                 for (int i = 0; i < count; i++)

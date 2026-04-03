@@ -25,7 +25,7 @@ namespace Diorama.Core.Filetypes.GSC
 
         public NuDisplayScene DisplayScene;
 
-        public NuMaterialData[] Materials;
+        public NuMaterialDataBlock MaterialBlock;
 
         //public List<NuLightmapData> Lightmaps;
         public NuLightmapDataBlock LightmapDataBlock;
@@ -74,11 +74,13 @@ namespace Diorama.Core.Filetypes.GSC
             uint nu20Version = file.ReadUInt(true);
             switch (nu20Version)
             {
+                case 0x4e:
                 case 0x4f:
                 case 0x50:
                 case 0x52:
                 case 0x53:
                 case 0x57:
+                case 0x58:
                     gsc = new GScene_4F();
                     break;
                 default:

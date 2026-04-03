@@ -13,7 +13,8 @@ namespace Diorama.Core.Filetypes.GSC.Components
     {
         public string Title;
         public List<Vector3> Path;
-        public byte flag_not_sure;
+        public byte isPeriodic;
+        public byte isBezier;
 
         public virtual void Deserialize(RawFile file, uint parentVersion)
         {
@@ -21,7 +22,11 @@ namespace Diorama.Core.Filetypes.GSC.Components
             Path = NuSerializer.ReadVectorArray<Vector3>(file);
             if (parentVersion > 0x4f)
             {
-                flag_not_sure = file.ReadByte();
+                isPeriodic = file.ReadByte();
+                if (parentVersion > 0x57)
+                {
+                    isBezier = file.ReadByte();
+                }
             }
         }
 

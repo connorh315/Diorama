@@ -27,15 +27,23 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
         public static NuDisplayScene Read(RawFile file, NuNameTable nameTable)
         {
+            SchemaSerializer temp = new SchemaSerializer(file, false);
+
             Debug.Assert(file.ReadString(4) == "PSID");
             uint version = file.ReadUInt(true);
-            Debug.Assert(version == 0x20 || version == 0x21, $"Unsupported DISP version: {version}");
+            Debug.Assert(version == 0x20 || version == 0x21 || version == 0x22, $"Unsupported DISP version: {version}");
 
             NuDisplayScene scene = new NuDisplayScene();
             scene.Version = version;
 
-            scene.DisplayItems = NuSerializer.ReadVectorArray<NuDefunctDisplayItem>(file); // only for versions < 0x22
-            scene.ClipObjects = NuSerializer.ReadVectorArray<NuClipObject>(file);
+            if (scene.Version < 0x22)
+            {
+                scene.DisplayItems = NuSerializer.ReadVectorArray<NuDefunctDisplayItem>(file); // only for versions < 0x22
+            }
+
+            temp.HandleSchemaVector(ref scene.ClipObjects, version);
+
+            //scene.ClipObjects = NuSerializer.ReadVectorArray<NuClipObject>(file, version);
 
             scene.SpecialObjects = NuSerializer.ReadVectorArray<NuSpecialObject>(file, version);
 
@@ -59,11 +67,17 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
         public void Write(RawFile file, NuNameTable nameTable)
         {
+            SchemaSerializer temp = new SchemaSerializer(file, true);
+
             file.WriteString("PSID");
             file.WriteUInt(Version, true);
 
-            NuSerializer.WriteVectorArray(file, DisplayItems);
-            NuSerializer.WriteVectorArray(file, ClipObjects);
+            if (Version < 0x22)
+            {
+                NuSerializer.WriteVectorArray(file, DisplayItems);
+            }
+            temp.HandleSchemaVector(ref ClipObjects, Version);
+            //NuSerializer.WriteVectorArray(file, ClipObjects);
             NuSerializer.WriteVectorArray(file, SpecialObjects, Version);
             NuSerializer.WriteVectorArray(file, SpecialGroupNodes, Version);
             NuSerializer.WriteVectorArray(file, BoundsCenterAndDistSqrd);

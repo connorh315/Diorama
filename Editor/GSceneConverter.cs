@@ -79,10 +79,10 @@ namespace Diorama.Editor
             }
 
             // TODO: Just do the reference sorting here instead
-            EditorMaterial[] materials = new EditorMaterial[scene.Materials.Length];
+            EditorMaterial[] materials = new EditorMaterial[scene.MaterialBlock.Materials.Length];
             for (int i = 0; i < materials.Length; i++)
             {
-                NuMaterialData nuMaterialData = scene.Materials[i];
+                NuMaterialData nuMaterialData = scene.MaterialBlock.Materials[i];
 
                 EditorMaterial material = new EditorMaterial();
 
@@ -116,62 +116,95 @@ namespace Diorama.Editor
             int lightmapId = -1;
             Dictionary<int, EditorGeometryObject> geometry = new();
 
-            for (int commandId = 0; commandId < display.DisplayItems.Count; commandId++)
+            List<EditorClipObject> allClipObjects = new();
+
+            if (display.DisplayItems != null)
             {
-                NuDefunctDisplayItem command = display.DisplayItems[commandId];
-                switch (command.Command)
+                for (int commandId = 0; commandId < display.DisplayItems.Count; commandId++)
                 {
-                    case DisplayCommand.Material:
-                        materialId = (int)command.Index;
-                        break;
-                    case DisplayCommand.LightMap:
-                        lightmapId = (int)command.Index;
-                        break;
-                    case DisplayCommand.MaterialClip:
-                        break;
-                    case DisplayCommand.Matrix:
-                        matrixId = (int)command.Index;
-                        break;
-                    case DisplayCommand.DynamicGeo:
-                        break;
-                    case DisplayCommand.Mesh:
-                        NuTransformMtx local = display.TransformMtxs[matrixId];
+                    NuDefunctDisplayItem command = display.DisplayItems[commandId];
+                    switch (command.Command)
+                    {
+                        case DisplayCommand.Material:
+                            materialId = (int)command.Index;
+                            break;
+                        case DisplayCommand.LightMap:
+                            lightmapId = (int)command.Index;
+                            break;
+                        case DisplayCommand.MaterialClip:
+                            break;
+                        case DisplayCommand.Matrix:
+                            matrixId = (int)command.Index;
+                            break;
+                        case DisplayCommand.DynamicGeo:
+                            break;
+                        case DisplayCommand.Mesh:
+                            NuTransformMtx local = display.TransformMtxs[matrixId];
 
+                            Matrix4 mtx = new Matrix4(local.Mtx[0], local.Mtx[1], local.Mtx[2], 0, local.Mtx[3], local.Mtx[4], local.Mtx[5], 0, local.Mtx[6], local.Mtx[7], local.Mtx[8], 0, local.Mtx[9], local.Mtx[10], local.Mtx[11], 1);
+
+                            RenderMesh mesh = meshes[command.Index];
+
+                            EditorGeometryObject obj = new EditorGeometryObject();
+                            obj.Transform = mtx;
+                            obj.Mesh = mesh;
+                            if (materialId > -1)
+                            {
+                                obj.Material = materials[materialId];
+                            }
+                            if (lightmapId > 0)
+                            {
+                                obj.Lightmap = lightmaps[lightmapId];
+                            }
+
+                            //Meshes.Add(mesh);
+                            geometry.Add(commandId, obj);
+                            //editorScene.Objects.Add(obj);
+                            break;
+                    }
+                }
+
+                foreach (var displayClip in display.ClipObjects)
+                {
+                    EditorClipObject clip = new EditorClipObject();
+                    foreach (var el in displayClip.Elements)
+                    {
+                        var geo = geometry[el.OldGeometryIndex];
+                        clip.Elements.Add(geo);
+                        geo.Parent = clip; // TODO: Remove
+                        geo.Material = materials[el.OldMaterialIndex];
+                    }
+                    allClipObjects.Add(clip);
+                }
+            }
+            else
+            {
+                foreach (var displayClip in display.ClipObjects)
+                {
+                    EditorClipObject clip = new EditorClipObject();
+                    foreach (var el in displayClip.Elements)
+                    {
+                        NuTransformMtx local = display.TransformMtxs[el.TransformIndex];
                         Matrix4 mtx = new Matrix4(local.Mtx[0], local.Mtx[1], local.Mtx[2], 0, local.Mtx[3], local.Mtx[4], local.Mtx[5], 0, local.Mtx[6], local.Mtx[7], local.Mtx[8], 0, local.Mtx[9], local.Mtx[10], local.Mtx[11], 1);
-
-                        RenderMesh mesh = meshes[command.Index];
-
+                        RenderMesh mesh = meshes[el.MeshIndex];
                         EditorGeometryObject obj = new EditorGeometryObject();
                         obj.Transform = mtx;
                         obj.Mesh = mesh;
-                        if (materialId > -1)
+                        if (el.MaterialIndex > -1)
                         {
-                            obj.Material = materials[materialId];
+                            obj.Material = materials[el.MaterialIndex];
                         }
-                        if (lightmapId > 0)
+                        if (el.LightmapIndex > -1)
                         {
-                            obj.Lightmap = lightmaps[lightmapId];
+                            obj.Lightmap = lightmaps[el.LightmapIndex];
                         }
 
-                        //Meshes.Add(mesh);
-                        geometry.Add(commandId, obj);
-                        //editorScene.Objects.Add(obj);
-                        break;
+                        clip.Elements.Add(obj);
+                        obj.Parent = clip;
+                        //geometry.Add(i, obj);
+                    }
+                    allClipObjects.Add(clip);
                 }
-            }
-
-            List<EditorClipObject> allClipObjects = new();
-            foreach (var displayClip in display.ClipObjects)
-            {
-                EditorClipObject clip = new EditorClipObject();
-                foreach (var el in displayClip.Elements)
-                {
-                    var geo = geometry[el.GeometryIndex];
-                    clip.Elements.Add(geo);
-                    geo.Parent = clip; // TODO: Remove
-                    geo.Material = materials[el.MaterialIndex];
-                }
-                allClipObjects.Add(clip);
             }
 
 

@@ -11,6 +11,12 @@ namespace Diorama.Editor
 {
     public static class OBJConverter
     {
+        static int ParseIndex(string s, int count)
+        {
+            int i = int.Parse(s);
+            return i > 0 ? i - 1 : count + i;
+        }
+
         public static RenderMesh MeshFromOBJ(string path, RenderMesh originalMesh)
         {
             string[] lines = File.ReadAllLines(path);
@@ -47,9 +53,15 @@ namespace Diorama.Editor
                     {
                         var parts = split[i].Split('/');
 
-                        int v = int.Parse(parts[0]) - 1;
-                        int vt = parts.Length > 1 && parts[1] != "" ? int.Parse(parts[1]) - 1 : -1;
-                        int vn = parts.Length > 2 ? int.Parse(parts[2]) - 1 : -1;
+                        int v = ParseIndex(parts[0], positions.Count);
+
+                        int vt = parts.Length > 1 && parts[1] != ""
+                            ? ParseIndex(parts[1], uvs.Count)
+                            : -1;
+
+                        int vn = parts.Length > 2
+                            ? ParseIndex(parts[2], normals.Count)
+                            : -1;
 
                         var key = (v, vt, vn);
 

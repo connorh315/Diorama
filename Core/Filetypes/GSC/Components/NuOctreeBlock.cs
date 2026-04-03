@@ -17,7 +17,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
             schema.Expect("5LVI");
             schema.HandleUInt(ref Version);
 
-            if (Version >= 3)
+            if (Version > 1)
             {
                 schema.HandleSchemaVector(ref LSVOctree);
             }

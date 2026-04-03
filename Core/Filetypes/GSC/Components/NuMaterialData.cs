@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -10,11 +11,9 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public abstract class NuMaterialData
+    public abstract class NuMaterialData : ISchemaSerializable
     {
-        public abstract void Parse(RawFile file);
-
-        public abstract void Write(RawFile file);
+        public uint ExtraStarter;
 
         public uint Version;
 
@@ -170,6 +169,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
         public byte BForceDefaultCubeMap; // Version > 0xe3
 
+        public float[] ShaderGraphParams = new float[8];
+
+        public List<NuVec4> ShaderGraphParamsVector;
+
         public uint shader_Version;
         public short legoVersion;
         public uint shaderType;
@@ -213,7 +216,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
         public byte motionBlurSamples;
         public byte numBones;
 
-        public (uint, uint)[] uvBlocks;
+        public NuMtlUVBlock[] uvBlocks;
         public byte old_bitangentFlip;
         public byte materialFlags_tangentSwap;
         public byte materialFlags_water;
@@ -285,6 +288,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
         public byte vertexFlags_wind;
         public byte vertexFlags_forceColourVertexStream;
         public byte vertexFlags_vertexRoughnessMod;
+        public long vertexFlags_unused2;
         public byte miscFlags_greyAlbedo;
         public byte miscFlags_motionBlur;
         public byte miscFlags_UVAnimation;
@@ -320,7 +324,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
         public int discreteLightShadingModel;
         public byte discreteLightSoftShadows;
 
-        public (int, int, byte)[] DiscreteLight2;
+        public NuMtlDiscreteLight[] DiscreteLight2 = new NuMtlDiscreteLight[4];
 
         public int sceneZAccess;
         public int shadowZAccess;
@@ -400,121 +404,159 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
         public uint DefaultRenderStage;
 
-        public static NuMaterialData[] Read(RawFile file)
-        {
-            Debug.Assert(file.ReadString(4) == "LTMU");
-            uint version = file.ReadUInt(true);
-            uint count = file.ReadUInt(true);
-            NuMaterialData[] materials = new NuMaterialData[count];
+        //public static NuMaterialData[] Read(RawFile file)
+        //{
+        //    Debug.Assert(file.ReadString(4) == "LTMU");
+        //    uint version = file.ReadUInt(true);
+        //    uint count = file.ReadUInt(true);
+        //    NuMaterialData[] materials = new NuMaterialData[count];
 
-            for (int i = 0; i < count; i++)
-            {
-                NuMaterialData materialData;
-                switch (version)
-                {
-                    case 0xd5:
-                    case 0xd6:
-                    case 0xd7:
-                    case 0xd8:
-                    case 0xd9:
-                    case 0xda:
-                    case 0xdb:
-                    case 0xdc:
-                    case 0xdd:
-                    case 0xde:
-                    case 0xdf:
-                    case 0xe0:
-                    case 0xe1:
-                    case 0xe2:
-                    case 0xe4:
-                        materialData = new NuMaterialData_E0();
-                        break;
-                    case 0xe5:
-                    case 0xe8:
-                    case 0xea:
-                    case 0xeb:
-                    case 0xec:
-                        materialData = new NuMaterialData_E5();
-                        break;
-                    case 0xef:
-                    case 0xf0:
-                    case 0xf1:
-                    case 0xf2:
-                        materialData = new NuMaterialData_F2();
-                        break;
-                    default:
-                        throw new Exception($"Unsupported UMTL Version: {version}");
-                }
+            
+        //    if (version > 0x100) // Just a guess
+        //    {
+        //        int correction = file.ReadInt(true);
+        //        Debug.Assert(correction == 1);
+        //    }
 
-                materialData.Version = version;
-                materialData.Parse(file);
+        //    for (int i = 0; i < count; i++)
+        //    {
+        //        NuMaterialData materialData;
+        //        switch (version)
+        //        {
+        //            case 0xd5:
+        //            case 0xd6:
+        //            case 0xd7:
+        //            case 0xd8:
+        //            case 0xd9:
+        //            case 0xda:
+        //            case 0xdb:
+        //            case 0xdc:
+        //            case 0xdd:
+        //            case 0xde:
+        //            case 0xdf:
+        //            case 0xe0:
+        //            case 0xe1:
+        //            case 0xe2:
+        //            case 0xe4:
+        //            case 0xe5:
+        //            case 0xe8:
+        //            case 0xea:
+        //            case 0xeb:
+        //            case 0xec:
+        //            case 0xef:
+        //            case 0xf0:
+        //            case 0xf1:
+        //            case 0xf2:
+        //            case 268:
+        //                materialData = new NuMaterialData_E0();
+        //                break;
+        //            default:
+        //                throw new Exception($"Unsupported UMTL Version: {version}");
+        //        }
 
-                materials[i] = materialData;
-            }
+        //        materialData.Version = version;
+        //        materialData.Parse(file);
 
-            return materials;
-        }
-    }
+        //        materials[i] = materialData;
+        //    }
 
-    public class NuMaterialData_F2 : NuMaterialData_E5
-    {
-        public override void Parse(RawFile file)
-        {
-            ReadShaderDesc(file);
-            HandleShaderParams(file, Version, false);
-            string materialName = file.ReadPascalString(true);
-            uint flags = file.ReadUInt(true);
-            Debug.Assert(flags == 4, "flags != 4");
+        //    return materials;
+        //}
 
-            file.Seek(0x494, SeekOrigin.Current); // "dummyHashArray" (really this should be 0x498, but the VertexList needs to read the prior int I think?)
-            VertexList.Parse(file);
-
-            file.Seek(0x4a, SeekOrigin.Current);
-        }
-    }
-
-    public class NuMaterialData_E5 : NuMaterialData_E0
-    {
-        public override void Parse(RawFile file)
-        {
-            base.Parse(file);
-            //file.Seek(0x1, SeekOrigin.Current);
-        }
+        public abstract void Handle(SchemaSerializer schema, uint parentVersion);
     }
 
     public class NuMaterialData_E0 : NuMaterialData
     {
-
-        public override void Write(RawFile file)
-        {
-            WriteShaderDesc(file);
-            HandleShaderParams(file, Version, true);
-            file.WritePascalString(MaterialName, 1);
-            file.WriteUInt(Flags, true);
-
-            file.WriteArray(DummyHashArray);
-            VertexLayout.Write(file);
-
-            if (Version < 0xda)
-            {
-                file.WriteArray(new byte[6]);
-            }
-
-            HandleMtlAttrib(file, true);
-            HandleMtlExtra(file, true);
-        }
-
         public string MaterialName;
         public uint Flags;
 
         public byte[] DummyHashArray;
 
         public VertexList VertexLayout;
+        
+        public uint RimLightBlendMode;
+        private uint shaderFxCodeHash;
+        private byte materialFlags_shaderGraphMtl;
+        private byte materialFlags_IsScratchedLego;
+        private byte dummy_isMayaShader;
+        private byte output_tangentRT;
+        private byte vertexFlags_gameFiveBitPacking;
+        private byte vertexFlags_usesInstancing;
+        private byte output_emissionRT;
+        private byte materialFlags_depthOnly;
 
-        public override void Parse(RawFile file)
+        public byte[] ShaderFxCode;
+        private byte isReferencedMaterial;
+        private string referencedMaterialName;
+        private string referencedGscName;
+        private byte AlphaRespondToLights;
+        private byte AlphaRespondToProbes;
+
+        public List<NuTexGenHdr> VertexFixupData;
+        public List<NuTexGenHdr> PixelFixupData;
+
+        public List<NuShaderUserParamInfo> VertexShaderConsts;
+        public List<NuShaderUserParamInfo> PixelShaderConsts;
+        private int packedFloatCountVertex;
+        private int packedFloatCountPixel;
+        public List<NuShaderUserParamInfo> VertexShaderInstancedConsts;
+        public List<NuShaderUserParamInfo> PixelShaderInstancedConsts;
+        private int packedInstancedFloatCountVertex;
+        private int packedInstancedFloatCountPixel;
+
+        public List<NuShaderUserTextureInfo> PixelShaderUserTexturesInfo;
+        private int EditorAlphaMode;
+
+        public string ShaderFXSize;
+
+        public byte[] Padding = new byte[6];
+
+        public override void Handle(SchemaSerializer schema, uint parentVersion)
         {
-            ReadShaderDesc(file);
-            HandleShaderParams(file, Version, false);
+            HandleShaderDesc(schema);
+            HandleShaderParams(schema);
+            
+            if (Version > 0xf6)
+            {
+                schema.HandlePascalString(ref ShaderFXSize, 1);
+            }
+            
+            schema.HandlePascalString(ref MaterialName, 1);
+            schema.HandleUInt(ref Flags);
+            Debug.Assert(Flags == 4, "flags != 4");
+
+            schema.HandleArray(ref DummyHashArray, 0x494);
+
+            if (schema.Writing)
+            {
+                VertexLayout.Write(schema.File);
+            }
+            else
+            {
+                VertexLayout = VertexList.Parse(schema.File);
+            }
+
+            if (Version < 0xda)
+            {
+                schema.HandleArray(ref Padding, 6);
+            }
+
+            HandleMtlAttrib(schema);
+            HandleMtlExtra(schema);
+        }
+
+        public void Parse(RawFile file)
+        {
+            SchemaSerializer temp = new SchemaSerializer(file, false);
+
+            HandleShaderDesc(temp);
+            HandleShaderParams(temp);
+            if (Version > 0xf6)
+            {
+                short shaderFxSize = file.ReadShort(true); // This is just a pascal string lol
+                ShaderFxCode = file.ReadArray(shaderFxSize);
+            }
             MaterialName = file.ReadPascalString(true);
             Flags = file.ReadUInt(true);
             Debug.Assert(Flags == 4, "flags != 4");
@@ -530,16 +572,34 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 }
             }
 
-            HandleMtlAttrib(file, false);
-            HandleMtlExtra(file, false);
+            HandleMtlAttrib(temp);
+            HandleMtlExtra(temp);
 
             //file.Seek(0x49, SeekOrigin.Current);
         }
 
-        public void HandleMtlAttrib(RawFile file, bool writing)
-        {
-            SchemaSerializer schema = new SchemaSerializer(file, writing);
+        //public override void Write(RawFile file)
+        //{
 
+        //    HandleShaderDesc(file, true);
+        //    HandleShaderParams(file, Version, true);
+        //    file.WritePascalString(MaterialName, 1);
+        //    file.WriteUInt(Flags, true);
+
+        //    file.WriteArray(DummyHashArray);
+        //    VertexLayout.Write(file);
+
+        //    if (Version < 0xda)
+        //    {
+        //        file.WriteArray(new byte[6]);
+        //    }
+
+        //    HandleMtlAttrib(file, true);
+        //    HandleMtlExtra(file, true);
+        //}
+
+        public void HandleMtlAttrib(SchemaSerializer schema)
+        {
             if (Version < 0xd8)
             {
                 schema.HandleByte(ref DefunctOldAlpha);
@@ -556,7 +616,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
             schema.HandleByte(ref OldUtc);
             schema.HandleByte(ref OldVtc);
             schema.HandleByte(ref Colour);
-            schema.HandleByte(ref OldFillAttrib);
+            if (Version < 0x100)
+            {
+                schema.HandleByte(ref OldFillAttrib);
+            }
             if (Version < 0xd8)
             {
                 schema.HandleByte(ref DefunctOnly2D);
@@ -592,26 +655,55 @@ namespace Diorama.Core.Filetypes.GSC.Components
             schema.HandleByte(ref AlphaTestMode);
         }
 
-        public void HandleMtlExtra(RawFile file, bool writing)
+        public void HandleMtlExtra(SchemaSerializer schema)
         {
-            SchemaSerializer schema = new SchemaSerializer(file, writing);
-
             schema.HandleUInt(ref Fx1);
             schema.HandleUInt(ref Fx2);
             schema.HandleUInt(ref Fx3);
             schema.HandleUInt(ref Fx4);
 
-            schema.HandleInt(ref OldTid);
+            if (Version < 0xfb)
+            {
+                schema.HandleInt(ref OldTid);
+            }
 
             schema.HandleByte(ref Fxid);
             schema.HandleByte(ref SpecialId);
 
             schema.HandleShort(ref ShortPril16bit);
 
-            schema.HandleUInt(ref FirstVariantIdx);
-            schema.HandleUInt(ref NextVariantIdx);
+            if (Version > 0xf9)
+            {
+                schema.HandleByte(ref isReferencedMaterial);
+                schema.HandlePascalString(ref referencedGscName, 1);
+                schema.HandlePascalString(ref referencedMaterialName, 1);
+            }
 
-            schema.HandleByte(ref DefunctIsCreasedMeshMaterial);
+            if (Version > 0xf8)
+            {
+                // do something??
+                int link1 = 0;
+                schema.HandleInt(ref link1);
+                Debug.Assert(link1 == 0);
+                int link2 = 0;
+                schema.HandleInt(ref link2);
+                if (link2 != 0)
+                {
+                    int link3 = 0;
+                    schema.HandleInt(ref link3);
+                }
+
+            }
+            else
+            {
+                schema.HandleUInt(ref FirstVariantIdx);
+                schema.HandleUInt(ref NextVariantIdx);
+            }
+
+            if (Version < 0x10e)
+            {
+                schema.HandleByte(ref DefunctIsCreasedMeshMaterial);
+            }
             schema.HandleByte(ref HasVariants);
 
             schema.HandleByte(ref LegoStudMaterial);
@@ -623,9 +715,18 @@ namespace Diorama.Core.Filetypes.GSC.Components
             schema.HandleByte(ref SpecialDepthSorting);
             schema.HandleByte(ref ForceAlphaLightingSupport);
 
+            if (Version > 0x108)
+            {
+                schema.HandleByte(ref AlphaRespondToLights);
+                schema.HandleByte(ref AlphaRespondToProbes);
+            }
+
             schema.HandleByte(ref NoAutoScreenDoor);
             schema.HandleByte(ref CompileLiveCubemapGenShader);
-            schema.HandleByte(ref CompileToonShader);
+            if (Version < 0x103)
+            {
+                schema.HandleByte(ref CompileToonShader);
+            }
 
             schema.HandleByte(ref ShadowImpostor);
             schema.HandleByte(ref ShadowFromFrontFaces);
@@ -635,565 +736,510 @@ namespace Diorama.Core.Filetypes.GSC.Components
             schema.HandleByte(ref ForceTPageAlphaFade);
 
             schema.HandleUInt(ref DefaultRenderStage);
-        }
 
-        public void WriteShaderDesc(RawFile file)
-        {
-            int iVar1 = 0;
-
-            file.WriteUInt(shader_Version, true);
-
-            if (Version > 0xe9)
+            if (Version > 0xfb)
             {
-                file.WriteShort(legoVersion, true);
-            }
-
-            file.WriteUInt(shaderType, true);
-            file.WriteUInt(lightingModel, true);
-            file.WriteUInt(substanceMode, true);
-
-            if (Version != 0xe7)
-            {
-                file.WriteUInt(roughnessMode, true);
-            }
-
-            file.WriteUInt(fresnelAlphaMode, true);
-
-            // Maybe:
-            file.WriteUInt(blendMode, true);
-            file.WriteUInt(alphaTest, true);
-            file.WriteUInt(alphaFadeSource, true);
-
-            file.WriteUInt(surfaceMapMethod, true);
-            file.WriteUInt(surfaceMapFormat0, true);
-            file.WriteUInt(surfaceMapFormat1, true);
-            file.WriteUInt(surfaceMapFormat2, true);
-            file.WriteUInt(surfaceMapFormat3, true);
-            file.WriteUInt(surfaceMapFormatVTFN, true);
-            file.WriteUInt(occlusion, true);
-            file.WriteUInt(refraction, true);
-            file.WriteUInt(reflection, true);
-            file.WriteUInt(baseDiffuseUsage, true);
-            file.WriteUInt(layerBlendDiffuse, true);
-            file.WriteUInt(layerBlendDiffuse1, true);
-            file.WriteUInt(layerBlendDiffuse2, true);
-            file.WriteUInt(usesDiffuseLayerColour, true);
-            file.WriteUInt(usesDiffuseLayerColour1, true);
-            file.WriteUInt(usesDiffuseLayerColour2, true);
-            file.WriteUInt(usesDiffuseLayerColour3, true);
-
-            file.WriteUInt(layerBlendSpecular0, true);
-            file.WriteUInt(layerBlendSpecular1, true);
-            file.WriteUInt(layerBlendSpecular2, true);
-            file.WriteUInt(dummy, true);
-            file.WriteUInt(layerBlendNormal0, true);
-            file.WriteUInt(layerBlendNormal1, true);
-            file.WriteUInt(layerBlendNormal2, true);
-            file.WriteUInt(dummyX, true);
-
-            file.WriteUInt(numUVSets, true);
-            file.WriteInt(LightmapUVSet, true);
-            file.WriteUInt(motionBlurVertexType, true);
-            file.WriteUInt(motionBlurPixelType, true);
-
-            file.WriteByte(motionBlurSamples);
-            file.WriteByte(numBones);
-
-            for (int i = 0; i < uvBlocks.Length; i++)
-            {
-                (uint state, uint UVSet) = uvBlocks[i];
-                file.WriteUInt(state, true);
-                file.WriteUInt(UVSet, true);
-            }
-
-            if (Version < 0xe0)
-            {
-                file.WriteByte(old_bitangentFlip);
-            }
-
-            file.WriteByte(materialFlags_tangentSwap);
-            file.WriteByte(materialFlags_water);
-
-            if (Version > 0xec)
-            {
-                file.WriteByte(materialFlags_parallaxBlendFix);
-            }
-
-            if (Version < 0xe0)
-            {
-                file.WriteByte(old_nextgenshine);
-            }
-
-            file.WriteByte(materialFlags_glow);
-            file.WriteByte(materialFlags_carpaint);
-
-            if (Version < 0xe0)
-            {
-                file.WriteByte(old_fractalbump);
-                file.WriteByte(old_fractalbump2);
-            }
-
-            file.WriteByte(materialFlags_fog);
-            file.WriteByte(materialFlags_unlitNonSRGB);
-            file.WriteByte(materialFlags_hdralpha_diffuse);
-            file.WriteByte(materialFlags_hdralpha_envmap);
-            file.WriteByte(materialFlags_derivHeightMap);
-
-            if (Version < 0xe6)
-            {
-                file.WriteByte(materialFlags_smoothSpec);
-            }
-
-            if (Version >= 0xec)
-            {
-                file.WriteByte(materialFlags_zeusCompatMode);
-            }
-
-            file.WriteByte(materialFlags_disable_varying_specular);
-            file.WriteByte(materialFlags_disable_fresnel);
-            file.WriteByte(materialFlags_two_sided_lighting);
-            file.WriteByte(materialFlags_smoothlightmap);
-            file.WriteByte(materialFlags_rimlight);
-            file.WriteByte(materialFlags_ignore_exposure);
-            file.WriteByte(materialFlags_baked_specular);
-            file.WriteByte(materialFlags_semi_lit);
-            file.WriteByte(materialFlags_refractionNearFix);
-            file.WriteByte(materialFlags_metallic_specular);
-            file.WriteByte(materialFlags_dontreceiveshadow);
-            file.WriteByte(materialFlags_lateshader);
-            file.WriteByte(materialFlags_diffreflmaps);
-            file.WriteByte(materialFlags_per_layer_uvscale);
-            file.WriteByte(materialFlags_tintable);
-            file.WriteByte(materialFlags_generateCubeMap);
-            file.WriteByte(materialFlags_outputToonShaderData);
-            file.WriteByte(materialFlags_disablePerPixelFade);
-            file.WriteByte(materialFlags_cel_shading);
-
-            if (Version > 0xd6)
-            {
-                file.WriteByte(miscFlags_conditional_cel_shading);
-            }
-
-            if (Version > 0xee)
-            {
-                file.WriteByte(materialFlags_receiveShadowDespiteCelShading);
-            }
-
-            if (Version > 0xde)
-            {
-                file.WriteByte(miscFlags_useRoomProjection);
-            }
-
-            if (Version > 0xdd)
-            {
-                file.WriteByte(miscFlags_useCustomPixelClipPlane);
-            }
-
-            if (Version > 0xe0)
-            {
-                file.WriteByte(miscFlags_layer2Refraction);
-                file.WriteByte(miscFlags_layer3Refraction);
-                file.WriteByte(miscFlags_layer4Refraction);
-            }
-
-            if (Version > 0xf0)
-            {
-                file.WriteByte(miscFlags_layer2DX11Only);
-                file.WriteByte(miscFlags_layer3DX11Only);
-                file.WriteByte(miscFlags_layer4DX11Only);
-            }
-
-            file.WriteByte(miscFlags_allLayerVertAlbedo);
-
-            file.WriteByte(vertexFlags_skinned);
-            file.WriteByte(vertexFlags_fastBlend);
-            file.WriteByte(vertexFlags_blendShape);
-            file.WriteByte(vertexFlags_doPerspDivInVS);
-            file.WriteByte(vertexFlags_numAlphaLayers);
-            file.WriteByte(vertexFlags_use2DW);
-            file.WriteByte(vertexFlags_untransformed);
-            file.WriteByte(vertexFlags_effectAmplitude);
-            file.WriteByte(vertexFlags_ignoreVertexOpacity);
-            file.WriteByte(vertexFlags_unused1);
-            file.WriteByte(vertexFlags_instancedLightmapping);
-            file.WriteByte(vertexFlags_positionAccuracy);
-            file.WriteByte(vertexFlags_uvAccuracy);
-            file.WriteByte(vertexFlags_tangent2);
-            file.WriteByte(VertexFlags_VertexControlledTint);
-            file.WriteByte(vertexFlags_ZBias);
-            file.WriteByte(vertexFlags_layer1VertAlbedo);
-            file.WriteByte(vertexFlags_layer2VertAlbedo);
-            file.WriteByte(vertexFlags_layer3VertAlbedo);
-            file.WriteByte(vertexFlags_disableSeparatePositionStream);
-            file.WriteByte(vertexFlags_legoTerrain);
-            file.WriteByte(vertexFlags_legoTerrainMeshType);
-
-            if (Version > 0xdb)
-            {
-                file.WriteByte(vertexFlags_largeWorldAwareCamera);
-            }
-
-            file.WriteByte(vertexFlags_wind);
-
-            if (Version > 0xe1)
-            {
-                file.WriteByte(vertexFlags_forceColourVertexStream);
-            }
-
-            if (Version > 0xed)
-            {
-                file.WriteByte(vertexFlags_vertexRoughnessMod);
-            }
-
-            file.WriteLong(0); // padding
-
-            file.WriteByte(miscFlags_greyAlbedo);
-            file.WriteByte(miscFlags_motionBlur);
-            file.WriteByte(miscFlags_UVAnimation);
-
-            if (Version < 0xf2)
-            {
-                file.WriteByte(miscFlags_canAlphaBlend);
-            }
-
-            if (iVar1 != 2)
-            {
-                file.WriteByte(miscFlags_defunctOpaque);
-                file.WriteByte(miscFlags_isDecal);
-                file.WriteByte(miscFlags_creaseMeshMaterial);
-            }
-
-            file.WriteByte(miscFlags_ttAnimationMode);
-            file.WriteByte(miscFlags_culled);
-            file.WriteByte(miscFlags_isDeferredDecal);
-            file.WriteByte(miscFlags_isPBRSourced);
-            file.WriteByte(miscFlags_requiresDiffuseAlphaMultiply);
-            file.WriteByte(miscFlags_isTPaged);
-            file.WriteByte(miscFlags_disableDynamicLighting);
-            file.WriteByte(miscFlags_useLayers234OnWii);
-            file.WriteByte(miscFlags_useWiiTintColours);
-            file.WriteByte(miscFlags_sRGBSupport);
-            file.WriteByte(miscFlags_useNormalEncodingTexture);
-            file.WriteByte(miscFlags_refractionIgnoreVertexNormal);
-            file.WriteByte(miscFlags_shadedGlow);
-            file.WriteByte(miscFlags_project_to_far_plane);
-            file.WriteByte(miscFlags_sortAfterPostEffects);
-
-            file.WriteByte(output_colourRT);
-            file.WriteByte(output_normalRT);
-            file.WriteByte(output_albedoRT);
-            file.WriteByte(output_depthAsColourRT);
-
-            // Only active when iVar1 == 2?
-            if (iVar1 == 2)
-            {
-                file.WriteUInt(displayMode, true);
-                // file.WriteByte(grassLayers);
-            }
-            // Only active when iVar1 == 2?
-
-            file.WriteUInt(shaderVersion, true);
-            file.WriteUInt(gpuVendor, true);
-            file.WriteUInt(colourSpace, true);
-            file.WriteUInt(bakedLighting, true);
-
-            file.WriteInt(discreteLightType, true);
-            file.WriteInt(discreteLightShadingModel, true);
-            file.WriteByte(discreteLightSoftShadows);
-
-            if (Version < 0xdd)
-            {
-                for (int i = 0; i < 4; i++)
+                if (Version > 0x105)
                 {
-                    // Type, ShadingModel, SoftShadows
-                    (int type, int shadingModel, byte softShadows) = DiscreteLight2[i];
-                    file.WriteInt(type, true);
-                    file.WriteInt(shadingModel, true);
-                    file.WriteByte(softShadows);
+                    if (Version > 0x115)
+                    {
+                        schema.HandleSchemaVector(ref VertexFixupData);
+                    }
+                    schema.HandleSchemaVector(ref PixelFixupData);
                 }
             }
 
-            if (refraction == 2 || iVar1 != 2)
+            if (Version > 0x103)
             {
-                file.WriteInt(sceneZAccess, true);
-            }
+                if (Version > 0x115)
+                {
+                    schema.HandleSchemaVector(ref VertexShaderConsts);
+                }
+                schema.HandleSchemaVector(ref PixelShaderConsts);
 
-            file.WriteInt(shadowZAccess, true);
-            file.WriteInt(pcfMethod, true);
-            // file.WriteInt(glowMode, true);
-            file.WriteInt(rainSplashSurfaceType, true);
+                if (Version > 0x105)
+                {
+                    if (Version > 0x115)
+                    {
+                        schema.HandleInt(ref packedFloatCountVertex);
+                    }
+
+                    schema.HandleInt(ref packedFloatCountPixel);
+
+                    if (Version > 0x114)
+                    {
+                        if (Version != 0x115)
+                        {
+                            schema.HandleSchemaVector(ref VertexShaderInstancedConsts);
+                            schema.HandleInt(ref packedInstancedFloatCountVertex);
+                        }
+                        schema.HandleSchemaVector(ref PixelShaderInstancedConsts);
+                        schema.HandleInt(ref packedInstancedFloatCountPixel);
+                    }
+                    if (Version > 0x115)
+                    {
+                        // TODO: loads of rubbish to implement here
+                    }
+                }
+
+                schema.HandleSchemaVector(ref PixelShaderUserTexturesInfo);
+
+                if (Version > 0x10c)
+                {
+                    schema.HandleInt(ref EditorAlphaMode);
+
+                    if (Version > 0x10e)
+                    {
+
+                    }
+                }
+            }
         }
 
-        public void ReadShaderDesc(RawFile file)
+        public void HandleShaderDesc(SchemaSerializer schema)
         {
             int iVar1 = 0;
 
-            shader_Version = file.ReadUInt(true);
-            if (Version > 0xe9)
+            if (Version > 0x100)
             {
-                legoVersion = file.ReadShort(true);
+                schema.HandleUInt(ref ExtraStarter);
             }
-            shaderType = file.ReadUInt(true);
-            lightingModel = file.ReadUInt(true);
-            substanceMode = file.ReadUInt(true);
+
+            if (Version < 0x10f)
+            {
+                schema.HandleUInt(ref shader_Version);
+            }
+
+            if (Version > 0xe9 && Version < 0x10f)
+            {
+                schema.HandleShort(ref legoVersion);
+            }
+
+            schema.HandleUInt(ref shaderType);
+            schema.HandleUInt(ref lightingModel);
+            schema.HandleUInt(ref substanceMode);
+
             if (Version != 0xe7)
             {
-                roughnessMode = file.ReadUInt(true);
+                schema.HandleUInt(ref roughnessMode);
             }
-            fresnelAlphaMode = file.ReadUInt(true); // 6
+
+            schema.HandleUInt(ref fresnelAlphaMode);
 
             // Maybe:
-            blendMode = file.ReadUInt(true);
-            alphaTest = file.ReadUInt(true);
-            alphaFadeSource = file.ReadUInt(true); // 3
+            schema.HandleUInt(ref blendMode);
+            schema.HandleUInt(ref alphaTest);
+            if (Version < 0x10e)
+            {
+                schema.HandleUInt(ref alphaFadeSource);
+            }
 
-            surfaceMapMethod = file.ReadUInt(true);
-            surfaceMapFormat0 = file.ReadUInt(true);
-            surfaceMapFormat1 = file.ReadUInt(true);
-            surfaceMapFormat2 = file.ReadUInt(true);
-            surfaceMapFormat3 = file.ReadUInt(true);
-            surfaceMapFormatVTFN = file.ReadUInt(true);
-            occlusion = file.ReadUInt(true);
-            refraction = file.ReadUInt(true);
-            reflection = file.ReadUInt(true);
-            baseDiffuseUsage = file.ReadUInt(true);
-            layerBlendDiffuse = file.ReadUInt(true); // (TODO: Should be 3?)
-            layerBlendDiffuse1 = file.ReadUInt(true); // (TODO: Should be 3?)
-            layerBlendDiffuse2 = file.ReadUInt(true); // (TODO: Should be 3?)
-            usesDiffuseLayerColour = file.ReadUInt(true); // 12 (TODO: Should be 4?)
-            usesDiffuseLayerColour1 = file.ReadUInt(true); // 12 (TODO: Should be 4?)
-            usesDiffuseLayerColour2 = file.ReadUInt(true); // 12 (TODO: Should be 4?)
-            usesDiffuseLayerColour3 = file.ReadUInt(true); // 12 (TODO: Should be 4?)
+            schema.HandleUInt(ref surfaceMapMethod);
+            schema.HandleUInt(ref surfaceMapFormat0);
+            schema.HandleUInt(ref surfaceMapFormat1);
+            schema.HandleUInt(ref surfaceMapFormat2);
+            schema.HandleUInt(ref surfaceMapFormat3);
+            schema.HandleUInt(ref surfaceMapFormatVTFN);
+            schema.HandleUInt(ref occlusion);
+            schema.HandleUInt(ref refraction);
+            schema.HandleUInt(ref reflection);
+            schema.HandleUInt(ref baseDiffuseUsage);
+            if (Version > 0xf5)
+            {
+                schema.HandleUInt(ref RimLightBlendMode);
+            }
+            schema.HandleUInt(ref layerBlendDiffuse);
+            schema.HandleUInt(ref layerBlendDiffuse1);
+            schema.HandleUInt(ref layerBlendDiffuse2);
+            schema.HandleUInt(ref usesDiffuseLayerColour);
+            schema.HandleUInt(ref usesDiffuseLayerColour1);
+            schema.HandleUInt(ref usesDiffuseLayerColour2);
+            schema.HandleUInt(ref usesDiffuseLayerColour3);
 
-            layerBlendSpecular0 = file.ReadUInt(true);
-            layerBlendSpecular1 = file.ReadUInt(true);
-            layerBlendSpecular2 = file.ReadUInt(true);
-            dummy = file.ReadUInt(true); // It's actually called this, I haven't just tried to re-sync the parser
-            layerBlendNormal0 = file.ReadUInt(true);
-            layerBlendNormal1 = file.ReadUInt(true);
-            layerBlendNormal2 = file.ReadUInt(true); // 6
-            dummyX = file.ReadUInt(true); // It's actually called this, I haven't just tried to re-sync the parser
+            schema.HandleUInt(ref layerBlendSpecular0);
+            schema.HandleUInt(ref layerBlendSpecular1);
+            schema.HandleUInt(ref layerBlendSpecular2);
+            schema.HandleUInt(ref dummy);
+            schema.HandleUInt(ref layerBlendNormal0);
+            schema.HandleUInt(ref layerBlendNormal1);
+            schema.HandleUInt(ref layerBlendNormal2);
+            schema.HandleUInt(ref dummyX);
 
-            numUVSets = file.ReadUInt(true);
-            LightmapUVSet = file.ReadInt(true);
-            motionBlurVertexType = file.ReadUInt(true);
-            motionBlurPixelType = file.ReadUInt(true);
+            schema.HandleUInt(ref numUVSets);
+            schema.HandleInt(ref LightmapUVSet);
+            if (Version < 0xf5)
+            {
+                schema.HandleUInt(ref motionBlurVertexType);
+                schema.HandleUInt(ref motionBlurPixelType);
 
-            motionBlurSamples = file.ReadByte();
-            numBones = file.ReadByte();
+                schema.HandleByte(ref motionBlurSamples);
+            }
+
+            schema.HandleByte(ref numBones);
 
             int uvBlocksToRead = 17;
             if (Version > 0xef)
             {
                 uvBlocksToRead = 21;
             }
-            
-            uvBlocks = new (uint, uint)[uvBlocksToRead];
 
-            for (int i = 0; i < uvBlocksToRead; i++)
+            if (Version > 0x104)
             {
-                uint state = file.ReadUInt(true);
-                uint UVSet = file.ReadUInt(true);
-                uvBlocks[i] = (state, UVSet);
+                if (Version < 0x116)
+                {
+                    uvBlocksToRead += 0x15;
+                }
             }
+
+            if (!schema.Writing)
+            {
+                uvBlocks = new NuMtlUVBlock[uvBlocksToRead];
+                for (int i = 0; i < uvBlocks.Length; i++)
+                {
+                    uvBlocks[i] = new NuMtlUVBlock();
+                }
+            }
+
+            for (int i = 0; i < uvBlocks.Length; i++)
+            {
+                schema.HandleUInt(ref uvBlocks[i].State);
+                schema.HandleUInt(ref uvBlocks[i].UVSet);
+
+                //Console.WriteLine("--- NEXT:");
+                //Console.WriteLine(uvBlocks[i].State);
+                //Console.WriteLine(uvBlocks[i].UVSet);
+            }
+
             if (Version < 0xe0)
             {
-                old_bitangentFlip = file.ReadByte();
+                schema.HandleByte(ref old_bitangentFlip);
             }
 
-            materialFlags_tangentSwap = file.ReadByte();
-            materialFlags_water = file.ReadByte();
+            if (Version < 0x10e)
+            {
+                schema.HandleByte(ref materialFlags_tangentSwap);
+                schema.HandleByte(ref materialFlags_water);
+            }
+
             if (Version > 0xec)
             {
-                materialFlags_parallaxBlendFix = file.ReadByte();
+                schema.HandleByte(ref materialFlags_parallaxBlendFix);
             }
+
             if (Version < 0xe0)
             {
-                old_nextgenshine = file.ReadByte();
+                schema.HandleByte(ref old_nextgenshine);
             }
-            materialFlags_glow = file.ReadByte();
-            materialFlags_carpaint = file.ReadByte();
+
+            schema.HandleByte(ref materialFlags_glow);
+            schema.HandleByte(ref materialFlags_carpaint);
+
             if (Version < 0xe0)
             {
-                old_fractalbump = file.ReadByte();
-                old_fractalbump2 = file.ReadByte();
+                schema.HandleByte(ref old_fractalbump);
+                schema.HandleByte(ref old_fractalbump2);
             }
-            materialFlags_fog = file.ReadByte();
-            materialFlags_unlitNonSRGB = file.ReadByte();
-            materialFlags_hdralpha_diffuse = file.ReadByte();
-            materialFlags_hdralpha_envmap = file.ReadByte();
-            materialFlags_derivHeightMap = file.ReadByte();
+
+            schema.HandleByte(ref materialFlags_fog);
+            schema.HandleByte(ref materialFlags_unlitNonSRGB);
+            schema.HandleByte(ref materialFlags_hdralpha_diffuse);
+
+            if (Version > 0xf6)
+            {
+                schema.HandleUInt(ref shaderFxCodeHash);
+            }
+
+            if (Version < 0x10e)
+            {
+                schema.HandleByte(ref materialFlags_hdralpha_envmap);
+            }
+
+            if (Version < 0x100)
+            {
+                schema.HandleByte(ref materialFlags_derivHeightMap);
+            }
+            else
+            {
+                schema.HandleByte(ref materialFlags_shaderGraphMtl);
+            }
+
             if (Version < 0xe6)
             {
-                materialFlags_smoothSpec = file.ReadByte();
+                schema.HandleByte(ref materialFlags_smoothSpec);
             }
 
-            if (Version >= 0xec)
+            if (Version >= 0xec && Version < 0x10e)
             {
-                materialFlags_zeusCompatMode = file.ReadByte();
+                schema.HandleByte(ref materialFlags_zeusCompatMode);
             }
 
-            materialFlags_disable_varying_specular = file.ReadByte();
-            materialFlags_disable_fresnel = file.ReadByte();
-            materialFlags_two_sided_lighting = file.ReadByte();
-            materialFlags_smoothlightmap = file.ReadByte();
-            materialFlags_rimlight = file.ReadByte();
-            materialFlags_ignore_exposure = file.ReadByte();
-            materialFlags_baked_specular = file.ReadByte();
-            materialFlags_semi_lit = file.ReadByte();
-            materialFlags_refractionNearFix = file.ReadByte();
-            materialFlags_metallic_specular = file.ReadByte();
-            materialFlags_dontreceiveshadow = file.ReadByte();
-            materialFlags_lateshader = file.ReadByte();
-            materialFlags_diffreflmaps = file.ReadByte();
-            materialFlags_per_layer_uvscale = file.ReadByte();
-            materialFlags_tintable = file.ReadByte();
-            materialFlags_generateCubeMap = file.ReadByte();
-            materialFlags_outputToonShaderData = file.ReadByte();
-            materialFlags_disablePerPixelFade = file.ReadByte();
-            materialFlags_cel_shading = file.ReadByte(); // 29
+            schema.HandleByte(ref materialFlags_disable_varying_specular);
+            schema.HandleByte(ref materialFlags_disable_fresnel);
+            schema.HandleByte(ref materialFlags_two_sided_lighting);
+            schema.HandleByte(ref materialFlags_smoothlightmap);
+            if (Version < 0x10f)
+            {
+                schema.HandleByte(ref materialFlags_rimlight);
+                schema.HandleByte(ref materialFlags_ignore_exposure);
+            }
+            schema.HandleByte(ref materialFlags_baked_specular);
+            schema.HandleByte(ref materialFlags_semi_lit);
+            schema.HandleByte(ref materialFlags_refractionNearFix);
+            schema.HandleByte(ref materialFlags_metallic_specular);
+            schema.HandleByte(ref materialFlags_dontreceiveshadow);
+            schema.HandleByte(ref materialFlags_lateshader);
+            schema.HandleByte(ref materialFlags_diffreflmaps);
+            schema.HandleByte(ref materialFlags_per_layer_uvscale);
+            schema.HandleByte(ref materialFlags_tintable);
+            schema.HandleByte(ref materialFlags_generateCubeMap);
+            if (Version > 0x111)
+            {
+                schema.HandleByte(ref materialFlags_depthOnly);
+            }
+            if (Version > 0x82 && Version < 0x103)
+            {
+                schema.HandleByte(ref materialFlags_outputToonShaderData);
+            }
+            if (Version < 0x8b || Version > 0x10e)
+            {
+                if (Version > 0x118)
+                {
+                    schema.HandleByte(ref vertexFlags_gameFiveBitPacking);
+                }
+            }
+            else
+            {
+                schema.HandleByte(ref materialFlags_disablePerPixelFade);
+            }
+            schema.HandleByte(ref materialFlags_cel_shading);
 
             if (Version > 0xd6)
             {
-                miscFlags_conditional_cel_shading = file.ReadByte();
+                schema.HandleByte(ref miscFlags_conditional_cel_shading);
             }
+
             if (Version > 0xee)
             {
-                materialFlags_receiveShadowDespiteCelShading = file.ReadByte();
+                schema.HandleByte(ref materialFlags_receiveShadowDespiteCelShading);
             }
+
             if (Version > 0xde)
             {
-                miscFlags_useRoomProjection = file.ReadByte();
+                schema.HandleByte(ref miscFlags_useRoomProjection);
             }
+
             if (Version > 0xdd)
             {
-                miscFlags_useCustomPixelClipPlane = file.ReadByte();
+                schema.HandleByte(ref miscFlags_useCustomPixelClipPlane);
             }
+
             if (Version > 0xe0)
             {
-                miscFlags_layer2Refraction = file.ReadByte();
-                miscFlags_layer3Refraction = file.ReadByte();
-                miscFlags_layer4Refraction = file.ReadByte();
+                schema.HandleByte(ref miscFlags_layer2Refraction);
+                schema.HandleByte(ref miscFlags_layer3Refraction);
+                schema.HandleByte(ref miscFlags_layer4Refraction);
             }
+
             if (Version > 0xf0)
             {
-                miscFlags_layer2DX11Only = file.ReadByte();
-                miscFlags_layer3DX11Only = file.ReadByte();
-                miscFlags_layer4DX11Only = file.ReadByte();
+                schema.HandleByte(ref miscFlags_layer2DX11Only);
+                schema.HandleByte(ref miscFlags_layer3DX11Only);
+                schema.HandleByte(ref miscFlags_layer4DX11Only);
             }
-            miscFlags_allLayerVertAlbedo = file.ReadByte(); // 7
 
-            vertexFlags_skinned = file.ReadByte();
-            vertexFlags_fastBlend = file.ReadByte();
-            vertexFlags_blendShape = file.ReadByte();
-            vertexFlags_doPerspDivInVS = file.ReadByte();
-            vertexFlags_numAlphaLayers = file.ReadByte();
-            vertexFlags_use2DW = file.ReadByte();
-            vertexFlags_untransformed = file.ReadByte();
-            vertexFlags_effectAmplitude = file.ReadByte();
-            vertexFlags_ignoreVertexOpacity = file.ReadByte();
-            vertexFlags_unused1 = file.ReadByte();
-            vertexFlags_instancedLightmapping = file.ReadByte();
-            vertexFlags_positionAccuracy = file.ReadByte();
-            vertexFlags_uvAccuracy = file.ReadByte();
-            vertexFlags_tangent2 = file.ReadByte();
-            VertexFlags_VertexControlledTint = file.ReadByte();
-            vertexFlags_ZBias = file.ReadByte();
-            vertexFlags_layer1VertAlbedo = file.ReadByte();
-            vertexFlags_layer2VertAlbedo = file.ReadByte();
-            vertexFlags_layer3VertAlbedo = file.ReadByte();
-            vertexFlags_disableSeparatePositionStream = file.ReadByte();
-            vertexFlags_legoTerrain = file.ReadByte();
-            vertexFlags_legoTerrainMeshType = file.ReadByte();
+            if (Version > 0x100)
+            {
+                schema.HandleByte(ref materialFlags_IsScratchedLego);
+            }
+
+            if (Version > 0x102 && Version < 0x10e)
+            {
+                schema.HandleByte(ref dummy_isMayaShader);
+            }
+
+            schema.HandleByte(ref miscFlags_allLayerVertAlbedo);
+
+            schema.HandleByte(ref vertexFlags_skinned);
+            schema.HandleByte(ref vertexFlags_fastBlend);
+            schema.HandleByte(ref vertexFlags_blendShape);
+            schema.HandleByte(ref vertexFlags_doPerspDivInVS);
+            schema.HandleByte(ref vertexFlags_numAlphaLayers);
+            schema.HandleByte(ref vertexFlags_use2DW);
+            schema.HandleByte(ref vertexFlags_untransformed);
+            schema.HandleByte(ref vertexFlags_effectAmplitude);
+            schema.HandleByte(ref vertexFlags_ignoreVertexOpacity);
+            schema.HandleByte(ref vertexFlags_unused1);
+            schema.HandleByte(ref vertexFlags_instancedLightmapping);
+            schema.HandleByte(ref vertexFlags_positionAccuracy);
+            schema.HandleByte(ref vertexFlags_uvAccuracy);
+            schema.HandleByte(ref vertexFlags_tangent2);
+            schema.HandleByte(ref VertexFlags_VertexControlledTint);
+            schema.HandleByte(ref vertexFlags_ZBias);
+            schema.HandleByte(ref vertexFlags_layer1VertAlbedo);
+            schema.HandleByte(ref vertexFlags_layer2VertAlbedo);
+            schema.HandleByte(ref vertexFlags_layer3VertAlbedo);
+            schema.HandleByte(ref vertexFlags_disableSeparatePositionStream);
+            schema.HandleByte(ref vertexFlags_legoTerrain);
+            schema.HandleByte(ref vertexFlags_legoTerrainMeshType);
+
             if (Version > 0xdb)
             {
-                vertexFlags_largeWorldAwareCamera = file.ReadByte();
+                schema.HandleByte(ref vertexFlags_largeWorldAwareCamera);
             }
-            vertexFlags_wind = file.ReadByte();
+
+            schema.HandleByte(ref vertexFlags_wind);
+
             if (Version > 0xe1)
             {
-                vertexFlags_forceColourVertexStream = file.ReadByte(); // 25
+                schema.HandleByte(ref vertexFlags_forceColourVertexStream);
             }
+
             if (Version > 0xed)
             {
-                vertexFlags_vertexRoughnessMod = file.ReadByte();
+                schema.HandleByte(ref vertexFlags_vertexRoughnessMod);
             }
 
-            file.ReadLong(); // 8 bytes of zero (It's actually called this, I haven't just tried to re-sync the parser)
+            schema.HandleLong(ref vertexFlags_unused2);
 
-            miscFlags_greyAlbedo = file.ReadByte();
-            miscFlags_motionBlur = file.ReadByte();
-            miscFlags_UVAnimation = file.ReadByte();
+            if (Version < 0x10e)
+            {
+                schema.HandleByte(ref miscFlags_greyAlbedo);
+                schema.HandleByte(ref miscFlags_motionBlur);
+                schema.HandleByte(ref miscFlags_UVAnimation);
+            }
+
             if (Version < 0xf2)
             {
-                miscFlags_canAlphaBlend = file.ReadByte();
+                schema.HandleByte(ref miscFlags_canAlphaBlend);
             }
+
             if (iVar1 != 2)
             {
-                miscFlags_defunctOpaque = file.ReadByte();
-                miscFlags_isDecal = file.ReadByte();
-                miscFlags_creaseMeshMaterial = file.ReadByte();
+                if (Version < 0x10e)
+                {
+                    schema.HandleByte(ref miscFlags_defunctOpaque);
+                }
+                if (Version < 0x10f)
+                {
+                    schema.HandleByte(ref miscFlags_isDecal);
+                }
+                if (Version < 0x10e)
+                {
+                    schema.HandleByte(ref miscFlags_creaseMeshMaterial);
+                }
             }
-            miscFlags_ttAnimationMode = file.ReadByte();
-            miscFlags_culled = file.ReadByte();
-            miscFlags_isDeferredDecal = file.ReadByte();
-            miscFlags_isPBRSourced = file.ReadByte();
-            miscFlags_requiresDiffuseAlphaMultiply = file.ReadByte();
-            miscFlags_isTPaged = file.ReadByte();
-            miscFlags_disableDynamicLighting = file.ReadByte();
-            miscFlags_useLayers234OnWii = file.ReadByte();
-            miscFlags_useWiiTintColours = file.ReadByte();
-            miscFlags_sRGBSupport = file.ReadByte();
-            miscFlags_useNormalEncodingTexture = file.ReadByte();
-            miscFlags_refractionIgnoreVertexNormal = file.ReadByte();
-            miscFlags_shadedGlow = file.ReadByte();
-            miscFlags_project_to_far_plane = file.ReadByte();
-            miscFlags_sortAfterPostEffects = file.ReadByte(); // 22
 
-            output_colourRT = file.ReadByte();
-            output_normalRT = file.ReadByte();
-            output_albedoRT = file.ReadByte();
-            output_depthAsColourRT = file.ReadByte(); // 4
+            if (Version > 0x1f && Version < 0x103)
+            {
+                schema.HandleByte(ref miscFlags_ttAnimationMode);
+            }
+            schema.HandleByte(ref miscFlags_culled);
+            if (Version < 0x10f)
+            {
+                schema.HandleByte(ref miscFlags_isDeferredDecal);
+            }
+            if (Version < 0x10e)
+            {
+                schema.HandleByte(ref miscFlags_isPBRSourced);
+            }
+            if (Version < 0x10e)
+            {
+                schema.HandleByte(ref miscFlags_requiresDiffuseAlphaMultiply);
+            }
+            if (Version < 0x10f)
+            {
+                schema.HandleByte(ref miscFlags_isTPaged);
+            }
+            schema.HandleByte(ref miscFlags_disableDynamicLighting);
+            schema.HandleByte(ref miscFlags_useLayers234OnWii);
+            schema.HandleByte(ref miscFlags_useWiiTintColours);
+            schema.HandleByte(ref miscFlags_sRGBSupport);
+            if (Version > 0xaa && Version < 0x103)
+            {
+                schema.HandleByte(ref miscFlags_useNormalEncodingTexture);
+            }
+            schema.HandleByte(ref miscFlags_refractionIgnoreVertexNormal);
+            schema.HandleByte(ref miscFlags_shadedGlow);
+            schema.HandleByte(ref miscFlags_project_to_far_plane);
+            if (Version < 0x10f)
+            {
+                schema.HandleByte(ref miscFlags_sortAfterPostEffects);
+            }
+            if (Version > 0x112)
+            {
+                schema.HandleByte(ref vertexFlags_usesInstancing);
+            }
+
+            schema.HandleByte(ref output_colourRT);
+            schema.HandleByte(ref output_normalRT);
+            schema.HandleByte(ref output_albedoRT);
+            if (Version > 0x10b)
+            {
+                schema.HandleByte(ref output_tangentRT);
+            }
+            if (Version > 0x110)
+            {
+                schema.HandleByte(ref output_emissionRT);
+            }
+            if (Version < 0x103)
+            {
+                schema.HandleByte(ref output_depthAsColourRT);
+            }
 
             // Only active when iVar1 == 2?
             if (iVar1 == 2)
             {
-                displayMode = file.ReadUInt(true);
-                //byte grassLayers = file.ReadByte();
+                schema.HandleUInt(ref displayMode);
+                // schema.HandleByte(ref grassLayers);
             }
             // Only active when iVar1 == 2?
 
-            shaderVersion = file.ReadUInt(true);
-            gpuVendor = file.ReadUInt(true);
-            colourSpace = file.ReadUInt(true);
-            bakedLighting = file.ReadUInt(true);
+            if (Version < 0x10e)
+            {
+                schema.HandleUInt(ref shaderVersion);
+            }
+            schema.HandleUInt(ref gpuVendor);
+            schema.HandleUInt(ref colourSpace);
+            if (Version < 0x110)
+            {
+                schema.HandleUInt(ref bakedLighting);
+            }
 
-            discreteLightType = file.ReadInt(true);
-            discreteLightShadingModel = file.ReadInt(true);
-            discreteLightSoftShadows = file.ReadByte();
+            schema.HandleInt(ref discreteLightType);
+            schema.HandleInt(ref discreteLightShadingModel);
+            schema.HandleByte(ref discreteLightSoftShadows);
+
             if (Version < 0xdd)
             {
-                DiscreteLight2 = new (int, int, byte)[4];
-
                 for (int i = 0; i < 4; i++)
                 {
-                    DiscreteLight2[i] = (file.ReadInt(true), file.ReadInt(true), file.ReadByte());
+                    if (!schema.Writing)
+                    {
+                        DiscreteLight2[i] = new NuMtlDiscreteLight();
+                    }
+
+                    schema.HandleInt(ref DiscreteLight2[i].Type);
+                    schema.HandleInt(ref DiscreteLight2[i].ShadingModel);
+                    schema.HandleByte(ref DiscreteLight2[i].SoftShadows);
                 }
             }
 
-            if (refraction == 2 || iVar1 != 2)
+            if ((refraction == 2 || iVar1 != 2) && Version < 0x100) // the version < 0x100 is just a guess, I'm not really sure, this seems to be an annoying debug leftover maybe?
             {
-                sceneZAccess = file.ReadInt(true); // TODO: Should be an int!
+                schema.HandleInt(ref sceneZAccess);
             }
-            shadowZAccess = file.ReadInt(true);
-            pcfMethod = file.ReadInt(true);
-            //int glowMode = file.ReadInt(true); // doesn't exist for v > 0x99
-            rainSplashSurfaceType = file.ReadInt(true);
+
+            if (Version < 0x10e)
+            {
+                schema.HandleInt(ref shadowZAccess);
+                schema.HandleInt(ref pcfMethod);
+                // schema.HandleInt(ref glowMode);
+                schema.HandleInt(ref rainSplashSurfaceType);
+            }
         }
 
-        public void HandleShaderParams(RawFile file, uint version, bool writing)
+        public void HandleShaderParams(SchemaSerializer schema)
         {
-            SchemaSerializer schema = new SchemaSerializer(file, writing);
 
             schema.HandleInt(ref Diffuse0Index);
             schema.HandleInt(ref Diffuse1Index);
@@ -1221,7 +1267,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
             schema.HandleInt(ref Normal3);
             schema.HandleInt(ref Specular3);
 
-            if (version > 0xef)
+            if (Version > 0xef)
             {
                 schema.HandleInt(ref Detail0);
                 schema.HandleInt(ref Detail1);
@@ -1234,11 +1280,13 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 schema.HandleFloat(ref DetailRepeat3);
             }
 
-            int numTexAuxEntries = writing ? TexAuxEntries.Length : 0;
+            int numTexAuxEntries = schema.Writing ? TexAuxEntries.Length : 0;
 
             schema.HandleInt(ref numTexAuxEntries);
 
-            if (!writing)
+            Console.WriteLine($"Reading through {numTexAuxEntries}");
+
+            if (!schema.Writing)
             {
                 TexAuxEntries = new NuTexAuxEntry[numTexAuxEntries];
                 for (int i = 0; i < TexAuxEntries.Length; i++)
@@ -1255,7 +1303,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 }
                 else
                 {
-                    byte maxAnisotopry = (byte)(writing ? TexAuxEntries[i].MaxAnisotropy : 0);
+                    byte maxAnisotopry = (byte)(schema.Writing ? TexAuxEntries[i].MaxAnisotropy : 0);
                     schema.HandleByte(ref maxAnisotopry);
                     TexAuxEntries[i].MaxAnisotropy = maxAnisotopry;
                 }
@@ -1311,11 +1359,15 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             schema.HandleInt(ref Colour13);
 
-            schema.HandleFloat(ref KBaseReflectivity);
-            schema.HandleFloat(ref KBaseSpecularCosPower);
+            if (Version < 0x107)
+            {
+                schema.HandleFloat(ref KBaseReflectivity);
+                schema.HandleFloat(ref KBaseSpecularCosPower);
+            }
+
             schema.HandleFloat(ref KCustomEnvMapStrength);
 
-            if (version < 0xe7)
+            if (Version < 0xe7)
             {
                 schema.HandleFloat(ref KEnvLighting);
             }
@@ -1344,8 +1396,14 @@ namespace Diorama.Core.Filetypes.GSC.Components
             }
 
             schema.HandleFloat(ref KCarPaintViewFactor);
-            schema.HandleFloat(ref KCarPaintLightFactor);
-            schema.HandleFloat(ref KBaseRoughness);
+            if (Version < 0xf5)
+            {
+                schema.HandleFloat(ref KCarPaintLightFactor);
+            }
+            if (Version < 0x107)
+            {
+                schema.HandleFloat(ref KBaseRoughness);
+            }
 
             if (Version < 0xe0)
             {
@@ -1358,9 +1416,15 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 schema.HandleFloat(ref DefunctKFractalHeight);
             }
 
-            schema.HandleFloat(ref KEnvLightIntensity);
+            if (Version < 0xf5)
+            {
+                schema.HandleFloat(ref KEnvLightIntensity);
+            }
             schema.HandleFloat(ref KEnvLightSpecular);
-            schema.HandleFloat(ref KEnvFresnel);
+            if (Version < 0xf5)
+            {
+                schema.HandleFloat(ref KEnvFresnel);
+            }
             schema.HandleFloat(ref KEnvFresnelPower);
 
             if (Version < 0xe6)
@@ -1369,7 +1433,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 schema.HandleFloat(ref KSkinSpread);
             }
 
-            schema.HandleFloat(ref KBaseSubstance);
+            if (Version < 0x107)
+            {
+                schema.HandleFloat(ref KBaseSubstance);
+            }
 
             schema.HandleByte(ref KDepthBias);
 
@@ -1406,6 +1473,32 @@ namespace Diorama.Core.Filetypes.GSC.Components
             if (Version > 0xe3)
             {
                 schema.HandleByte(ref BForceDefaultCubeMap);
+            }
+
+            if (Version > 0xff)
+            {
+                if (Version < 0x116)
+                {
+                    if (Version < 0x106)
+                    {
+                        for (int i = 0; i < 8; i++)
+                        {
+                            schema.HandleFloat(ref ShaderGraphParams[i]);
+                        }
+                    }
+                    else
+                    {
+                        schema.HandleSerializableVector(ref ShaderGraphParamsVector);
+
+                        //// Some sort of list structure, need to find some implementations for it!
+                        //int test = 0;
+                        //schema.HandleInt(ref test);
+                        //Debug.Assert(test == 0);
+                        //int test2 = 0;
+                        //schema.HandleInt(ref test2);
+                        //Debug.Assert(test2 == 0);
+                    }
+                }
             }
         }
     }

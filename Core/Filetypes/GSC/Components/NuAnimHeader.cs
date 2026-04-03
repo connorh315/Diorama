@@ -41,7 +41,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
         public List<byte> TangentKeys;
         public List<byte> CurveSetFlags;
 
-        public byte[] Buffer;
+        public byte[] Buffer = new byte[0];
 
         public byte[] CurveGroupKeys;
 

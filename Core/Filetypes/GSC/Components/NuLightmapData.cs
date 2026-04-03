@@ -21,6 +21,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
         public float TexCoordScale0;
         public float TexCoordScale1;
 
+        public List<NuTexGenHdr> TextureFixupData;
 
         public void Deserialize(RawFile file, uint parentVersion)
         {
@@ -36,6 +37,13 @@ namespace Diorama.Core.Filetypes.GSC.Components
             TexCoordOffset1 = file.ReadFloat(true);
             TexCoordScale0 = file.ReadFloat(true);
             TexCoordScale1 = file.ReadFloat(true);
+
+            if (parentVersion > 0xc)
+            {
+                SchemaSerializer temp = new SchemaSerializer(file, false);
+
+                temp.HandleSchemaVector<NuTexGenHdr>(ref TextureFixupData, parentVersion);
+            }
         }
 
         public void Serialize(RawFile file, uint parentVersion)
@@ -52,6 +60,13 @@ namespace Diorama.Core.Filetypes.GSC.Components
             file.WriteFloat(TexCoordOffset1, true);
             file.WriteFloat(TexCoordScale0, true);
             file.WriteFloat(TexCoordScale1, true);
+
+            if (parentVersion > 0xc)
+            {
+                SchemaSerializer temp = new SchemaSerializer(file, true);
+
+                temp.HandleSchemaVector<NuTexGenHdr>(ref TextureFixupData, parentVersion);
+            }
         }
     }
 }

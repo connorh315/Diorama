@@ -13,6 +13,11 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
         public List<NuLightmapData> Lightmaps { get; set; }
 
+        public float MinU;
+        public float MaxU;
+        public float MinV;
+        public float MaxV;
+
         public static NuLightmapDataBlock Parse(RawFile file)
         {
             NuLightmapDataBlock block = new NuLightmapDataBlock();
@@ -21,7 +26,15 @@ namespace Diorama.Core.Filetypes.GSC.Components
             block.Version = file.ReadUInt(true);
             if (block.Version >= 3)
             {
-                block.Lightmaps = NuSerializer.ReadVectorArray<NuLightmapData>(file);
+                block.Lightmaps = NuSerializer.ReadVectorArray<NuLightmapData>(file, block.Version);
+            }
+
+            if (block.Version > 0xd)
+            {
+                block.MinU = file.ReadFloat(true);
+                block.MaxU = file.ReadFloat(true);
+                block.MinV = file.ReadFloat(true);
+                block.MaxV = file.ReadFloat(true);
             }
 
             return block;
@@ -33,7 +46,15 @@ namespace Diorama.Core.Filetypes.GSC.Components
             file.WriteUInt(Version, true);
             if (Version >= 3)
             {
-                NuSerializer.WriteVectorArray(file, Lightmaps);
+                NuSerializer.WriteVectorArray(file, Lightmaps, Version);
+            }
+
+            if (Version > 0xd)
+            {
+                file.WriteFloat(MinU, true);
+                file.WriteFloat(MaxU, true);
+                file.WriteFloat(MinV, true);
+                file.WriteFloat(MaxV, true);
             }
         }
     }
