@@ -41,8 +41,14 @@ namespace Diorama.Core.Types
 
         public static void WriteVectorArray<T>(RawFile file, List<T> items, uint parentVersion = 0)
         {
-            //file.WriteString("ROTV");
-            file.WriteInt(0);
+            if (Settings.ShouldWriteROTV)
+            {
+                file.WriteString("ROTV");
+            }
+            else
+            {
+                file.WriteInt(0);
+            }
             file.WriteInt(items.Count, true);
 
             bool isVectorSerializable =

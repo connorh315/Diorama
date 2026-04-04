@@ -142,8 +142,15 @@ namespace Diorama.Core
         {
             if (Writing)
             {
-                //File.WriteString("ROTV");
-                File.WriteInt(0);
+                if (Settings.ShouldWriteROTV)
+                {
+                    File.WriteString("ROTV");
+                }
+                else
+                {
+                    File.WriteInt(0);
+                }
+
                 File.WriteInt(arr.Count, true);
 
                 foreach (var item in arr)
@@ -193,8 +200,14 @@ namespace Diorama.Core
         {
             if (Writing)
             {
-                //File.WriteString("ROTV");
-                File.WriteInt(0);
+                if (Settings.ShouldWriteROTV)
+                {
+                    File.WriteString("ROTV");
+                }
+                else
+                {
+                    File.WriteInt(0);
+                }
                 File.WriteInt(arr.Count, true);
 
                 foreach (var item in arr)

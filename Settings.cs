@@ -13,5 +13,7 @@ namespace Diorama
 #else
         public static string DatLocation = @"";
 #endif
+
+        public static bool ShouldWriteROTV = true;
     }
 }
