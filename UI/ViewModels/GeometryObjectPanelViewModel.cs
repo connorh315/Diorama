@@ -35,6 +35,16 @@ namespace Diorama.UI.ViewModels
 
                 selectedGeo.Mesh = newMesh;
             });
-        }        
+        }
+
+        public void ExportMesh(string path)
+        {
+            if (Controller.SelectedGeometry == null) return;
+
+            var selectedGeo = Controller.SelectedGeometry;
+
+            OBJConverter.WriteMeshToOBJ(selectedGeo.Mesh, path);
+
+        }
     }
 }

@@ -197,9 +197,33 @@ namespace Diorama.Core.Filetypes.GSC.Components
             return list;
         }
 
-        private Vertex ReadVertex(RawFile file)
+        public static Vertex[] CreateVerticesArray(int count)
         {
-            Vertex vertex = new Vertex();
+            Vertex[] list = new Vertex[count];
+            for (int i = 0; i < count; i++)
+            {
+                list[i] = new Vertex();
+            }
+            return list;
+        }
+
+        public void FillVertices(ref Vertex[] vertices, int firstVertexIndex)
+        {
+            int bufferStartOffset = firstVertexIndex * Stride;
+
+            using (MemoryStream stream = new MemoryStream(VerticesDump))
+            using (RawFile file = new RawFile(stream))
+            {
+                file.Seek(bufferStartOffset, SeekOrigin.Begin);
+                for (int i = 0; i < vertices.Length; i++)
+                {
+                    ReadVertex(file, ref vertices[i]);
+                }
+            }
+        }
+
+        private void ReadVertex(RawFile file, ref Vertex vertex)
+        {
             foreach (VertexDefinition def in Definitions)
             {
                 switch (def.Variable)
@@ -224,7 +248,6 @@ namespace Diorama.Core.Filetypes.GSC.Components
                         break;
                 }
             }
-            return vertex;
         }
 
         private static Vector4 ReadVector(RawFile file, VertexDefinitionStorageEnum storageType)

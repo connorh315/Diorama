@@ -24,11 +24,14 @@ namespace Diorama.Editor
             List<Vector3> positions = new();
             List<Vector3> normals = new();
             List<Vector2> uvs = new();
+            List<Vector3> colors = new();
 
             List<Vertex> vertices = new();
             List<ushort> indices = new();
 
             Dictionary<(int v, int vt, int vn), int> vertexMap = new();
+
+            bool hasVertexColours = false;
 
             foreach (string line in lines)
             {
@@ -36,6 +39,15 @@ namespace Diorama.Editor
                 if (split[0] == "v")
                 {
                     positions.Add(new Vector3(float.Parse(split[1]), float.Parse(split[2]), float.Parse(split[3])));
+                    if (split.Length >= 7)
+                    {
+                        colors.Add(new Vector3(float.Parse(split[4]), float.Parse(split[5]), float.Parse(split[6])));
+                        hasVertexColours = true;
+                    }
+                    else
+                    {
+                        colors.Add(Vector3.One);
+                    }
                 }
                 else if (split[0] == "vn")
                 {
@@ -72,7 +84,7 @@ namespace Diorama.Editor
                                 Position = positions[v],
                                 Normal = vn >= 0 ? normals[vn] : Vector3.Zero,
                                 UVSet01 = vt >= 0 ? new Vector4(uvs[vt], 0, 0) : Vector4.Zero,
-                                ColorSet0 = Vector4.One
+                                ColorSet0 = new Vector4(colors[v], 1)
                             };
 
                             index = vertices.Count;
@@ -119,7 +131,48 @@ namespace Diorama.Editor
 
             mesh.OriginalMesh = nuMesh;
 
+            if (!hasVertexColours)
+            {
+                Console.WriteLine($"Caution: {Path.GetFileName(path)} does not have vertex colours. All vertex colours in the mesh will be set to a default of white");
+            }
+
             return mesh;
+        }
+
+        public static void WriteMeshToOBJ(RenderMesh mesh, string path)
+        {
+            List<string> lines = new();
+
+            var nuMesh = mesh.OriginalMesh;
+
+            Vertex[] vertices = VertexList.CreateVerticesArray(mesh.VerticesCount);
+
+            for (int vListIdx = 0; vListIdx < nuMesh.VertexBuffers.Length; vListIdx++)
+            {
+                var vList = nuMesh.VertexBuffers[vListIdx];
+                vList.FillVertices(ref vertices, mesh.VerticesBase);
+            }
+
+            foreach (var v in vertices)
+            {
+                lines.Add($"v {v.Position.X} {v.Position.Y} {v.Position.Z} {v.ColorSet0.X} {v.ColorSet0.Y} {v.ColorSet0.Z}");
+                lines.Add($"vt {v.UVSet01.X} {v.UVSet01.Y}");
+                lines.Add($"vn {v.Normal.X} {v.Normal.Y} {v.Normal.Z}");
+            }
+
+            int iStart = (int)nuMesh.IndicesBase;
+            int iEnd = (int)(nuMesh.IndicesBase + nuMesh.IndicesCount);
+
+            for (int i = iStart; i < iEnd; i += 3)
+            {
+                ushort i0 = (ushort)(nuMesh.Indices[i] + 1);
+                ushort i1 = (ushort)(nuMesh.Indices[i + 1] + 1);
+                ushort i2 = (ushort)(nuMesh.Indices[i + 2] + 1);
+
+                lines.Add($"f {i0}/{i0}/{i0} {i1}/{i1}/{i1} {i2}/{i2}/{i2}");
+            }
+
+            File.WriteAllLines(path, lines);
         }
     }
 }

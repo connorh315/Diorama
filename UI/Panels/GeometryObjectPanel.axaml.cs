@@ -19,12 +19,13 @@ public class GeometryObjectPanel : TemplatedControl
     {
         base.OnApplyTemplate(e);
 
-        var button = e.NameScope.Find<Button>("ReplaceMesh");
+        var replaceMeshButton = e.NameScope.Find<Button>("ReplaceMesh");
+        if (replaceMeshButton != null)
+            replaceMeshButton.Click += ReplaceMeshClick;
 
-        if (button != null)
-        {
-            button.Click += ReplaceMeshClick;
-        }
+        var exportMeshButton = e.NameScope.Find<Button>("ExportMesh");
+        if (exportMeshButton != null)
+            exportMeshButton.Click += ExportMeshClick;
     }
 
     private async void ReplaceMeshClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -47,6 +48,28 @@ public class GeometryObjectPanel : TemplatedControl
         if (DataContext is GeometryObjectPanelViewModel vm)
         {
             vm.ReplaceMesh(path);
+        }
+    }
+
+    private async void ExportMeshClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        var window = TopLevel.GetTopLevel(this) as Window;
+
+        var obj = new FilePickerFileType("OBJ file") { Patterns = new[] { "*.OBJ" } };
+
+        var file = await window.StorageProvider.SaveFilePickerAsync(
+            new FilePickerSaveOptions
+            {
+                Title = "Export Mesh",
+                FileTypeChoices = new[] { obj },
+                SuggestedFileType = obj,
+            });
+
+        var path = file?.Path.LocalPath;
+
+        if (DataContext is GeometryObjectPanelViewModel vm)
+        {
+            vm.ExportMesh(path);
         }
     }
 }
