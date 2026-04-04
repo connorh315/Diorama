@@ -142,7 +142,8 @@ namespace Diorama.Core
         {
             if (Writing)
             {
-                File.WriteString("ROTV");
+                //File.WriteString("ROTV");
+                File.WriteInt(0);
                 File.WriteInt(arr.Count, true);
 
                 foreach (var item in arr)
@@ -188,6 +189,31 @@ namespace Diorama.Core
             }
         }
 
+        public void HandleVector3Vector(ref List<Vector3> arr, uint parentVersion = 0)
+        {
+            if (Writing)
+            {
+                //File.WriteString("ROTV");
+                File.WriteInt(0);
+                File.WriteInt(arr.Count, true);
+
+                foreach (var item in arr)
+                {
+                    File.WriteVector3(item, true);
+                }
+            }
+            else
+            {
+                string magic = File.ReadString(4);
+                Debug.Assert(magic == "ROTV" || magic == "\0\0\0");
+                int count = File.ReadInt(true);
+                arr = new List<Vector3>();
+                for (int i = 0; i < count; i++)
+                {
+                    arr.Add(File.ReadVector3(true));
+                }
+            }
+        }
 
         // TODO: Remove permanently once all implementations are gone
         public void HandleSerializableVector<T>(ref List<T> arr, uint parentVersion = 0) where T : IVectorSerializable, new()

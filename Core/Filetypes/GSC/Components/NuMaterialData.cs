@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HarfBuzzSharp;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
@@ -13,7 +14,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
 {
     public abstract class NuMaterialData : ISchemaSerializable
     {
-        public uint ExtraStarter;
+        public uint DoesMaterialExist;
 
         public uint Version;
 
@@ -171,7 +172,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
         public float[] ShaderGraphParams = new float[8];
 
-        public List<NuVec4> ShaderGraphParamsVector;
+        public List<NuVec4> ShaderGraphParamsVector0;
+        public List<NuVec4> ShaderGraphParamsVector1;
+        public List<NuVec4> ShaderGraphParamsVector2;
+        public List<NuVec4> ShaderGraphParamsVector3;
 
         public uint shader_Version;
         public short legoVersion;
@@ -217,6 +221,8 @@ namespace Diorama.Core.Filetypes.GSC.Components
         public byte numBones;
 
         public NuMtlUVBlock[] uvBlocks;
+        public List<NuMtlUVBlock> TexturesScope;
+        public List<NuMtlUVBlock> TexturesScope2;
         public byte old_bitangentFlip;
         public byte materialFlags_tangentSwap;
         public byte materialFlags_water;
@@ -468,10 +474,13 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
     public class NuMaterialData_E0 : NuMaterialData
     {
+        public NuMaterialDataBlock Parent;
+
         public string MaterialName;
         public uint Flags;
 
         public byte[] DummyHashArray;
+        public byte[] DummyHashArray2;
 
         public VertexList VertexLayout;
         
@@ -505,15 +514,44 @@ namespace Diorama.Core.Filetypes.GSC.Components
         private int packedInstancedFloatCountVertex;
         private int packedInstancedFloatCountPixel;
 
+        public List<NuShaderUserTextureInfo> VertexShaderUserTexturesInfo;
         public List<NuShaderUserTextureInfo> PixelShaderUserTexturesInfo;
         private int EditorAlphaMode;
 
         public string ShaderFXSize;
 
         public byte[] Padding = new byte[6];
+        private byte shaderGraphMeshAttribsUsed_texcoord0;
+        private byte shaderGraphMeshAttribsUsed_texcoord1;
+        private byte shaderGraphMeshAttribsUsed_texcoord2;
+        private byte shaderGraphMeshAttribsUsed_texcoord3;
+        private byte shaderGraphMeshAttribsUsed_color0;
+        private byte shaderGraphMeshAttribsUsed_color1;
+        private byte shaderGraphMeshAttribsUsed_normal;
+        private uint featureSet;
+        private uint undeclaredInt;
+        private byte SortAfterPostEffects;
+        private byte tFont;
+        private byte DistanceFieldAlpha;
+        private byte IsTPaged;
+        private byte IsDeferredDecal;
+        private byte IsDecal;
+
+        public string ShaderBytecodesPath;
+
+        public NuMaterialData ChildMaterial;
 
         public override void Handle(SchemaSerializer schema, uint parentVersion)
         {
+            //if (Version > 0x100)
+            //{
+            //    schema.HandleUInt(ref DoesMaterialExist);
+            //    if (DoesMaterialExist == 0)
+            //    {
+            //        return;
+            //    }
+            //}
+
             HandleShaderDesc(schema);
             HandleShaderParams(schema);
             
@@ -527,6 +565,14 @@ namespace Diorama.Core.Filetypes.GSC.Components
             Debug.Assert(Flags == 4, "flags != 4");
 
             schema.HandleArray(ref DummyHashArray, 0x494);
+            if (Version > 0x119)
+            {
+                schema.HandleArray(ref DummyHashArray2, 0x5ee);
+            }
+            else if (Version > 0x112) // 0x113 and 0x118 and 0x119
+            {
+                schema.HandleArray(ref DummyHashArray2, 0x46e);
+            }
 
             if (schema.Writing)
             {
@@ -549,6 +595,15 @@ namespace Diorama.Core.Filetypes.GSC.Components
         public void Parse(RawFile file)
         {
             SchemaSerializer temp = new SchemaSerializer(file, false);
+
+            if (Version > 0x100)
+            {
+                temp.HandleUInt(ref DoesMaterialExist);
+                if (DoesMaterialExist == 0)
+                {
+                    return;
+                }
+            }
 
             HandleShaderDesc(temp);
             HandleShaderParams(temp);
@@ -655,6 +710,9 @@ namespace Diorama.Core.Filetypes.GSC.Components
             schema.HandleByte(ref AlphaTestMode);
         }
 
+        public int MaterialLink;
+        public int MaterialLinkData;
+
         public void HandleMtlExtra(SchemaSerializer schema)
         {
             schema.HandleUInt(ref Fx1);
@@ -667,7 +725,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 schema.HandleInt(ref OldTid);
             }
 
-            schema.HandleByte(ref Fxid);
+            schema.HandleByte(ref Fxid); // 0xb4
             schema.HandleByte(ref SpecialId);
 
             schema.HandleShort(ref ShortPril16bit);
@@ -681,16 +739,19 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             if (Version > 0xf8)
             {
-                // do something??
-                int link1 = 0;
-                schema.HandleInt(ref link1);
-                Debug.Assert(link1 == 0);
-                int link2 = 0;
-                schema.HandleInt(ref link2);
-                if (link2 != 0)
+                if (!schema.Writing)
                 {
-                    int link3 = 0;
-                    schema.HandleInt(ref link3);
+                    ChildMaterial = Parent.HandleMaterial(schema);
+                }
+                else
+                {
+                    Parent.HandleMaterialWrite(ChildMaterial, schema);
+                }
+
+                    schema.HandleInt(ref MaterialLink);
+                if (MaterialLink != 0)
+                {
+                    schema.HandleInt(ref MaterialLinkData);
                 }
 
             }
@@ -739,8 +800,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             if (Version > 0xfb)
             {
+                // TODO: temp texture fixup data goes here for < 0x106
                 if (Version > 0x105)
                 {
+
                     if (Version > 0x115)
                     {
                         schema.HandleSchemaVector(ref VertexFixupData);
@@ -775,10 +838,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
                         }
                         schema.HandleSchemaVector(ref PixelShaderInstancedConsts);
                         schema.HandleInt(ref packedInstancedFloatCountPixel);
-                    }
-                    if (Version > 0x115)
-                    {
-                        // TODO: loads of rubbish to implement here
+                        if (Version > 0x115)
+                        {
+                            schema.HandleSchemaVector(ref VertexShaderUserTexturesInfo);
+                        }
                     }
                 }
 
@@ -790,20 +853,25 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
                     if (Version > 0x10e)
                     {
-
+                        schema.HandleByte(ref SortAfterPostEffects);
+                        schema.HandleByte(ref tFont);
+                        schema.HandleByte(ref DistanceFieldAlpha);
+                        schema.HandleByte(ref IsTPaged);
+                        schema.HandleByte(ref IsDeferredDecal);
+                        schema.HandleByte(ref IsDecal);
                     }
                 }
+            }
+
+            if (Version > 0x113)
+            {
+                schema.HandlePascalString(ref ShaderBytecodesPath, 1);
             }
         }
 
         public void HandleShaderDesc(SchemaSerializer schema)
         {
             int iVar1 = 0;
-
-            if (Version > 0x100)
-            {
-                schema.HandleUInt(ref ExtraStarter);
-            }
 
             if (Version < 0x10f)
             {
@@ -910,6 +978,12 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 //Console.WriteLine(uvBlocks[i].UVSet);
             }
 
+            if (Version > 0x115)
+            {
+                schema.HandleSchemaVector(ref TexturesScope);
+                schema.HandleSchemaVector(ref TexturesScope2);
+            }
+
             if (Version < 0xe0)
             {
                 schema.HandleByte(ref old_bitangentFlip);
@@ -947,6 +1021,20 @@ namespace Diorama.Core.Filetypes.GSC.Components
             if (Version > 0xf6)
             {
                 schema.HandleUInt(ref shaderFxCodeHash);
+            }
+
+            if (Version > 0x116)
+            {
+                schema.HandleByte(ref shaderGraphMeshAttribsUsed_texcoord0);
+                schema.HandleByte(ref shaderGraphMeshAttribsUsed_texcoord1);
+                schema.HandleByte(ref shaderGraphMeshAttribsUsed_texcoord2);
+                schema.HandleByte(ref shaderGraphMeshAttribsUsed_texcoord3);
+                schema.HandleByte(ref shaderGraphMeshAttribsUsed_color0);
+                schema.HandleByte(ref shaderGraphMeshAttribsUsed_color1);
+                if (Version > 0x117)
+                {
+                    schema.HandleByte(ref shaderGraphMeshAttribsUsed_normal);
+                }
             }
 
             if (Version < 0x10e)
@@ -1199,10 +1287,18 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 schema.HandleUInt(ref shaderVersion);
             }
             schema.HandleUInt(ref gpuVendor);
+            if (Version > 0x11a)
+            {
+                schema.HandleUInt(ref featureSet);
+            }
             schema.HandleUInt(ref colourSpace);
             if (Version < 0x110)
             {
                 schema.HandleUInt(ref bakedLighting);
+            }
+            else
+            {
+                schema.HandleUInt(ref undeclaredInt);
             }
 
             schema.HandleInt(ref discreteLightType);
@@ -1240,7 +1336,6 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
         public void HandleShaderParams(SchemaSerializer schema)
         {
-
             schema.HandleInt(ref Diffuse0Index);
             schema.HandleInt(ref Diffuse1Index);
             schema.HandleInt(ref Diffuse2Index);
@@ -1284,7 +1379,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             schema.HandleInt(ref numTexAuxEntries);
 
-            if (numTexAuxEntries > 40)
+            if (numTexAuxEntries > 40 || numTexAuxEntries < 0)
             {
                 throw new Exception("bad numTexAuxEntries!");
             }
@@ -1493,7 +1588,11 @@ namespace Diorama.Core.Filetypes.GSC.Components
                     }
                     else
                     {
-                        schema.HandleSerializableVector(ref ShaderGraphParamsVector);
+                        schema.HandleSerializableVector(ref ShaderGraphParamsVector2);
+                        if (Version > 0x114)
+                        {
+                            schema.HandleSerializableVector(ref ShaderGraphParamsVector3);
+                        }
 
                         //// Some sort of list structure, need to find some implementations for it!
                         //int test = 0;
@@ -1503,6 +1602,13 @@ namespace Diorama.Core.Filetypes.GSC.Components
                         //schema.HandleInt(ref test2);
                         //Debug.Assert(test2 == 0);
                     }
+                }
+                else
+                {
+                    schema.HandleSerializableVector(ref ShaderGraphParamsVector0);
+                    schema.HandleSerializableVector(ref ShaderGraphParamsVector1);
+                    schema.HandleSerializableVector(ref ShaderGraphParamsVector2);
+                    schema.HandleSerializableVector(ref ShaderGraphParamsVector3);
                 }
             }
         }

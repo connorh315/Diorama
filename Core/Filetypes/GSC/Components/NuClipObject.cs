@@ -23,6 +23,8 @@ namespace Diorama.Core.Filetypes.GSC.Components
         public byte Unused;
 
         public byte RequiresLightState;
+
+        public byte IsFaceOn;
     }
 
     public class NuClipObject : ISchemaSerializable
@@ -57,9 +59,14 @@ namespace Diorama.Core.Filetypes.GSC.Components
                     schema.HandleByte(ref Elements[i].LightmapType);
                     schema.HandleByte(ref Elements[i].TransformType);
                     schema.HandleByte(ref Elements[i].GeomType);
-                    schema.HandleByte(ref Elements[i].Unused);
+                    if (parentVersion > 0x22)
+                    {
+                        schema.HandleByte(ref Elements[i].Unused);
+                    }
 
                     schema.HandleByte(ref Elements[i].RequiresLightState);
+
+                    schema.HandleByte(ref Elements[i].IsFaceOn);
                 }
             }
         }

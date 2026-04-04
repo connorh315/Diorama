@@ -19,7 +19,7 @@ namespace Diorama.Core.Filetypes.GSC
 
         public NuTextureHeaders TextureHeaders { get; set; }
 
-        public List<NuSpline> Splines { get; set; }
+        public List<NuSpline> Splines;
 
         public List<NuVfxLocator> VfxLocators { get; set; }
 
@@ -84,6 +84,8 @@ namespace Diorama.Core.Filetypes.GSC
 
         protected override void Parse(GSerializationContext ctx)
         {
+            SchemaSerializer schema = new SchemaSerializer(file, false);
+
             SceneInfo = NuSceneInfo.Read(file, NU20Version);
 
             if (NU20Version > 0x56)
@@ -101,7 +103,7 @@ namespace Diorama.Core.Filetypes.GSC
                 Debug.Assert(hasTextureHeaderComponent == 1);
             }
 
-            Splines = NuSerializer.ReadVectorArray<NuSpline>(file, NU20Version);
+            schema.HandleSchemaVector(ref Splines, NU20Version);
 
             VfxLocators = NuSerializer.ReadVectorArray<NuVfxLocator>(file);
 
@@ -112,7 +114,10 @@ namespace Diorama.Core.Filetypes.GSC
             Debug.Assert(file.ReadUInt(true) == 0);
             Debug.Assert(file.ReadUInt(true) == 1);
 
-            MaterialBlock = GComponentFactory.Parse<NuMaterialDataBlock>(file, NU20Version);
+            var matBlock = new NuMaterialDataBlock();
+            matBlock.Handle(schema, NU20Version, ctx);
+            MaterialBlock = matBlock;
+            //MaterialBlock = GComponentFactory.Parse<NuMaterialDataBlock>(file, NU20Version);
 
             //Materials = NuMaterialData.Read(file);
 
@@ -217,11 +222,12 @@ namespace Diorama.Core.Filetypes.GSC
                 file.WriteInt(0);
             }
 
-            NuSerializer.WriteVectorArray(file, Splines, NU20Version);
-            if (Splines.Count != 0)
-            {
-                throw new NotSupportedException("cannot write splines");
-            }
+            schema.HandleSchemaVector(ref Splines, NU20Version);
+            //NuSerializer.WriteVectorArray(file, Splines, NU20Version);
+            //if (Splines.Count != 0)
+            //{
+            //    throw new NotSupportedException("cannot write splines");
+            //}
 
             NuSerializer.WriteVectorArray(file, VfxLocators);
             if (VfxLocators.Count != 0)
@@ -235,7 +241,7 @@ namespace Diorama.Core.Filetypes.GSC
             file.WriteInt(0, true);
             file.WriteInt(1, true);
 
-            MaterialBlock.Handle(schema, NU20Version);
+            MaterialBlock.Handle(schema, NU20Version, ctx);
 
             //file.WriteString("LTMU");
             //file.WriteUInt(Materials[0].Version, true);

@@ -42,7 +42,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             int stride = 0;
             for (int vDef = 0; vDef < vertexDefinitionCount; vDef++)
-            {
+            { // if def.type is like 0x26 etc. I think it might mean to use the second vertex buffer + then the specific type??
                 VertexDefinition def = VertexDefinition.Parse(file);
 
                 list.Definitions[vDef] = def;

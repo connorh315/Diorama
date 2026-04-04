@@ -32,6 +32,12 @@ namespace Diorama.Core.Filetypes.GSC
 
         public bool GetOrAddReference(object obj, out int reference)
         {
+            if (obj == null)
+            {
+                reference = 0;
+                return false;
+            }
+
             if (References.TryGetValue(obj, out reference)) return true;
 
             reference = AddReference(obj);

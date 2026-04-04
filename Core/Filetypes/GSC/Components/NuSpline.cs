@@ -9,30 +9,46 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class NuSpline : IVectorSerializable
+    public class NuSpline : ISchemaSerializable
     {
         public string Title;
         public List<Vector3> Path;
         public byte isPeriodic;
         public byte isBezier;
 
-        public virtual void Deserialize(RawFile file, uint parentVersion)
+        public void Handle(SchemaSerializer schema, uint parentVersion)
         {
-            Title = file.ReadPascalString(true);
-            Path = NuSerializer.ReadVectorArray<Vector3>(file);
+            schema.HandlePascalString(ref Title, 1);
+            schema.HandleVector3Vector(ref Path);
             if (parentVersion > 0x4f)
             {
-                isPeriodic = file.ReadByte();
+                schema.HandleByte(ref isPeriodic);
                 if (parentVersion > 0x57)
                 {
-                    isBezier = file.ReadByte();
+                    schema.HandleByte(ref isBezier);
                 }
             }
         }
 
-        public void Serialize(RawFile file, uint parentVersion)
-        {
-            throw new NotImplementedException();
-        }
+
+        //public virtual void Deserialize(RawFile file, uint parentVersion)
+        //{
+        //    Title = file.ReadPascalString(true);
+        //    Path = NuSerializer.ReadVectorArray<Vector3>(file);
+        //    if (parentVersion > 0x4f)
+        //    {
+        //        isPeriodic = file.ReadByte();
+        //        if (parentVersion > 0x57)
+        //        {
+        //            isBezier = file.ReadByte();
+        //        }
+        //    }
+        //}
+
+
+        //public void Serialize(RawFile file, uint parentVersion)
+        //{
+        //    throw new NotImplementedException();
+        //}
     }
 }

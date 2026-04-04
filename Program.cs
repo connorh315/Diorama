@@ -47,7 +47,7 @@ namespace Diorama
             int total = 0;
 
             var datFiles = Directory.GetFiles(
-                @"F:\PS4Games\CUSA01176\data",
+                @"G:\SteamLibrary\steamapps\common\LEGO DC Super-Villains",
                 "*.DAT",
                 SearchOption.AllDirectories
             );
@@ -147,9 +147,15 @@ namespace Diorama
                 //if (!ex.Message.StartsWith("Unsupported NU20 version"))
                 //    Console.WriteLine($"Failed to parse {file.FileLocation}: {ex}");
 
+                //countFails.AddOrUpdate(
+                //    ex.Message,
+                //    1,                  // if key does not exist
+                //    (_, old) => old + 1 // if key exists
+                //);
+
                 countFails.AddOrUpdate(
-                    ex.Message,
-                    1,                  // if key does not exist
+                    (string)file.Opaque,
+                    1, // if key does not exist
                     (_, old) => old + 1 // if key exists
                 );
             }

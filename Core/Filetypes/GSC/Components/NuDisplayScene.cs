@@ -31,7 +31,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             Debug.Assert(file.ReadString(4) == "PSID");
             uint version = file.ReadUInt(true);
-            Debug.Assert(version == 0x20 || version == 0x21 || version == 0x22, $"Unsupported DISP version: {version}");
+            Debug.Assert(version == 0x20 || version == 0x21 || version == 0x22 || version == 0x23, $"Unsupported DISP version: {version}");
 
             NuDisplayScene scene = new NuDisplayScene();
             scene.Version = version;

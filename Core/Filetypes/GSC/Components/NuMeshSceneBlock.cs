@@ -72,7 +72,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             NuMeshSceneBlock meshBlock = new NuMeshSceneBlock();
             meshBlock.Version = file.ReadUInt(true);
-            Debug.Assert(meshBlock.Version == 0xaf);
+            Debug.Assert(meshBlock.Version == 0xaf || meshBlock.Version == 0xc8);
 
             meshBlock.Meshes = new NuRenderMesh[file.ReadInt(true)];
             for (int i = 0; i < meshBlock.Meshes.Length; i++)
@@ -80,6 +80,12 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 Debug.Assert(file.ReadUInt(true) == 0x1);
 
                 NuRenderMesh mesh = new NuRenderMesh();
+
+                if (meshBlock.Version == 0xc8)
+                {
+                    Debug.Assert(file.ReadString(4) == "SMNR");
+                    Debug.Assert(file.ReadInt(true) == 0xc8);
+                }
 
                 uint vertexBufferCount = file.ReadUInt(true);
                 mesh.VertexBuffers = new VertexList[vertexBufferCount];
@@ -158,6 +164,12 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 file.WriteInt(1, true);
 
                 var mesh = Meshes[i];
+
+                if (Version == 0xc8)
+                {
+                    file.WriteString("SMNR");
+                    file.WriteInt(0xc8, true);
+                }
 
                 file.WriteInt(mesh.VertexBuffers.Length, true);
                 for (int vList = 0; vList < mesh.VertexBuffers.Length; vList++)
