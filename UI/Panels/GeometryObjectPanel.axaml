@@ -31,11 +31,14 @@
           <controls:Vec3Input
               Value="{Binding Controller.SelectedGeometry.Scale, Mode=TwoWay}"
               InputLabel="Scale" />
+          
+          <controls:ColorInput InputLabel="Material Primary Colour" Color="{Binding Controller.SelectedGeometry.Material.Colour1, Mode=TwoWay}" />
+          
           <StackPanel Orientation="Horizontal">
             <Button Content="Replace mesh" x:Name="ReplaceMesh"/>
             <Button Content="Export mesh" x:Name="ExportMesh"/>
-            
           </StackPanel>
+
         </StackPanel>
         
       </ControlTemplate>

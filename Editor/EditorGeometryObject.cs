@@ -18,7 +18,7 @@ namespace Diorama.Editor
 
         public EditorClipObject Parent { get; set; }
         
-        public EditorMaterial Material;
+        public EditorMaterial Material { get; set; }
         public EditorLightmap Lightmap;
         public RenderMesh Mesh { get; set; }
 

@@ -1,0 +1,46 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:Diorama">
+
+  <!--
+    Additional resources 
+    Using Control Themes:
+         https://docs.avaloniaui.net/docs/basics/user-interface/styling/control-themes
+    Using Theme Variants:
+         https://docs.avaloniaui.net/docs/guides/styles-and-resources/how-to-use-theme-variants
+  -->
+  
+  <Design.PreviewWith>
+    <StackPanel Width="400" Spacing="10">      
+        <StackPanel Background="{DynamicResource SystemRegionBrush}">
+          <controls:Vec3Input />
+        </StackPanel>
+    </StackPanel>
+  </Design.PreviewWith>
+ 
+  <ControlTheme x:Key="{x:Type controls:ColorInput}" TargetType="controls:ColorInput">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*" />
+            <ColumnDefinition Width="3*" />
+          </Grid.ColumnDefinitions>
+          <TextBlock Grid.Column="0" Text="{TemplateBinding InputLabel}" VerticalAlignment="Center" />
+          <ColorPicker Grid.Column="1" HorizontalAlignment="Left" Color="{Binding UIColor, RelativeSource={RelativeSource TemplatedParent}}"/>
+          <!--
+          <Grid Grid.Column="1" ColumnDefinitions="15,*,15,*,15,*">
+            <controls:DragLabel Grid.Column="0" Text="X" VerticalAlignment="Center" HorizontalAlignment="Center" Value="{Binding X, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"/>
+            <TextBox x:Name="PART_Textbox1" Grid.Column="1" Text="{Binding X, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay, StringFormat=F4}" />
+            <controls:DragLabel Grid.Column="2" Text="Y" VerticalAlignment="Center" HorizontalAlignment="Center" Value="{Binding Y, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"/>
+            <TextBox x:Name="PART_Textbox2" Grid.Column="3" Text="{Binding Y, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay, StringFormat=F4}"/>
+            <controls:DragLabel Grid.Column="4" Text="Z" VerticalAlignment="Center" HorizontalAlignment="Center" Value="{Binding Z, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"/>
+            <TextBox x:Name="PART_Textbox3" Grid.Column="5" Text="{Binding Z, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay, StringFormat=F4}"/>
+          </Grid>
+          -->
+        </Grid>
+
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+</ResourceDictionary>

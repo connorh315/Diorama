@@ -14,7 +14,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="11.3.12" />
+    <PackageReference Include="Avalonia" Version="11.3.13" />
+    <PackageReference Include="Avalonia.Controls.ColorPicker" Version="11.3.13" />
     <PackageReference Include="Avalonia.Desktop" Version="11.3.12" />
     <PackageReference Include="Avalonia.Diagnostics" Version="11.3.12" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.12" />
@@ -29,6 +30,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="UI\Controls\ColorInput.axaml.cs">
+      <DependentUpon>ColorInput.axaml</DependentUpon>
+    </Compile>
     <Compile Update="UI\Panels\GeometryObjectPanel.axaml.cs">
       <DependentUpon>GeometryObjectPanel.axaml</DependentUpon>
     </Compile>
