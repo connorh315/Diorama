@@ -37,7 +37,7 @@ namespace Diorama
 
             this.AttachDevTools();
 
-            Title = "Diorama - v0.1.0";
+            Title = "Diorama - v1.0.0";
         }
 
         private void Window_DragDrop(object sender, DragEventArgs e)
