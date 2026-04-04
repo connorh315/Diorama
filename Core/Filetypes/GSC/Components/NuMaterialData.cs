@@ -200,6 +200,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
         public uint layerBlendDiffuse;
         public uint layerBlendDiffuse1;
         public uint layerBlendDiffuse2;
+        public byte[] Temp = new byte[4]; 
         public uint usesDiffuseLayerColour;
         public uint usesDiffuseLayerColour1;
         public uint usesDiffuseLayerColour2;
@@ -502,6 +503,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
         private byte AlphaRespondToLights;
         private byte AlphaRespondToProbes;
 
+        public List<NuTexGenHdr> TempVertexFixupData;
         public List<NuTexGenHdr> VertexFixupData;
         public List<NuTexGenHdr> PixelFixupData;
 
@@ -564,7 +566,15 @@ namespace Diorama.Core.Filetypes.GSC.Components
             schema.HandleUInt(ref Flags);
             Debug.Assert(Flags == 4, "flags != 4");
 
-            schema.HandleArray(ref DummyHashArray, 0x494);
+            if (Version > 0xce)
+            {
+                schema.HandleArray(ref DummyHashArray, 0x494);
+            }
+            else // 0xc6 and 0xca and 0xce definitely
+            {
+                schema.HandleArray(ref DummyHashArray, 0x45c);
+            }
+
             if (Version > 0x119)
             {
                 schema.HandleArray(ref DummyHashArray2, 0x5ee);
@@ -572,6 +582,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
             else if (Version > 0x112) // 0x113 and 0x118 and 0x119
             {
                 schema.HandleArray(ref DummyHashArray2, 0x46e);
+            }
+            else if (Version == 0xfe)
+            {
+                schema.HandleArray(ref DummyHashArray2, 0x54);
             }
 
             if (schema.Writing)
@@ -581,6 +595,16 @@ namespace Diorama.Core.Filetypes.GSC.Components
             else
             {
                 VertexLayout = VertexList.Parse(schema.File);
+            }
+
+            if (Version < 0xd5)
+            {
+                schema.HandleUInt(ref depthVertexDescMask);
+            }
+
+            if (Version < 0xd4)
+            {
+                schema.HandleUInt(ref defunctFPThroughputPS3);
             }
 
             if (Version < 0xda)
@@ -712,6 +736,24 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
         public int MaterialLink;
         public int MaterialLinkData;
+        private uint depthVertexDescMask;
+        private uint defunctFPThroughputPS3;
+        private short defunctShineSortId;
+        private int nameIx;
+        private byte vanmmode;
+        private byte uanmmode;
+        private float du;
+        private float dv;
+        private float sv;
+        private float su;
+        private byte oldWasSerialized;
+        private int SphereMap;
+        private int ShineMap;
+        private float defunctEnvRotationX;
+        private float defunctEnvRotationY;
+        private float defunctEnvRotationZ;
+        private float defunctShineStrength;
+        private float defunctShineSpread;
 
         public void HandleMtlExtra(SchemaSerializer schema)
         {
@@ -737,6 +779,22 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 schema.HandlePascalString(ref referencedMaterialName, 1);
             }
 
+            if (Version < 0xc7)
+            {
+                schema.HandleShort(ref defunctShineSortId);
+            }
+
+            if (Version < 0xd2)
+            {
+                schema.HandleByte(ref uanmmode);
+                schema.HandleByte(ref vanmmode);
+
+                schema.HandleFloat(ref du);
+                schema.HandleFloat(ref dv);
+                schema.HandleFloat(ref su);
+                schema.HandleFloat(ref sv);
+            }
+
             if (Version > 0xf8)
             {
                 if (!schema.Writing)
@@ -748,7 +806,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
                     Parent.HandleMaterialWrite(ChildMaterial, schema);
                 }
 
-                    schema.HandleInt(ref MaterialLink);
+                schema.HandleInt(ref MaterialLink);
                 if (MaterialLink != 0)
                 {
                     schema.HandleInt(ref MaterialLinkData);
@@ -766,6 +824,11 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 schema.HandleByte(ref DefunctIsCreasedMeshMaterial);
             }
             schema.HandleByte(ref HasVariants);
+
+            if (Version < 0xd2)
+            {
+                schema.HandleByte(ref oldWasSerialized);
+            }
 
             schema.HandleByte(ref LegoStudMaterial);
 
@@ -796,19 +859,27 @@ namespace Diorama.Core.Filetypes.GSC.Components
             schema.HandleByte(ref ForceTPageSurfType);
             schema.HandleByte(ref ForceTPageAlphaFade);
 
+            if (Version < 0xd3)
+            {
+                schema.HandleInt(ref nameIx);
+            }
+
             schema.HandleUInt(ref DefaultRenderStage);
 
             if (Version > 0xfb)
             {
                 // TODO: temp texture fixup data goes here for < 0x106
-                if (Version > 0x105)
+                if (Version < 0x106)
                 {
-
+                    schema.HandleSchemaVector(ref TempVertexFixupData, 0xe);
+                }
+                else
+                {
                     if (Version > 0x115)
                     {
-                        schema.HandleSchemaVector(ref VertexFixupData);
+                        schema.HandleSchemaVector(ref VertexFixupData, 0xe);
                     }
-                    schema.HandleSchemaVector(ref PixelFixupData);
+                    schema.HandleSchemaVector(ref PixelFixupData, 0xe);
                 }
             }
 
@@ -911,7 +982,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
             schema.HandleUInt(ref occlusion);
             schema.HandleUInt(ref refraction);
             schema.HandleUInt(ref reflection);
-            schema.HandleUInt(ref baseDiffuseUsage);
+            if (Version > 0xc8)
+            {
+                schema.HandleUInt(ref baseDiffuseUsage);
+            }
             if (Version > 0xf5)
             {
                 schema.HandleUInt(ref RimLightBlendMode);
@@ -919,10 +993,25 @@ namespace Diorama.Core.Filetypes.GSC.Components
             schema.HandleUInt(ref layerBlendDiffuse);
             schema.HandleUInt(ref layerBlendDiffuse1);
             schema.HandleUInt(ref layerBlendDiffuse2);
-            schema.HandleUInt(ref usesDiffuseLayerColour);
-            schema.HandleUInt(ref usesDiffuseLayerColour1);
-            schema.HandleUInt(ref usesDiffuseLayerColour2);
-            schema.HandleUInt(ref usesDiffuseLayerColour3);
+
+            if (Version < 200)
+            {
+                if (Version > 0xc4)
+                {
+                    for (int i = 0; i < 4; i++)
+                    {
+                        schema.HandleByte(ref Temp[i]);
+                    }
+                }
+            }
+            else
+            {
+                schema.HandleUInt(ref usesDiffuseLayerColour);
+                schema.HandleUInt(ref usesDiffuseLayerColour1);
+                schema.HandleUInt(ref usesDiffuseLayerColour2);
+                schema.HandleUInt(ref usesDiffuseLayerColour3);
+            }
+
 
             schema.HandleUInt(ref layerBlendSpecular0);
             schema.HandleUInt(ref layerBlendSpecular1);
@@ -945,7 +1034,15 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             schema.HandleByte(ref numBones);
 
-            int uvBlocksToRead = 17;
+            int uvBlocksToRead = 16;
+            if (Version > 0xcc)
+            {
+                uvBlocksToRead += 1;
+            }
+            if (Version < 0xc7)
+            {
+                uvBlocksToRead += 2;
+            }
             if (Version > 0xef)
             {
                 uvBlocksToRead = 21;
@@ -1099,7 +1196,11 @@ namespace Diorama.Core.Filetypes.GSC.Components
             {
                 schema.HandleByte(ref materialFlags_disablePerPixelFade);
             }
-            schema.HandleByte(ref materialFlags_cel_shading);
+
+            if (Version > 0xcd)
+            {
+                schema.HandleByte(ref materialFlags_cel_shading);
+            }
 
             if (Version > 0xd6)
             {
@@ -1167,8 +1268,12 @@ namespace Diorama.Core.Filetypes.GSC.Components
             schema.HandleByte(ref vertexFlags_layer2VertAlbedo);
             schema.HandleByte(ref vertexFlags_layer3VertAlbedo);
             schema.HandleByte(ref vertexFlags_disableSeparatePositionStream);
-            schema.HandleByte(ref vertexFlags_legoTerrain);
-            schema.HandleByte(ref vertexFlags_legoTerrainMeshType);
+
+            if (Version > 0xc2)
+            {
+                schema.HandleByte(ref vertexFlags_legoTerrain);
+                schema.HandleByte(ref vertexFlags_legoTerrainMeshType);
+            }
 
             if (Version > 0xdb)
             {
@@ -1248,8 +1353,11 @@ namespace Diorama.Core.Filetypes.GSC.Components
             }
             schema.HandleByte(ref miscFlags_refractionIgnoreVertexNormal);
             schema.HandleByte(ref miscFlags_shadedGlow);
-            schema.HandleByte(ref miscFlags_project_to_far_plane);
-            if (Version < 0x10f)
+            if (Version > 0xc1)
+            {
+                schema.HandleByte(ref miscFlags_project_to_far_plane);
+            }
+            if (Version > 0xc3 && Version < 0x10f)
             {
                 schema.HandleByte(ref miscFlags_sortAfterPostEffects);
             }
@@ -1348,6 +1456,12 @@ namespace Diorama.Core.Filetypes.GSC.Components
             schema.HandleInt(ref Normal1Index);
 
             schema.HandleInt(ref EnvMap);
+
+            if (Version < 0xc7)
+            {
+                schema.HandleInt(ref SphereMap);
+                schema.HandleInt(ref ShineMap);
+            }
 
             schema.HandleInt(ref VTFH);
             schema.HandleInt(ref VTFN);
@@ -1479,12 +1593,16 @@ namespace Diorama.Core.Filetypes.GSC.Components
             schema.HandleFloat(ref KVTFNormal);
             schema.HandleInt(ref KVTFOffset);
 
-            schema.HandleFloat(ref KVTFDirection);
-            schema.HandleFloat(ref KVTFDirection1);
-            schema.HandleFloat(ref KVTFDirection2);
-            schema.HandleFloat(ref KUseVTFDirection);
+            if (Version > 0xcb)
+            {
+                schema.HandleFloat(ref KVTFDirection);
+                schema.HandleFloat(ref KVTFDirection1);
+                schema.HandleFloat(ref KVTFDirection2);
+                schema.HandleFloat(ref KUseVTFDirection);
+                
+                schema.HandleInt(ref Vtfh2);
+            }
 
-            schema.HandleInt(ref Vtfh2);
 
             schema.HandleInt(ref Colour14);
             schema.HandleInt(ref Colour15);
@@ -1516,6 +1634,13 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 schema.HandleFloat(ref DefunctKFractalHeight);
             }
 
+            if (Version < 0xc7)
+            {
+                schema.HandleFloat(ref defunctEnvRotationX);
+                schema.HandleFloat(ref defunctEnvRotationY);
+                schema.HandleFloat(ref defunctEnvRotationZ);
+            }
+
             if (Version < 0xf5)
             {
                 schema.HandleFloat(ref KEnvLightIntensity);
@@ -1533,6 +1658,12 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 schema.HandleFloat(ref KSkinSpread);
             }
 
+            if (Version < 0xc7)
+            {
+                schema.HandleFloat(ref defunctShineSpread);
+                schema.HandleFloat(ref defunctShineStrength);
+            }
+
             if (Version < 0x107)
             {
                 schema.HandleFloat(ref KBaseSubstance);
@@ -1540,7 +1671,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             schema.HandleByte(ref KDepthBias);
 
-            schema.HandleFloat(ref KDepthBiasScale);
+            if (Version > 0xc9)
+            {
+                schema.HandleFloat(ref KDepthBiasScale);
+            }
             schema.HandleFloat(ref KShadowBias);
 
             if (Version > 0xde)
@@ -1559,13 +1693,16 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             schema.HandleFloat(ref KStiffness);
 
-            if (Version >= 0xd1)
+            if (Version > 0xb6)
             {
                 schema.HandleFloat(ref PerLayerUVScale1);
                 schema.HandleFloat(ref PerLayerUVScale2);
                 schema.HandleFloat(ref PerLayerUVScale3);
                 schema.HandleFloat(ref PerLayerUVScale4);
+            }
 
+            if (Version > 0xd0)
+            {
                 schema.HandleByte(ref KLightmapTranslucency);
                 schema.HandleByte(ref KLightmapEmission);
             }

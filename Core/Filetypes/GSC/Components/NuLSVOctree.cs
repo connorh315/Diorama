@@ -47,7 +47,8 @@ namespace Diorama.Core.Filetypes.GSC.Components
             {
                 schema.Expect("TGLD");
                 schema.HandleUInt(ref DlgtVersion);
-                Debug.Assert(DlgtVersion == 0x34 || DlgtVersion == 0x36 || DlgtVersion == 0x37 || DlgtVersion == 0x39, $"dlgtversion not supported: {DlgtVersion}");
+
+                Debug.Assert(DlgtVersion == 0x31 || DlgtVersion == 0x33 || DlgtVersion == 0x34 || DlgtVersion == 0x36 || DlgtVersion == 0x37 || DlgtVersion == 0x39, $"dlgtversion not supported: {DlgtVersion}");
 
                 schema.HandleSchemaVarArray(ref Lights, DlgtVersion);
 

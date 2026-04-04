@@ -79,6 +79,7 @@ namespace Diorama.Core.Filetypes.GSC
                 case 0x50:
                 case 0x52:
                 case 0x53:
+                case 0x56:
                 case 0x57:
                 case 0x58:
                     gsc = new GScene_4F();

@@ -148,9 +148,14 @@ namespace Diorama.Core.Filetypes.GSC
 
             OccluderBlock = NuOccluderBlock.Parse(file);
 
+            if (NU20Version < 0x4f)
+            {
+                NuIrradianceBlock block = GComponentFactory.Parse<NuIrradianceBlock>(file);
+            }
+
             //OctreeBlock = NuOctreeBlock.Parse(file);
 
-            OctreeBlock = GComponentFactory.Parse<NuOctreeBlock>(file);
+            OctreeBlock = GComponentFactory.Parse<NuOctreeBlock>(file, NU20Version);
 
             if (NameTable.Version < 0x14)
             {

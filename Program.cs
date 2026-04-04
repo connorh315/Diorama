@@ -17,7 +17,7 @@ namespace Diorama
         // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
         // yet and stuff might break.
         [STAThread]
-        public static void Main(string[] args) => BuildAvaloniaApp()
+        public static void Main2(string[] args) => BuildAvaloniaApp()
             .StartWithClassicDesktopLifetime(args);
 
         // Avalonia configuration, don't remove; also used by visual designer.
@@ -31,10 +31,10 @@ namespace Diorama
                 //})
                 .LogToTrace();
 
-        static void Main2(string[] args)
+        static void Main(string[] args)
         {
 
-            //ParseFile(@"A:\ADDITIONALCONTENT\OPUS_ADVENTURETIME\LEVELS\LEVELPACK\OPUS_ADVENTURETIME\OPUS_ADVENTURETIME_MIDTRO3\CUT_GIZ_ENCHIRIDION_BOOTH_DX11.GSC");
+            //ParseFile(@"A:\ADDITIONALCONTENT\OPUS_ADVENTURETIME\LEVELS\LEVELPACK\OPUS_ADVENTURETIME\OPUS_ADVENTURETIME_MIDTRO3\CUT_GIZ_ENCHIRIDION_BDOOTH_DX11.GSC");
             //TryParseFile(@"A:\CHARS\CREATURE\GHOST_75827\GHOST_75827_KRAWLIE_DX11.GHG");
             //TryParseFile(@"A:\CHARS\SUPER_CHARACTER\FACE\FACE_METALBEARD_DX11.GHG");
             //TryParseFile(@"A:\LEVELS\BUILDER\BUILDERGAMEMECHANICS\BUILDERMASTERBUILD\BUILDERMASTERBUILD_DX11.GSC");
@@ -47,7 +47,7 @@ namespace Diorama
             int total = 0;
 
             var datFiles = Directory.GetFiles(
-                @"G:\SteamLibrary\steamapps\common\LEGO DC Super-Villains",
+                @"G:\SteamLibrary\steamapps\common\LEGO Batman 3 Beyond Gotham",
                 "*.DAT",
                 SearchOption.AllDirectories
             );

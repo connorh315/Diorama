@@ -27,7 +27,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
         public NuMaterialData_E0 HandleMaterial(SchemaSerializer schema)
         {
             int reference = 1;
-            if (Version > 0x100)
+            if (Version > 0xfd) // definitely exists in 0xfe
             {
                 schema.HandleInt(ref reference);
             }

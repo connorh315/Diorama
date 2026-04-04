@@ -33,7 +33,6 @@ namespace Diorama.Core.Filetypes.GSC.Components
         public List<ushort> KeyItems;
 
         public List<float> FConstants;
-        public int BufferSize;
 
         public List<ushort> Constants;
         public List<ushort> KeyTypes;
@@ -41,7 +40,8 @@ namespace Diorama.Core.Filetypes.GSC.Components
         public List<byte> TangentKeys;
         public List<byte> CurveSetFlags;
 
-        public byte[] Buffer = new byte[0];
+        public byte[] BufferC = new byte[0];
+        public byte[] BufferD = new byte[0];
 
         public byte[] CurveGroupKeys;
 
@@ -83,9 +83,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
             if (major > 'C')
             {
                 schema.HandleLegacyVarArray(ref FConstants);
-                schema.HandleInt(ref BufferSize);
 
-                Debug.Assert(BufferSize == 0, "ANIC+ buffer size > 0 not seen before!");
+                int bufferSize = BufferC.Length;
+                schema.HandleInt(ref bufferSize);
+                schema.HandleArray(ref BufferC, bufferSize);
             }
 
             schema.HandleLegacyVarArray(ref Constants);
@@ -96,9 +97,9 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             if (major > 'D')
             {
-                int bufferSize = Buffer.Length;
+                int bufferSize = BufferD.Length;
                 schema.HandleInt(ref bufferSize);
-                schema.HandleArray(ref Buffer, bufferSize);
+                schema.HandleArray(ref BufferD, bufferSize);
             }
 
             schema.HandleArray(ref CurveGroupKeys, (int)(KeysNeeded * CurveGroupSize));

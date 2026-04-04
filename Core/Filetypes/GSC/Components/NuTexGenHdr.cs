@@ -19,8 +19,6 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
         public void Handle(SchemaSerializer schema, uint parentVersion)
         {
-            parentVersion = 0xe; // not sure where this comes from
-
             schema.HandleArray(ref Checksum, 16);
             schema.HandlePascalString(ref TextureName, 1);
             schema.HandlePascalString(ref Path, 1);

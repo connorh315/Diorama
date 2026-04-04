@@ -20,7 +20,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
             Debug.Assert(file.ReadString(4) == "LBTN");
 
             table.Version = file.ReadUInt(true);
-            Debug.Assert(table.Version == 0x4e || table.Version == 0x4f || table.Version == 0x50 || table.Version == 0x52 || table.Version == 0x53 || table.Version == 0x57 || table.Version == 0x58);
+            Debug.Assert(table.Version == 0x4e || table.Version == 0x4f || table.Version == 0x50 || table.Version == 0x52 || table.Version == 0x53 || table.Version == 0x56 || table.Version == 0x57 || table.Version == 0x58);
 
             int ntblLength = file.ReadInt(true);
             table.Names = file.ReadString(ntblLength);
