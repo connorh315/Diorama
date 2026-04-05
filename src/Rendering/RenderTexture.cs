@@ -99,9 +99,10 @@ namespace Diorama.Rendering
                     blockSize = 0;
                     uncompressedPixelSize = 16;
                     break;
-                //case 0x30315844: // DX10
-                //    blockSize = 16; // safe default for BC formats
-                //    break;
+                case 0x30315844: // DX10
+                    compressionFormat = InternalFormat.Rgba8Snorm;
+                    blockSize = 16; // safe default for BC formats
+                    break;
                 default:
                     throw new Exception("Unsupported version!");
                     blockSize = 4; // assume RGBA8
@@ -162,9 +163,21 @@ namespace Diorama.Rendering
                         h,
                         0,
                         PixelFormat.Rgba,
-                        PixelType.Float,
+                        PixelType.Byte,
                         texture.Data.AsSpan(offset, mipSize).ToArray()
                     );
+
+                    //GL.TexImage2D(
+                    //    TextureTarget.Texture2D,
+                    //    i,
+                    //    (PixelInternalFormat)compressionFormat,
+                    //    w,
+                    //    h,
+                    //    0,
+                    //    PixelFormat.Rgba,
+                    //    PixelType.Float,
+                    //    texture.Data.AsSpan(offset, mipSize).ToArray()
+                    //);
                 }
 
                 offset += mipSize;

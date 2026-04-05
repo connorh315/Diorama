@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Platforms>AnyCPU;x64</Platforms>
-    <ApplicationManifest>app1.manifest</ApplicationManifest>
+    <ApplicationManifest>src/app1.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <PropertyGroup Label="Avalonia">
@@ -30,28 +30,28 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="UI\Controls\ColorInput.axaml.cs">
+    <Compile Update="src\UI\Controls\ColorInput.axaml.cs">
       <DependentUpon>ColorInput.axaml</DependentUpon>
     </Compile>
-    <Compile Update="UI\Panels\GeometryObjectPanel.axaml.cs">
+    <Compile Update="src\UI\Panels\GeometryObjectPanel.axaml.cs">
       <DependentUpon>GeometryObjectPanel.axaml</DependentUpon>
     </Compile>
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Rendering\Shaders\blendshader.frag">
+    <None Update="src\Rendering\Shaders\blendshader.frag">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Rendering\Shaders\blendshader.vert">
+    <None Update="src\Rendering\Shaders\blendshader.vert">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Rendering\Shaders\pickshader.frag">
+    <None Update="src\Rendering\Shaders\pickshader.frag">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Rendering\Shaders\shader.frag">
+    <None Update="src\Rendering\Shaders\shader.frag">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Rendering\Shaders\shader.vert">
+    <None Update="src\Rendering\Shaders\shader.vert">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

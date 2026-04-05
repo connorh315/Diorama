@@ -11,12 +11,12 @@
     <Application.Resources>
       <ResourceDictionary>
         <ResourceDictionary.MergedDictionaries>
-          <ResourceInclude Source="/UI/Controls/SceneHierarchy.axaml"/>
-          <ResourceInclude Source="/UI/Controls/Vec3Input.axaml"/>
-          <ResourceInclude Source="/UI/Controls/ColorInput.axaml"/>
+          <ResourceInclude Source="UI/Controls/SceneHierarchy.axaml"/>
+          <ResourceInclude Source="UI/Controls/Vec3Input.axaml"/>
+          <ResourceInclude Source="UI/Controls/ColorInput.axaml"/>
           
-          <ResourceInclude Source="/UI/Panels/InspectorPanel.axaml"/>
-          <ResourceInclude Source="/UI/Panels/GeometryObjectPanel.axaml"/>
+          <ResourceInclude Source="UI/Panels/InspectorPanel.axaml"/>
+          <ResourceInclude Source="UI/Panels/GeometryObjectPanel.axaml"/>
         </ResourceDictionary.MergedDictionaries>
       </ResourceDictionary>
     </Application.Resources>

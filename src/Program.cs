@@ -17,7 +17,7 @@ namespace Diorama
         // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
         // yet and stuff might break.
         [STAThread]
-        public static void Main2(string[] args) => BuildAvaloniaApp()
+        public static void Main(string[] args) => BuildAvaloniaApp()
             .StartWithClassicDesktopLifetime(args);
 
         // Avalonia configuration, don't remove; also used by visual designer.
@@ -31,7 +31,7 @@ namespace Diorama
                 //})
                 .LogToTrace();
 
-        static void Main(string[] args)
+        static void Main2(string[] args)
         {
 
             //ParseFile(@"A:\ADDITIONALCONTENT\OPUS_ADVENTURETIME\LEVELS\LEVELPACK\OPUS_ADVENTURETIME\OPUS_ADVENTURETIME_MIDTRO3\CUT_GIZ_ENCHIRIDION_BDOOTH_DX11.GSC");

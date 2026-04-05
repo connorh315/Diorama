@@ -34,6 +34,8 @@ namespace Diorama.Core.Filetypes.TEXTURES
 
         public bool IsCompressed = true;
 
+        public uint Dx10Format;
+
         private int Calculate(RawFile file)
         {
             long startPos = file.Position;
@@ -77,8 +79,11 @@ namespace Diorama.Core.Filetypes.TEXTURES
                     break;
                 case 0x30315844: // DX10
                     HeaderSize += 20;
-                    file.Seek(20, SeekOrigin.Current);
-                    blockSize = 16; // safe default for BC formats
+                    Dx10Format = file.ReadUInt();
+                    file.Seek(16, SeekOrigin.Current);
+                    IsCompressed = false;
+                    blockSize = 4;
+                    //blockSize = 16; // safe default for BC formats
                     break;
                 case 0x74:
                     IsCompressed = false;

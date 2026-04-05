@@ -13,49 +13,49 @@ namespace Diorama.Core.Filetypes.GSC
 {
     public class GScene_4F : GScene
     {
-        public NuSceneInfo SceneInfo { get; set; }
+        public NuSceneInfo SceneInfo;
 
-        public NuNameTable NameTable { get; set; }
+        public NuNameTable NameTable;
 
-        public NuTextureHeaders TextureHeaders { get; set; }
+        public NuTextureHeaders TextureHeaders;
 
         public List<NuSpline> Splines;
 
-        public List<NuVfxLocator> VfxLocators { get; set; }
+        public List<NuVfxLocator> VfxLocators;
 
-        public List<NuMtlOldReferencedMaterial> EmbeddedTextures { get; set; }
+        public List<NuMtlOldReferencedMaterial> EmbeddedTextures;
 
-        public byte[] UnkData { get; set; }
+        public byte[] UnkData;
 
-        public List<NuCpuSkinLod> CpuSkinLods { get; set; }
+        public List<NuCpuSkinLod> CpuSkinLods;
 
-        public NuTextureAnim3SceneBlock TextureAnim3SceneBlock { get; set; }
+        public NuTextureAnim3SceneBlock TextureAnim3SceneBlock;
 
         public float PlaybackFPS;
 
-        public NuAnimSceneBlock AnimSceneBlock { get; set; }
+        public NuAnimSceneBlock AnimSceneBlock;
 
-        public NuBlendCharShapeBlock BlendCharShapeBlock { get; set; }
+        public NuBlendCharShapeBlock BlendCharShapeBlock;
 
-        public NuOccluderBlock OccluderBlock { get; set; }
+        public NuOccluderBlock OccluderBlock;
 
-        public NuOctreeBlock OctreeBlock { get; set; }
+        public NuOctreeBlock OctreeBlock;
 
-        public List<NuCharacterData> CharacterData { get; set; }
+        public List<NuCharacterData> CharacterData;
 
         public uint OldWiiMeshSceneBlockLinkArrayCount;
 
-        public NuMetadataBlock Metadata { get; set; }
+        public NuMetadataBlock Metadata;
 
-        public uint TexHdrSceneBlock { get; set; }
+        public uint TexHdrSceneBlock;
 
-        public byte UseSingleLodAnim { get; set; }
+        public byte UseSingleLodAnim;
 
-        public uint NumBlendShapes { get; set; }
+        public uint NumBlendShapes;
 
-        public List<ushort> Padding { get; set; }
+        public List<ushort> Padding;
 
-        public List<(string, string)> SharedScenes { get; set; }
+        public List<(string, string)> SharedScenes;
 
         public Vector3 WorldBoundsCentre;
         public Vector3 WorldBoundsExtents;
