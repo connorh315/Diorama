@@ -1,21 +1,21 @@
-﻿using BrickVault;
-using Diorama.Core.Types;
-using System.Numerics;
+﻿using Diorama.Core.Types;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class NuMeshSceneBlock
+    public class NuMeshSceneBlock : ISchemaSerializable
     {
         public uint Version { get; set; }
 
         public NuRenderMesh[] Meshes { get; set; }
 
-        protected VertexList GetVertexList(RawFile file, GSerializationContext ctx, ref int offset)
+        protected VertexList GetVertexList(RawFile file, GSerializationContext ctx, ref uint flags, ref int offset)
         {
             int reference = 0;
             uint vertexReference = file.ReadUInt(true);
@@ -30,7 +30,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
             else
             {
                 // New vertex list
-                uint flags = file.ReadUInt(true); // 0x502??
+                flags = file.ReadUInt(true); // 0x502??
                 VertexList list = VertexList.Parse(file);
                 ctx.AddReference(list);
                 offset = file.ReadInt(true);
@@ -66,22 +66,19 @@ namespace Diorama.Core.Filetypes.GSC.Components
             }
         }
 
-        public static NuMeshSceneBlock Parse(RawFile file, GSerializationContext ctx)
+        public void Read(RawFile file, GSerializationContext ctx)
         {
-            Debug.Assert(file.ReadString(4) == "HSEM");
+            Version = file.ReadUInt(true);
+            Debug.Assert(Version == 0xaf || Version == 0xc8);
 
-            NuMeshSceneBlock meshBlock = new NuMeshSceneBlock();
-            meshBlock.Version = file.ReadUInt(true);
-            Debug.Assert(meshBlock.Version == 0xaf || meshBlock.Version == 0xc8);
-
-            meshBlock.Meshes = new NuRenderMesh[file.ReadInt(true)];
-            for (int i = 0; i < meshBlock.Meshes.Length; i++)
+            Meshes = new NuRenderMesh[file.ReadInt(true)];
+            for (int i = 0; i < Meshes.Length; i++)
             {
                 Debug.Assert(file.ReadUInt(true) == 0x1);
 
                 NuRenderMesh mesh = new NuRenderMesh();
 
-                if (meshBlock.Version == 0xc8)
+                if (Version == 0xc8)
                 {
                     Debug.Assert(file.ReadString(4) == "SMNR");
                     Debug.Assert(file.ReadInt(true) == 0xc8);
@@ -89,26 +86,28 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
                 uint vertexBufferCount = file.ReadUInt(true);
                 mesh.VertexBuffers = new VertexList[vertexBufferCount];
+                mesh.VertexBufferFlags = new uint[vertexBufferCount];
                 mesh.VertexBufferOffsets = new int[vertexBufferCount];
 
                 for (int vList = 0; vList < vertexBufferCount; vList++)
                 {
-                    mesh.VertexBuffers[vList] = meshBlock.GetVertexList(file, ctx, ref mesh.VertexBufferOffsets[vList]); // Not really sure what the "offset" field is / what it's for
+                    mesh.VertexBuffers[vList] = GetVertexList(file, ctx, ref mesh.VertexBufferFlags[vList], ref mesh.VertexBufferOffsets[vList]); // Not really sure what the "offset" field is / what it's for
                 }
 
                 uint fastBlendVbsCount = file.ReadUInt(true);
-                VertexList[] fastBlendVbs = new VertexList[fastBlendVbsCount];
+                mesh.FastBlendVBs = new VertexList[fastBlendVbsCount];
+                mesh.FastBlendFlags = new uint[fastBlendVbsCount];
+                mesh.FastBlendOffsets = new int[fastBlendVbsCount];
                 for (int fastVList = 0; fastVList < fastBlendVbsCount; fastVList++)
                 {
-                    int offset = 0;
-                    fastBlendVbs[fastVList] = meshBlock.GetVertexList(file, ctx, ref offset); // TODO: Properly implement VertexBufferOffsets
+                    mesh.FastBlendVBs[fastVList] = GetVertexList(file, ctx, ref mesh.FastBlendFlags[fastVList], ref mesh.FastBlendOffsets[fastVList]);
                 }
                 if (fastBlendVbsCount != 0)
                 {
-                    ctx.AddReference(fastBlendVbs);
+                    ctx.AddReference(mesh.FastBlendVBs);
                 }
 
-                mesh.Indices = meshBlock.GetIndexList(file, ctx);
+                mesh.Indices = GetIndexList(file, ctx);
                 mesh.IndicesBase = file.ReadUInt(true);
                 mesh.IndicesCount = file.ReadUInt(true);
                 mesh.VerticesBase = file.ReadUInt(true);
@@ -130,7 +129,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 int nuBlendShape = file.ReadInt(true); // i think
                 if (nuBlendShape != 0)
                 {
-                    NuBlendShape.Parse(file, ctx, meshBlock.Version);
+                    NuBlendShape.Parse(file, ctx, Version);
                 }
                 //Debug.Assert(defunctOptFlags == 0);
 
@@ -146,16 +145,23 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
                 ctx.AddReference(mesh);
 
-                meshBlock.Meshes[i] = mesh;
+                Meshes[i] = mesh;
             }
+        }
+
+        public static NuMeshSceneBlock Parse(RawFile file, GSerializationContext ctx)
+        {
+            Debug.Assert(file.ReadString(4) == "HSEM");
+
+            NuMeshSceneBlock meshBlock = new NuMeshSceneBlock();
+
+            meshBlock.Read(file, ctx);
 
             return meshBlock;
         }
 
         public void Write(RawFile file, GSerializationContext ctx)
         {
-            file.WriteString("HSEM");
-
             file.WriteUInt(Version, true);
 
             file.WriteInt(Meshes.Length, true);
@@ -184,13 +190,38 @@ namespace Diorama.Core.Filetypes.GSC.Components
                     else
                     {
                         file.WriteUInt((uint)1, true);
-                        file.WriteUInt(0x502, true);
+                        file.WriteUInt(mesh.VertexBufferFlags[vList], true);
                         buffer.Write(file);
                         file.WriteInt(mesh.VertexBufferOffsets[vList], true);
                     }
                 }
 
-                file.WriteInt(0, true); // TODO: Fast blend VBs
+                if (mesh.FastBlendVBs != null)
+                {
+                    file.WriteInt(mesh.FastBlendVBs.Length, true);
+                    for (int fastVList = 0; fastVList < mesh.FastBlendVBs.Length; fastVList++)
+                    {
+                        var buffer = mesh.FastBlendVBs[fastVList];
+                        if (ctx.GetOrAddReference(buffer, out int reference))
+                        {
+                            file.WriteUInt((uint)(reference | 0xc0000000), true);
+                            file.WriteUInt(1, true);
+                            file.WriteInt(mesh.FastBlendOffsets[fastVList], true);
+                        }
+                        else
+                        {
+                            file.WriteUInt((uint)1, true);
+                            file.WriteUInt(mesh.FastBlendFlags[fastVList], true);
+                            buffer.Write(file);
+                            file.WriteInt(mesh.FastBlendOffsets[fastVList], true);
+                        }
+                    }
+
+                    if (mesh.FastBlendVBs.Length != 0) // not sure on this one really...
+                    {
+                        ctx.AddReference(mesh.FastBlendVBs);
+                    }
+                }
 
                 if (ctx.GetOrAddReference(mesh.Indices, out int indReference))
                 {
@@ -239,6 +270,20 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 file.WriteFloat(mesh.DensityDiscDiameter, true);
 
                 ctx.AddReference(mesh);
+            }
+        }
+
+        public void Handle(SchemaSerializer schema, uint parentVersion)
+        {
+            schema.Expect("HSEM");
+
+            if (schema.Writing)
+            {
+                Write(schema.File, (GSerializationContext)schema.Context);
+            }
+            else
+            {
+                Read(schema.File, (GSerializationContext)schema.Context);
             }
         }
     }

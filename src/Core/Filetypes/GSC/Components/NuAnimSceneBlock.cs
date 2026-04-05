@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class NuAnimSceneBlock
+    public class NuAnimSceneBlock : ISchemaSerializable
     {
         public uint Version;
         public List<NuInstAnim> NuInstAnim;
@@ -30,6 +30,17 @@ namespace Diorama.Core.Filetypes.GSC.Components
             temp.HandleSchemaVarArray(ref block.NuAnimHeader);
 
             return block;
+        }
+
+        public void Handle(SchemaSerializer schema, uint parentVersion)
+        {
+            schema.Expect("3ALA");
+            schema.HandleUInt(ref Version);
+            Debug.Assert(Version == 3 || Version == 4, $"Unsupported ala3 version: {Version}");
+
+            schema.HandleSchemaVarArray(ref NuInstAnim, Version);
+            schema.HandleSchemaVarArray(ref NuStateAnim);
+            schema.HandleSchemaVarArray(ref NuAnimHeader);
         }
 
         public void Write(RawFile file)

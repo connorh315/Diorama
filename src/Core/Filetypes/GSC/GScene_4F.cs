@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC
 {
-    public class GScene_4F : GScene
+    public class GScene_4F : GScene, ISchemaSerializable
     {
         public NuSceneInfo SceneInfo;
 
@@ -27,7 +27,9 @@ namespace Diorama.Core.Filetypes.GSC
 
         public byte[] UnkData;
 
-        public List<NuCpuSkinLod> CpuSkinLods;
+        //public List<NuCpuSkinLod> CpuSkinLods;
+
+        public NuCpuSkinnedblock CpuSkinnedBlock;
 
         public NuTextureAnim3SceneBlock TextureAnim3SceneBlock;
 
@@ -38,6 +40,8 @@ namespace Diorama.Core.Filetypes.GSC
         public NuBlendCharShapeBlock BlendCharShapeBlock;
 
         public NuOccluderBlock OccluderBlock;
+
+        public NuIrradianceBlock IrradianceBlock;
 
         public NuOctreeBlock OctreeBlock;
 
@@ -55,7 +59,7 @@ namespace Diorama.Core.Filetypes.GSC
 
         public List<ushort> Padding;
 
-        public List<(string, string)> SharedScenes;
+        public List<NuSharedScene> SharedScenes;
 
         public Vector3 WorldBoundsCentre;
         public Vector3 WorldBoundsExtents;
@@ -76,7 +80,7 @@ namespace Diorama.Core.Filetypes.GSC
             }
             else
             {
-                CpuSkinLods = NuSerializer.ReadVectorArray<NuCpuSkinLod>(file, version);
+                //CpuSkinLods = NuSerializer.ReadVectorArray<NuCpuSkinLod>(file, version);
             }
         }
 
@@ -85,6 +89,7 @@ namespace Diorama.Core.Filetypes.GSC
         protected override void Parse(GSerializationContext ctx)
         {
             SchemaSerializer schema = new SchemaSerializer(file, false);
+            schema.SetContext(ctx);
 
             SceneInfo = NuSceneInfo.Read(file, NU20Version);
 
@@ -95,12 +100,10 @@ namespace Diorama.Core.Filetypes.GSC
 
             NameTable = NuNameTable.Read(file);
 
-            uint hasTextureHeaderComponent = file.ReadUInt(true);
-            if (hasTextureHeaderComponent != 0)
+            schema.HandleOptional(ref TextureHeaders, NU20Version);
+            if (TextureHeaders != null)
             {
-                TextureHeaders = NuTextureHeaders.Read(file);
                 ctx.AddReference(TextureHeaders);
-                Debug.Assert(hasTextureHeaderComponent == 1);
             }
 
             schema.HandleSchemaVector(ref Splines, NU20Version);
@@ -115,7 +118,7 @@ namespace Diorama.Core.Filetypes.GSC
             Debug.Assert(file.ReadUInt(true) == 1);
 
             var matBlock = new NuMaterialDataBlock();
-            matBlock.Handle(schema, NU20Version, ctx);
+            matBlock.Handle(schema, NU20Version);
             MaterialBlock = matBlock;
             //MaterialBlock = GComponentFactory.Parse<NuMaterialDataBlock>(file, NU20Version);
 
@@ -131,7 +134,7 @@ namespace Diorama.Core.Filetypes.GSC
 
             uint cpusCount = file.ReadUInt(true);
             Debug.Assert(cpusCount == 1);
-            ReadCpuSkinned();
+            CpuSkinnedBlock = GComponentFactory.Parse<NuCpuSkinnedblock>(file, NU20Version);
 
             DisplayScene = NuDisplayScene.Read(file, NameTable);
 
@@ -186,16 +189,18 @@ namespace Diorama.Core.Filetypes.GSC
             {
                 SharedScenes = new();
 
-                uint sharedScenesSize = file.ReadUInt(true);
-                if (sharedScenesSize != 0)
-                {
-                    for (int i = 0; i < sharedScenesSize; i++)
-                    {
-                        string resourceId = file.ReadPascalString();
-                        string objectId = file.ReadPascalString();
-                        SharedScenes.Add((resourceId, objectId));
-                    }
-                }
+                NuSerializer.ReadLegacyVarArray<NuSharedScene>(file);
+
+                //uint sharedScenesSize = file.ReadUInt(true);
+                //if (sharedScenesSize != 0)
+                //{
+                //    for (int i = 0; i < sharedScenesSize; i++)
+                //    {
+                //        string resourceId = file.ReadPascalString();
+                //        string objectId = file.ReadPascalString();
+                //        SharedScenes.Add((resourceId, objectId));
+                //    }
+                //}
             }
 
             if (NameTable.Version > 0x54)
@@ -218,13 +223,11 @@ namespace Diorama.Core.Filetypes.GSC
 
             NameTable.Write(file);
 
+            schema.HandleOptional(ref TextureHeaders, NU20Version);
+
             if (TextureHeaders != null)
             {
-                throw new NotSupportedException("cannot write texture headers");
-            }
-            else
-            {
-                file.WriteInt(0);
+                ctx.AddReference(TextureHeaders);
             }
 
             schema.HandleSchemaVector(ref Splines, NU20Version);
@@ -246,7 +249,7 @@ namespace Diorama.Core.Filetypes.GSC
             file.WriteInt(0, true);
             file.WriteInt(1, true);
 
-            MaterialBlock.Handle(schema, NU20Version, ctx);
+            MaterialBlock.Handle(schema, NU20Version);
 
             //file.WriteString("LTMU");
             //file.WriteUInt(Materials[0].Version, true);
@@ -267,11 +270,11 @@ namespace Diorama.Core.Filetypes.GSC
             file.WriteInt(1, true); // cpu skinned marker
             file.WriteString("SUPC");
             file.WriteInt(4, true); // TODO: pull this properly
-            NuSerializer.WriteVectorArray(file, CpuSkinLods);
-            if (CpuSkinLods.Count != 0)
-            {
-                throw new NotSupportedException("cannot write cpu skin lods");
-            }
+            //NuSerializer.WriteVectorArray(file, CpuSkinLods);
+            //if (CpuSkinLods.Count != 0)
+            //{
+            //    throw new NotSupportedException("cannot write cpu skin lods");
+            //}
 
             DisplayScene.Write(file, NameTable);
 
@@ -320,8 +323,8 @@ namespace Diorama.Core.Filetypes.GSC
 
                 for (int i = 0; i < SharedScenes.Count; i++)
                 {
-                    file.WritePascalString(SharedScenes[i].Item1);
-                    file.WritePascalString(SharedScenes[i].Item2);
+                    //file.WritePascalString(SharedScenes[i].Item1);
+                    //file.WritePascalString(SharedScenes[i].Item2);
                 }
             }
 
@@ -329,6 +332,103 @@ namespace Diorama.Core.Filetypes.GSC
             {
                 file.WriteVector3(WorldBoundsCentre, true);
                 file.WriteVector3(WorldBoundsExtents, true);
+            }
+        }
+
+        public override void Handle(SchemaSerializer schema, uint parentVersion)
+        {
+            int unknownSection = 0;
+
+            GSerializationContext ctx = new GSerializationContext();
+            schema.SetContext(ctx);
+
+            schema.Handle(ref SceneInfo);
+
+            if (NU20Version > 0x56)
+            {
+                schema.HandleByte(ref WasGeneratedFromLEDImport);
+            }
+
+            schema.Handle(ref NameTable);
+
+            schema.HandleOptional(ref TextureHeaders);
+            if (TextureHeaders != null)
+            {
+                ctx.AddReference(TextureHeaders);
+            }
+
+            schema.HandleSchemaVector(ref Splines, NU20Version);
+
+            schema.HandleSchemaVector(ref VfxLocators);
+
+            schema.HandleOptional(ref MeshSceneBlock);
+
+            schema.HandleInt(ref unknownSection);
+            Debug.Assert(unknownSection == 0);
+
+            schema.HandleOptional(ref MaterialBlock);
+
+            schema.HandleOptional(ref LightmapDataBlock);
+
+            schema.HandleOptional(ref CpuSkinnedBlock, NU20Version);
+
+            schema.Handle(ref DisplayScene, parentVersion);
+
+            schema.Handle(ref TextureAnim3SceneBlock);
+
+            schema.HandleFloat(ref PlaybackFPS);
+
+            schema.HandleOptional(ref AnimSceneBlock);
+
+            schema.HandleInt(ref unknownSection);
+            Debug.Assert(unknownSection == 0);
+
+            schema.Handle(ref BlendCharShapeBlock);
+
+            schema.Handle(ref OccluderBlock);
+
+            if (NU20Version < 0x4f)
+            {
+                schema.Handle(ref IrradianceBlock);
+            }
+
+            schema.Handle(ref OctreeBlock, NU20Version);
+
+            if (NameTable.Version < 0x14)
+            {
+                schema.HandleSerializableLegacyVarArray(ref CharacterData);
+            }
+            else
+            {
+                schema.HandleSerializableVector(ref CharacterData);
+            }
+
+            schema.HandleUInt(ref OldWiiMeshSceneBlockLinkArrayCount);
+
+            schema.Handle(ref Metadata);
+
+            if (NameTable.Version < 0x51)
+            {
+                schema.HandleInt(ref unknownSection);
+                Debug.Assert(unknownSection == 0, "texhdrsceneblock exists");
+            }
+
+            schema.HandleByte(ref UseSingleLodAnim);
+
+            schema.HandleUInt(ref NumBlendShapes);
+
+            schema.HandleSerializableVector(ref Padding);
+
+            if (NameTable.Version > 0x46)
+            {
+                schema.HandleSchemaVarArray(ref SharedScenes);
+            }
+
+            if (NameTable.Version > 0x54)
+            {
+                schema.HandleVector3(ref WorldBoundsCentre);
+                schema.HandleVector3(ref WorldBoundsExtents);
+
             }
         }
     }

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class NuMaterialDataBlock 
+    public class NuMaterialDataBlock : ISchemaSerializable
     {
         public uint Version;
 
@@ -90,9 +90,9 @@ namespace Diorama.Core.Filetypes.GSC.Components
             }
         }
 
-        public void Handle(SchemaSerializer schema, uint parentVersion, GSerializationContext ctx)
+        public void Handle(SchemaSerializer schema, uint parentVersion)
         {
-            this.ctx = ctx;
+            this.ctx = (GSerializationContext)schema.Context;
 
             schema.Expect("LTMU");
             schema.HandleUInt(ref Version);
@@ -121,7 +121,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             if (Version < 0xfa)
             {
-                schema.HandleSerializableVector(ref EmbeddedTextures);
+                schema.HandleSchemaVector(ref EmbeddedTextures);
             }
 
             if (Version < 0xf8)

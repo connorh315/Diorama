@@ -12,6 +12,11 @@ namespace Diorama.Core
     {
         public RawFile File { get; private set; }
         public bool Writing { get; private set; }
+        public object Context { get; private set; }
+        public void SetContext(object context)
+        {
+            Context = context;
+        }
         public SchemaSerializer(RawFile file, bool writing)
         {
             File = file;
@@ -102,7 +107,7 @@ namespace Diorama.Core
             }
         }
 
-        public void HandlePascalString(ref string v, int padding = 0)
+        public void HandlePascalString(ref string v, int padding = 1)
         {
             if (Writing)
             {
@@ -111,6 +116,18 @@ namespace Diorama.Core
             else
             {
                 v = File.ReadPascalString();
+            }
+        }
+
+        public void HandleIntPascalString(ref string v, int padding = 0, uint security = 256)
+        {
+            if (Writing)
+            {
+                File.WriteIntPascalString(v, padding: padding);
+            }
+            else
+            {
+                v = File.ReadIntPascalString(security: security);
             }
         }
 
@@ -135,6 +152,27 @@ namespace Diorama.Core
             else
             {
                 arr = File.ReadArray(size);
+            }
+        }
+
+        public void HandleArray(ref string[] strings)
+        {
+            if (Writing)
+            {
+                File.WriteInt(strings.Length, true);
+                for (int i = 0; i < strings.Length; i++)
+                {
+                    File.WritePascalString(strings[i], 1);
+                }
+            }
+            else
+            {
+                int count = File.ReadInt(true);
+                strings = new string[count];
+                for (int i = 0; i < count; i++)
+                {
+                    strings[i] = File.ReadPascalString();
+                }
             }
         }
 
@@ -196,6 +234,28 @@ namespace Diorama.Core
             }
         }
 
+        public void HandleSchemaVarArray(ref List<uint> arr, uint parentVersion = 0)
+        {
+            if (Writing)
+            {
+                File.WriteInt(arr.Count, true);
+                foreach (var item in arr)
+                {
+                    File.WriteUInt(item, true);
+                }
+            }
+            else
+            {
+                int count = File.ReadInt(true);
+                arr = new List<uint>();
+                for (int i = 0; i < count; i++)
+                {
+                    var item = File.ReadUInt(true);
+                    arr.Add(item);
+                }
+            }
+        }
+
         public void HandleVector3Vector(ref List<Vector3> arr, uint parentVersion = 0)
         {
             if (Writing)
@@ -233,11 +293,35 @@ namespace Diorama.Core
         {
             if (Writing)
             {
-                NuSerializer.WriteVectorArray(File, arr);
+                NuSerializer.WriteVectorArray(File, arr, parentVersion);
             }
             else
             {
-                arr = NuSerializer.ReadVectorArray<T>(File);
+                arr = NuSerializer.ReadVectorArray<T>(File, parentVersion);
+            }
+        }
+
+        public void HandleSerializableVector(ref List<ushort> arr, uint parentVersion = 0)
+        {
+            if (Writing)
+            {
+                NuSerializer.WriteVectorArray(File, arr, parentVersion);
+            }
+            else
+            {
+                arr = NuSerializer.ReadVectorArray<ushort>(File, parentVersion);
+            }
+        }
+
+        public void HandleSerializableVector(ref List<uint> arr, uint parentVersion = 0)
+        {
+            if (Writing)
+            {
+                NuSerializer.WriteVectorArray(File, arr, parentVersion);
+            }
+            else
+            {
+                arr = NuSerializer.ReadVectorArray<uint>(File, parentVersion);
             }
         }
 
@@ -246,11 +330,11 @@ namespace Diorama.Core
         {
             if (Writing)
             {
-                NuSerializer.WriteLegacyVarArray(File, arr);
+                NuSerializer.WriteLegacyVarArray(File, arr, parentVersion);
             }
             else
             {
-                arr = NuSerializer.ReadLegacyVarArray<T>(File);
+                arr = NuSerializer.ReadLegacyVarArray<T>(File, parentVersion);
             }
         }
 
@@ -302,6 +386,44 @@ namespace Diorama.Core
             {
                 var actual = File.ReadString(expected.Length);
                 Debug.Assert(actual == expected, $"Expected {expected} but got {actual}");
+            }
+        }
+
+        public void HandleOptional<T>(ref T optional, uint parentVersion = 0) where T : ISchemaSerializable, new()
+        {
+            if (Writing)
+            {
+                if (optional == null)
+                {
+                    File.WriteInt(0);
+                    return;
+                }
+
+                File.WriteInt(1, true);
+                optional.Handle(this, parentVersion);
+            }
+            else
+            {
+                int exists = 0;
+                HandleInt(ref exists);
+                if (exists == 1)
+                {
+                    optional = new T();
+                    optional.Handle(this, parentVersion);
+                }
+            }
+        }
+
+        public void Handle<T>(ref T value, uint parentVersion = 0) where T : ISchemaSerializable, new()
+        {
+            if (Writing)
+            {
+                value.Handle(this, parentVersion);
+            }
+            else
+            {
+                value = new T();
+                value.Handle(this, parentVersion);
             }
         }
     }

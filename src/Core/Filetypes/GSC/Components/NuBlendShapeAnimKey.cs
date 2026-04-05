@@ -6,8 +6,13 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class NuBlendShapeAnimKey : IVectorSerializable
+    public class NuBlendShapeAnimKey : IVectorSerializable, ISchemaSerializable
     {
+        public short Index;
+        public short IndexTo;
+        public byte Blend;
+        public byte FlatlineRegion;
+
         public void Deserialize(RawFile file, uint parentVersion)
         {
             short index = file.ReadShort(true);
@@ -18,6 +23,17 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 byte flatlineRegion = file.ReadByte();
             }
             // version > 3
+        }
+
+        public void Handle(SchemaSerializer schema, uint parentVersion)
+        {
+            schema.HandleShort(ref Index);
+            schema.HandleShort(ref IndexTo);
+            schema.HandleByte(ref Blend);
+            if (parentVersion > 3)
+            {
+                schema.HandleByte(ref FlatlineRegion);
+            }
         }
 
         public void Serialize(RawFile file, uint parentVersion)

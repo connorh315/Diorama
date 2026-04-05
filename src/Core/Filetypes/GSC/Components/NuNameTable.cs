@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class NuNameTable
+    public class NuNameTable : ISchemaSerializable
     {
         public uint Version;
 
-        public string Names { get; set; }
+        public string Names;
 
         public static NuNameTable Read(RawFile file)
         {
@@ -26,6 +26,14 @@ namespace Diorama.Core.Filetypes.GSC.Components
             table.Names = file.ReadString(ntblLength);
 
             return table;
+        }
+
+        public void Handle(SchemaSerializer schema, uint parentVersion)
+        {
+            schema.Expect("LBTN");
+            schema.HandleUInt(ref Version);
+            Debug.Assert(Version == 0x4e || Version == 0x4f || Version == 0x50 || Version == 0x52 || Version == 0x53 || Version == 0x56 || Version == 0x57 || Version == 0x58);
+            schema.HandleIntPascalString(ref Names, padding: 1, security: 0xffff); 
         }
 
         public void Write(RawFile file)

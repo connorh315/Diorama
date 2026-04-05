@@ -10,7 +10,11 @@ namespace Diorama.Core.Filetypes.GSC.Components
     public class NuRenderMesh
     {
         public VertexList[] VertexBuffers;
+        public uint[] VertexBufferFlags;
         public int[] VertexBufferOffsets;
+        public VertexList[] FastBlendVBs;
+        public uint[] FastBlendFlags;
+        public int[] FastBlendOffsets;
         public ushort[] Indices;
 
         public uint VerticesBase;

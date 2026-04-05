@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class NuSceneInfo
+    public class NuSceneInfo : ISchemaSerializable
     {
         public string[] Strings;
 
@@ -22,6 +22,13 @@ namespace Diorama.Core.Filetypes.GSC.Components
             }
 
             return info;
+        }
+
+        public void Handle(SchemaSerializer schema, uint parentVersion)
+        {
+            schema.Expect("OFNI");
+
+            schema.HandleArray(ref Strings);
         }
 
         public void Write(RawFile file, uint gscVersion)

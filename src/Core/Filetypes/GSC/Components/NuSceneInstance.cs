@@ -58,10 +58,13 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 }
             }
 
-            VertexControlledTint[0] = file.ReadInt(true);
-            VertexControlledTint[1] = file.ReadInt(true);
-            VertexControlledTint[2] = file.ReadInt(true);
-            VertexControlledTint[3] = file.ReadInt(true);
+            if (parentVersion > 0x1f)
+            {
+                VertexControlledTint[0] = file.ReadInt(true);
+                VertexControlledTint[1] = file.ReadInt(true);
+                VertexControlledTint[2] = file.ReadInt(true);
+                VertexControlledTint[3] = file.ReadInt(true);
+            }
         }
 
         public void Serialize(RawFile file, uint parentVersion)
@@ -94,9 +97,12 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 }
             }
 
-            for (int i = 0; i < 4; i++)
+            if (parentVersion > 0x1f)
             {
-                file.WriteInt(VertexControlledTint[i], true);
+                for (int i = 0; i < 4; i++)
+                {
+                    file.WriteInt(VertexControlledTint[i], true);
+                }
             }
         }
     }

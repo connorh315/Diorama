@@ -43,14 +43,17 @@ namespace Diorama.Core.Filetypes.GSC.Components
             schema.HandleByte(ref AttributeId);
 
             // Version > 4
-            schema.HandleByte(ref UsesSpriteSheet);
-            schema.HandleByte(ref SSFaceOn);
+            if (parentVersion > 4)
+            {
+                schema.HandleByte(ref UsesSpriteSheet);
+                schema.HandleByte(ref SSFaceOn);
 
-            // Unknown bytes
-            schema.HandleByte(ref Undefined1);
-            schema.HandleByte(ref Undefined2);
-            schema.HandleByte(ref Undefined3);
-            schema.HandleByte(ref Undefined4);
+                // Unknown bytes
+                schema.HandleByte(ref Undefined1);
+                schema.HandleByte(ref Undefined2);
+                schema.HandleByte(ref Undefined3);
+                schema.HandleByte(ref Undefined4);
+            }
         }
     }
 }

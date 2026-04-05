@@ -16,9 +16,9 @@ namespace Diorama.Core.Filetypes.GSC.Components
         {
             schema.Expect("BNAT");
             schema.HandleUInt(ref Version);
-            Debug.Assert(Version == 5);
+            Debug.Assert(Version == 4 || Version == 5);
 
-            schema.HandleSchemaVarArray(ref TexAnim3Headers);
+            schema.HandleSchemaVarArray(ref TexAnim3Headers, Version);
         }
     }
 }

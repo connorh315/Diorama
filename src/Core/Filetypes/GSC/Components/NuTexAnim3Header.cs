@@ -20,7 +20,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
         public List<ushort> NumTidsArray;
         public List<NuCurveAnimBlock3> CurveList;
 
-        public NuAnimHeader AnimHeader = new NuAnimHeader();
+        public NuAnimHeader AnimHeader;
 
         public void Handle(SchemaSerializer schema, uint parentVersion)
         {
@@ -45,15 +45,9 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             schema.HandleLegacyVarArray(ref Tids);
             schema.HandleLegacyVarArray(ref NumTidsArray);
-            schema.HandleSchemaVarArray(ref CurveList);
+            schema.HandleSchemaVarArray(ref CurveList, parentVersion);
 
-            int hasAnimHeader = AnimHeader != null ? 1 : 0;
-            schema.HandleInt(ref hasAnimHeader);
-
-            if (hasAnimHeader == 1)
-            {
-                AnimHeader.Handle(schema, parentVersion);
-            }
+            schema.HandleOptional(ref AnimHeader, parentVersion);
         }
     }
 }

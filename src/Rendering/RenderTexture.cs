@@ -1,5 +1,4 @@
-﻿using BrickVault;
-using Diorama.Core.Filetypes.TEXTURES;
+﻿using Diorama.Core.Filetypes.TEXTURES;
 using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections.Generic;

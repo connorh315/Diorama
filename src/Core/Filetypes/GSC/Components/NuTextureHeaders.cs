@@ -8,8 +8,10 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class NuTextureHeaders
+    public class NuTextureHeaders : ISchemaSerializable
     {
+        public uint Version;
+
         public List<NuTextureHeader> Headers;
 
         public static NuTextureHeaders Read(RawFile file)
@@ -22,6 +24,14 @@ namespace Diorama.Core.Filetypes.GSC.Components
             headers.Headers = NuSerializer.ReadVectorArray<NuTextureHeader>(file);
 
             return headers;
+        }
+
+        public void Handle(SchemaSerializer schema, uint parentVersion)
+        {
+            schema.Expect("HGXT");
+            schema.HandleUInt(ref Version);
+
+            schema.HandleSchemaVector(ref Headers);
         }
     }
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class NuTextureHeader : IVectorSerializable
+    public class NuTextureHeader : IVectorSerializable, ISchemaSerializable
     {
         public byte[] Hash;
         public string Path;
@@ -16,6 +16,24 @@ namespace Diorama.Core.Filetypes.GSC.Components
         public uint Level;
         public string ObjectId;
         public byte FixupTypeAsU8;
+
+        public void Handle(SchemaSerializer schema, uint parentVersion)
+        {
+            schema.HandleArray(ref Hash, 16);
+            schema.HandlePascalString(ref Path, 1);
+            schema.HandlePascalString(ref Name, 1);
+            schema.HandleByte(ref Type);
+
+            if (parentVersion > 0xc)
+            {
+                schema.HandleUInt(ref Level);
+                if (parentVersion > 0xd)
+                {
+                    schema.HandlePascalString(ref ObjectId);
+                }
+                schema.HandleByte(ref FixupTypeAsU8);
+            }
+        }
 
         public void Deserialize(RawFile file, uint parentVersion)
         {

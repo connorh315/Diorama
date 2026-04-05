@@ -7,16 +7,38 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class NuVfxLocator : IVectorSerializable
+    public class NuVfxLocator : IVectorSerializable, ISchemaSerializable
     {
+        public uint Version;
+
         public string VFXName;
         public string LEDFileName;
 
-        public float[] MTX = new float[16];
+        public NuMtx Mtx;
+
+        //public float[] MTX = new float[16];
 
         public float Radius;
         public byte FuzzySearch;
         public byte NxgOnly;
+
+        public void Handle(SchemaSerializer schema, uint parentVersion)
+        {
+            schema.Expect("LXFV");
+            schema.HandleUInt(ref Version);
+
+            schema.HandlePascalString(ref VFXName, 1);
+            schema.HandlePascalString(ref LEDFileName, 1);
+
+            schema.Handle(ref Mtx);
+
+            if (Version > 1)
+            {
+                schema.HandleFloat(ref Radius);
+                schema.HandleByte(ref FuzzySearch);
+                schema.HandleByte(ref NxgOnly);
+            }
+        }
 
         public void Deserialize(RawFile file, uint parentVersion)
         {
@@ -26,10 +48,13 @@ namespace Diorama.Core.Filetypes.GSC.Components
             VFXName = file.ReadPascalString();
             LEDFileName = file.ReadPascalString();
 
-            for (int i = 0; i < 16; i++)
-            { // TODO: Matrix structure
-                MTX[i] = file.ReadFloat(true);
-            }   
+            Mtx = new NuMtx();
+            Mtx.Deserialize(file, 0);
+
+            //for (int i = 0; i < 16; i++)
+            //{ // TODO: Matrix structure
+            //    MTX[i] = file.ReadFloat(true);
+            //}   
 
             if (version > 1)
             {

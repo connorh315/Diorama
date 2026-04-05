@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class NuBlendCharShapeBlock
+    public class NuBlendCharShapeBlock : ISchemaSerializable
     {
         public uint Version;
         public List<NuBlendShapeAnimList> AnimList;
@@ -21,6 +21,13 @@ namespace Diorama.Core.Filetypes.GSC.Components
             block.AnimList = NuSerializer.ReadLegacyVarArray<NuBlendShapeAnimList>(file, block.Version);
 
             return block;
+        }
+
+        public void Handle(SchemaSerializer schema, uint parentVersion)
+        {
+            schema.Expect("BCSB");
+            schema.HandleUInt(ref Version);
+            schema.HandleSchemaVarArray(ref AnimList, Version);
         }
 
         public void Write(RawFile file)

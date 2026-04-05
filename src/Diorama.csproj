@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Platforms>AnyCPU;x64</Platforms>
-    <ApplicationManifest>src/app1.manifest</ApplicationManifest>
+    <ApplicationManifest>app1.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <PropertyGroup Label="Avalonia">
@@ -25,7 +25,7 @@
 
   <ItemGroup>
     <Reference Include="BrickVault">
-      <HintPath>G:\BV\BrickVault\bin\x64\Release\net8.0\BrickVault.dll</HintPath>
+      <HintPath>G:\BV\BrickVault\bin\x64\Lib\net8.0\BrickVault.dll</HintPath>
     </Reference>
   </ItemGroup>
 
@@ -39,6 +39,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Rendering\Shaders\blendshader.frag">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Rendering\Shaders\blendshader.vert">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Rendering\Shaders\pickshader.frag">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="src\Rendering\Shaders\blendshader.frag">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

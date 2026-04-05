@@ -1,6 +1,7 @@
 ﻿using Diorama.Core.Types;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,7 +9,7 @@ using System.Xml;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class NuDisplayScene
+    public class NuDisplayScene : ISchemaSerializable
     {
         public uint Version;
         
@@ -23,7 +24,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
         public List<uint> AnimMtls;
         public List<NuTransformMtx> TransformMtxs;
         public List<NuFaceOnDisplayItem> FaceOnDisplayItems;
-        public List<short> TextureAnimListIndexs2;
+        public List<ushort> TextureAnimListIndexs2;
 
         public static NuDisplayScene Read(RawFile file, NuNameTable nameTable)
         {
@@ -59,10 +60,36 @@ namespace Diorama.Core.Filetypes.GSC.Components
             scene.FaceOnDisplayItems = NuSerializer.ReadVectorArray<NuFaceOnDisplayItem>(file); // not sure about this one - needs looking into
             if (nameTable.Version > 0x52)
             {
-                scene.TextureAnimListIndexs2 = NuSerializer.ReadLegacyVarArray<short>(file);
+                scene.TextureAnimListIndexs2 = NuSerializer.ReadLegacyVarArray<ushort>(file);
             }
 
             return scene;
+        }
+
+        public void Handle(SchemaSerializer schema, uint parentVersion)
+        {
+            schema.Expect("PSID");
+            schema.HandleUInt(ref Version);
+
+            if (Version < 0x22)
+            {
+                schema.HandleSerializableVector(ref DisplayItems);
+            }
+            schema.HandleSchemaVector(ref ClipObjects, Version);
+
+            schema.HandleSerializableVector(ref SpecialObjects, Version);
+            schema.HandleSerializableVector(ref SpecialGroupNodes, Version);
+            schema.HandleSerializableVector(ref BoundsCenterAndDistSqrd);
+            schema.HandleSerializableVector(ref BoundsExtentsAndRadius);
+            schema.HandleSerializableVector(ref SceneInstances, Version);
+            schema.HandleSerializableVector(ref SceneInstanceFixups);
+            schema.HandleSerializableVector(ref AnimMtls);
+            schema.HandleSerializableVector(ref TransformMtxs);
+            schema.HandleSerializableVector(ref FaceOnDisplayItems);
+            if (parentVersion > 0x52)
+            {
+                schema.HandleLegacyVarArray(ref TextureAnimListIndexs2);
+            }
         }
 
         public void Write(RawFile file, NuNameTable nameTable)

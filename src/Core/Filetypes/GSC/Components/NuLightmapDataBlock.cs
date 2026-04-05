@@ -7,16 +7,34 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class NuLightmapDataBlock
+    public class NuLightmapDataBlock : ISchemaSerializable
     {
-        public uint Version { get; set; }
+        public uint Version;
 
-        public List<NuLightmapData> Lightmaps { get; set; }
+        public List<NuLightmapData> Lightmaps;
 
         public float MinU;
         public float MaxU;
         public float MinV;
         public float MaxV;
+
+        public void Handle(SchemaSerializer schema, uint parentVersion)
+        {
+            schema.Expect("TDML");
+            schema.HandleUInt(ref Version);
+            if (Version >= 3)
+            {
+                schema.HandleSerializableVector(ref Lightmaps, Version);
+            }
+
+            if (Version >= 0xd)
+            {
+                schema.HandleFloat(ref MinU);
+                schema.HandleFloat(ref MaxU);
+                schema.HandleFloat(ref MaxV);
+                schema.HandleFloat(ref MaxV);
+            }
+        }
 
         public static NuLightmapDataBlock Parse(RawFile file)
         {

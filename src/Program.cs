@@ -1,5 +1,4 @@
 ﻿using Avalonia;
-using BrickVault.Types;
 using Diorama.Core;
 using Diorama.Core.Filetypes.GSC;
 using Diorama.Core.Filetypes.GSC.Components;
@@ -31,178 +30,178 @@ namespace Diorama
                 //})
                 .LogToTrace();
 
-        static void Main2(string[] args)
-        {
+        //static void Main2(string[] args)
+        //{
 
-            //ParseFile(@"A:\ADDITIONALCONTENT\OPUS_ADVENTURETIME\LEVELS\LEVELPACK\OPUS_ADVENTURETIME\OPUS_ADVENTURETIME_MIDTRO3\CUT_GIZ_ENCHIRIDION_BDOOTH_DX11.GSC");
-            //TryParseFile(@"A:\CHARS\CREATURE\GHOST_75827\GHOST_75827_KRAWLIE_DX11.GHG");
-            //TryParseFile(@"A:\CHARS\SUPER_CHARACTER\FACE\FACE_METALBEARD_DX11.GHG");
-            //TryParseFile(@"A:\LEVELS\BUILDER\BUILDERGAMEMECHANICS\BUILDERMASTERBUILD\BUILDERMASTERBUILD_DX11.GSC");
-            //TryParseFile("A:\\levels\\builder\\buildergamemechanics\\builderghostreceptor\\builderghostreceptor_dx11.gsc");
-            //ParseFile("A:\\levels\\vfx\\vfx_story\\vfx_1wizardofoz\\vfx_1wizardofoza\\vfx_1wizardofoza_dx11.gsc");
-            //TryParseFile("A:\\levels\\vfx\\vfx_ipsharedscenes\\vfx_puncheffects\\vfx_puncheffects_dx11.gsc");
-            //return;
+        //    //ParseFile(@"A:\ADDITIONALCONTENT\OPUS_ADVENTURETIME\LEVELS\LEVELPACK\OPUS_ADVENTURETIME\OPUS_ADVENTURETIME_MIDTRO3\CUT_GIZ_ENCHIRIDION_BDOOTH_DX11.GSC");
+        //    //TryParseFile(@"A:\CHARS\CREATURE\GHOST_75827\GHOST_75827_KRAWLIE_DX11.GHG");
+        //    //TryParseFile(@"A:\CHARS\SUPER_CHARACTER\FACE\FACE_METALBEARD_DX11.GHG");
+        //    //TryParseFile(@"A:\LEVELS\BUILDER\BUILDERGAMEMECHANICS\BUILDERMASTERBUILD\BUILDERMASTERBUILD_DX11.GSC");
+        //    //TryParseFile("A:\\levels\\builder\\buildergamemechanics\\builderghostreceptor\\builderghostreceptor_dx11.gsc");
+        //    //ParseFile("A:\\levels\\vfx\\vfx_story\\vfx_1wizardofoz\\vfx_1wizardofoza\\vfx_1wizardofoza_dx11.gsc");
+        //    //TryParseFile("A:\\levels\\vfx\\vfx_ipsharedscenes\\vfx_puncheffects\\vfx_puncheffects_dx11.gsc");
+        //    //return;
 
-            int counter = 0;
-            int total = 0;
+        //    int counter = 0;
+        //    int total = 0;
 
-            var datFiles = Directory.GetFiles(
-                @"G:\SteamLibrary\steamapps\common\LEGO Batman 3 Beyond Gotham",
-                "*.DAT",
-                SearchOption.AllDirectories
-            );
-            //Parallel.ForEach(
-            //    datFiles,
-            //    new ParallelOptions { MaxDegreeOfParallelism = 4 },
-            //datPath =>
-            byte[] compressedShare = new byte[32000000];
-            byte[] decompressedShare = new byte[96000000];
+        //    var datFiles = Directory.GetFiles(
+        //        @"G:\SteamLibrary\steamapps\common\LEGO Batman 3 Beyond Gotham",
+        //        "*.DAT",
+        //        SearchOption.AllDirectories
+        //    );
+        //    //Parallel.ForEach(
+        //    //    datFiles,
+        //    //    new ParallelOptions { MaxDegreeOfParallelism = 4 },
+        //    //datPath =>
+        //    byte[] compressedShare = new byte[32000000];
+        //    byte[] decompressedShare = new byte[96000000];
 
-            using var file = new RawFile(new MemoryStream(100000000));
-            foreach (string datPath in datFiles)
-            {
-                var dat = DATFile.Open(datPath);
-
-
-                using (var datFile = new BrickVault.RawFile(dat.FileLocation))
-                {
-                    foreach (var entry in dat.Files)
-                    {
-                        if (!entry.Path.EndsWith("gsc"))
-                            continue;
-
-                        if (compressedShare.Length < entry.CompressedSize)
-                        {
-                            compressedShare = new byte[entry.CompressedSize];
-                        }
-
-                        if (decompressedShare.Length < entry.DecompressedSize)
-                        {
-                            decompressedShare = new byte[entry.DecompressedSize];
-                        }
-
-                        Interlocked.Increment(ref total);
-
-                        file.fileStream.Position = 0;
-
-                        dat.Extract(entry, file.fileStream, datFile, compressedShare, decompressedShare);
-                        file.fileStream.Position = 0;
-
-                        file.Opaque = entry.Path;
-
-                        if (TryParseFile(file))
-                        {
-                            Interlocked.Increment(ref counter);
-                        }
-                    }
-                }
-            }
-            //);
-
-            Console.WriteLine($"Successfully processed {counter} meshes out of {total} files.");
-            foreach (var pair in countFails)
-            {
-                Console.WriteLine($"{pair.Key}: {pair.Value}");
-            }
-        }
-
-        static ConcurrentDictionary<string, int> countFails =
-            new ConcurrentDictionary<string, int>();
+        //    using var file = new RawFile(new MemoryStream(100000000));
+        //    foreach (string datPath in datFiles)
+        //    {
+        //        var dat = DATFile.Open(datPath);
 
 
-        static bool TryParseFile(string path)
-        {
-            try
-            {
-                ParseFile(path, false);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                if (!ex.Message.StartsWith("Unsupported NU20 version"))
-                    //Console.WriteLine($"Failed to parse {path}: {ex}");
+        //        using (var datFile = new BrickVault.RawFile(dat.FileLocation))
+        //        {
+        //            foreach (var entry in dat.Files)
+        //            {
+        //                if (!entry.Path.EndsWith("gsc"))
+        //                    continue;
 
-                    if (!countFails.ContainsKey(ex.Message))
-                        countFails[ex.Message] = 0;
+        //                if (compressedShare.Length < entry.CompressedSize)
+        //                {
+        //                    compressedShare = new byte[entry.CompressedSize];
+        //                }
 
-                countFails[ex.Message]++;
-            }
-            return false;
-        }
+        //                if (decompressedShare.Length < entry.DecompressedSize)
+        //                {
+        //                    decompressedShare = new byte[entry.DecompressedSize];
+        //                }
 
-        static bool TryParseFile(RawFile file)
-        {
-            try
-            {
-                ParseRawFile(file);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                if (ex.Message == "should be 0")
-                {
-                    Console.WriteLine();
-                }
+        //                Interlocked.Increment(ref total);
 
-                //if (!ex.Message.StartsWith("Unsupported NU20 version"))
-                //    Console.WriteLine($"Failed to parse {file.FileLocation}: {ex}");
+        //                file.fileStream.Position = 0;
 
-                //countFails.AddOrUpdate(
-                //    ex.Message,
-                //    1,                  // if key does not exist
-                //    (_, old) => old + 1 // if key exists
-                //);
+        //                dat.Extract(entry, file.fileStream, datFile, compressedShare, decompressedShare);
+        //                file.fileStream.Position = 0;
 
-                countFails.AddOrUpdate(
-                    (string)file.Opaque,
-                    1, // if key does not exist
-                    (_, old) => old + 1 // if key exists
-                );
-            }
-            return false;
-        }
+        //                file.Opaque = entry.Path;
 
-        static void ParseRawFile(RawFile file)
-        {
-            GScene gsc = GScene.Parse(file);
+        //                if (TryParseFile(file))
+        //                {
+        //                    Interlocked.Increment(ref counter);
+        //                }
+        //            }
+        //        }
+        //    }
+        //    //);
 
-            var display = gsc.DisplayScene;
-            Dictionary<int, bool> used = new();
-            for (int i = 0; i < display.SceneInstances.Count; i++)
-            {
-                var instance = display.SceneInstances[i];
+        //    Console.WriteLine($"Successfully processed {counter} meshes out of {total} files.");
+        //    foreach (var pair in countFails)
+        //    {
+        //        Console.WriteLine($"{pair.Key}: {pair.Value}");
+        //    }
+        //}
 
-                if (instance.ClipObjectIndex > -1)
-                {
-                    if (used.ContainsKey(instance.ClipObjectIndex))
-                    {
-                        Console.WriteLine("not unique!");
-                    }
-                    used.Add(instance.ClipObjectIndex, true);
-                }
-            }
-        }
+        //static ConcurrentDictionary<string, int> countFails =
+        //    new ConcurrentDictionary<string, int>();
 
-        static void ParseFile(string path, bool shouldExport = true)
-        {
-            GScene file = GScene.Parse(path);
 
-            var display = file.DisplayScene;
-            Dictionary<int, bool> used = new();
-            for (int i = 0; i < display.SceneInstances.Count; i++)
-            {
-                var instance = display.SceneInstances[i];
+        //static bool TryParseFile(string path)
+        //{
+        //    try
+        //    {
+        //        ParseFile(path, false);
+        //        return true;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        if (!ex.Message.StartsWith("Unsupported NU20 version"))
+        //            //Console.WriteLine($"Failed to parse {path}: {ex}");
 
-                if (instance.ClipObjectIndex > -1)
-                {
-                    if (used.ContainsKey(instance.ClipObjectIndex))
-                    {
-                        Console.WriteLine("not unique!");
-                    }
-                    used.Add(instance.ClipObjectIndex, true);
-                }
-            }
-        }
+        //            if (!countFails.ContainsKey(ex.Message))
+        //                countFails[ex.Message] = 0;
+
+        //        countFails[ex.Message]++;
+        //    }
+        //    return false;
+        //}
+
+        //static bool TryParseFile(RawFile file)
+        //{
+        //    try
+        //    {
+        //        ParseRawFile(file);
+        //        return true;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        if (ex.Message == "should be 0")
+        //        {
+        //            Console.WriteLine();
+        //        }
+
+        //        //if (!ex.Message.StartsWith("Unsupported NU20 version"))
+        //        //    Console.WriteLine($"Failed to parse {file.FileLocation}: {ex}");
+
+        //        //countFails.AddOrUpdate(
+        //        //    ex.Message,
+        //        //    1,                  // if key does not exist
+        //        //    (_, old) => old + 1 // if key exists
+        //        //);
+
+        //        countFails.AddOrUpdate(
+        //            (string)file.Opaque,
+        //            1, // if key does not exist
+        //            (_, old) => old + 1 // if key exists
+        //        );
+        //    }
+        //    return false;
+        //}
+
+        //static void ParseRawFile(RawFile file)
+        //{
+        //    GScene gsc = GScene.Parse(file);
+
+        //    var display = gsc.DisplayScene;
+        //    Dictionary<int, bool> used = new();
+        //    for (int i = 0; i < display.SceneInstances.Count; i++)
+        //    {
+        //        var instance = display.SceneInstances[i];
+
+        //        if (instance.ClipObjectIndex > -1)
+        //        {
+        //            if (used.ContainsKey(instance.ClipObjectIndex))
+        //            {
+        //                Console.WriteLine("not unique!");
+        //            }
+        //            used.Add(instance.ClipObjectIndex, true);
+        //        }
+        //    }
+        //}
+
+        //static void ParseFile(string path, bool shouldExport = true)
+        //{
+        //    GScene file = GScene.Parse(path);
+
+        //    var display = file.DisplayScene;
+        //    Dictionary<int, bool> used = new();
+        //    for (int i = 0; i < display.SceneInstances.Count; i++)
+        //    {
+        //        var instance = display.SceneInstances[i];
+
+        //        if (instance.ClipObjectIndex > -1)
+        //        {
+        //            if (used.ContainsKey(instance.ClipObjectIndex))
+        //            {
+        //                Console.WriteLine("not unique!");
+        //            }
+        //            used.Add(instance.ClipObjectIndex, true);
+        //        }
+        //    }
+        //}
 
         static void WriteObjFacesFromTriangleStrip(
             List<string> lines,

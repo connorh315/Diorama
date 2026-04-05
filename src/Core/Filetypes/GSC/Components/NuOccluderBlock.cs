@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class NuOccluderBlock
+    public class NuOccluderBlock : ISchemaSerializable
     {
         public uint Version;
         public List<ushort> NuOccluder;
@@ -23,6 +23,17 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 Debug.Assert(block.NuOccluder.Count == 0, "occluderlist != 0");
             }
             return block;
+        }
+
+        public void Handle(SchemaSerializer schema, uint parentVersion)
+        {
+            schema.Expect("BCCO");
+            schema.HandleUInt(ref Version);
+            if (Version >= 3)
+            {
+                schema.HandleSerializableVector(ref NuOccluder);
+                Debug.Assert(NuOccluder.Count == 0, "occluderlist != 0");
+            }
         }
 
         public void Write(RawFile file)

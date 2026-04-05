@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 namespace Diorama.Tests
 {
     [TestClass]
-    public class DimensionsTests : GscTestBase
+    public class Lb3Tests : GscTestBase
     {
-        private const string Path = @"F:\PS4Games\CUSA01176\data";
+        private const string Path = @"G:\SteamLibrary\steamapps\common\LEGO Batman 3 Beyond Gotham";
 
         [TestMethod]
         public void DeserializeAllGscFiles()

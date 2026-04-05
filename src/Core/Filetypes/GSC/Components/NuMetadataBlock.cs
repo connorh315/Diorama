@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class NuMetadataBlock
+    public class NuMetadataBlock : ISchemaSerializable
     {
         public uint Version;
         public List<NuDynamicString> MetaStrings;
@@ -23,6 +23,17 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 block.MetaStrings = NuSerializer.ReadVectorArray<NuDynamicString>(file);
             }
             return block;
+        }
+
+        public void Handle(SchemaSerializer schema, uint parentVersion)
+        {
+            schema.Expect("ATEM");
+            schema.HandleUInt(ref Version);
+
+            if (Version >= 0x46)
+            {
+                schema.HandleSchemaVector(ref MetaStrings);
+            }
         }
 
         public void Write(RawFile file)

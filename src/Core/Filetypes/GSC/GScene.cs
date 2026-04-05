@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC
 {
-    public abstract class GScene
+    public abstract class GScene : ISchemaSerializable
     {
         public string Path;
 
@@ -30,14 +30,19 @@ namespace Diorama.Core.Filetypes.GSC
         //public List<NuLightmapData> Lightmaps;
         public NuLightmapDataBlock LightmapDataBlock;
 
-        public NuMeshSceneBlock MeshSceneBlock { get; set; }
+        public NuMeshSceneBlock MeshSceneBlock;
 
         public byte[] Trailer;
 
         protected abstract void Parse(GSerializationContext ctx);
 
+        public abstract void Handle(SchemaSerializer schema, uint parentVersion = 0);
+
         public void Write(RawFile file, GSerializationContext ctx)
         {
+            SchemaSerializer schema = new SchemaSerializer(file, true);
+            schema.SetContext(ctx);
+
             file.WriteInt(ResourceHeaderBlock.Length, true);
             file.WriteArray(ResourceHeaderBlock);
 
@@ -48,7 +53,7 @@ namespace Diorama.Core.Filetypes.GSC
                 file.WriteString("02UN");
                 file.WriteUInt(NU20Version, true);
 
-                WriteNu20(file, ctx);
+                Handle(schema);
             }
 
 
@@ -93,7 +98,12 @@ namespace Diorama.Core.Filetypes.GSC
             gsc.ResourceHeaderBlock = resourceHeaderBlock;
 
             GSerializationContext context = new GSerializationContext();
-            gsc.Parse(context);
+
+            SchemaSerializer schema = new SchemaSerializer(file, false);
+            GScene_4F hack = (GScene_4F)gsc;
+            hack.Handle(schema, nu20Version);
+
+            //gsc.Parse(context);
             gsc.Path = gsc.file.FileLocation;
 
             if (file.Position != resourceHeaderSize + 4 + 4 + gscSize)
