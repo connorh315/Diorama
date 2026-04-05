@@ -1,11 +1,12 @@
-﻿using Diorama.Rendering;
+﻿using Diorama.Core.Filetypes.GSC.Components;
+using Diorama.Rendering;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using Diorama.Core.Filetypes.GSC.Components;
-using System.Numerics;
 
 namespace Diorama.Editor
 {
@@ -38,10 +39,10 @@ namespace Diorama.Editor
                 string[] split = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
                 if (split[0] == "v")
                 {
-                    positions.Add(new Vector3(float.Parse(split[1]), float.Parse(split[2]), float.Parse(split[3])));
+                    positions.Add(new Vector3(ParseFloat(split[1]), ParseFloat(split[2]), ParseFloat(split[3])));
                     if (split.Length >= 7)
                     {
-                        colors.Add(new Vector3(float.Parse(split[4]), float.Parse(split[5]), float.Parse(split[6])));
+                        colors.Add(new Vector3(ParseFloat(split[6]), ParseFloat(split[5]), ParseFloat(split[4])));
                         hasVertexColours = true;
                     }
                     else
@@ -51,11 +52,11 @@ namespace Diorama.Editor
                 }
                 else if (split[0] == "vn")
                 {
-                    normals.Add(new Vector3(float.Parse(split[1]), float.Parse(split[2]), float.Parse(split[3])));
+                    normals.Add(new Vector3(ParseFloat(split[1]), ParseFloat(split[2]), ParseFloat(split[3])));
                 }
                 else if (split[0] == "vt")
                 {
-                    uvs.Add(new Vector2(float.Parse(split[1]), float.Parse(split[2])));
+                    uvs.Add(new Vector2(ParseFloat(split[1]), ParseFloat(split[2])));
                 }
                 else if (split[0] == "f")
                 {
@@ -137,6 +138,16 @@ namespace Diorama.Editor
             }
 
             return mesh;
+        }
+
+        static float ParseFloat(string s)
+        {
+            if (!float.TryParse(s, NumberStyles.Float, CultureInfo.InvariantCulture, out var value))
+            {
+                s = s.Replace(',', '.');
+                value = float.Parse(s, CultureInfo.InvariantCulture);
+            }
+            return value;
         }
 
         public static void WriteMeshToOBJ(RenderMesh mesh, string path)
