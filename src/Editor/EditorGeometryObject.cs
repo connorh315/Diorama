@@ -1,4 +1,5 @@
-﻿using Diorama.Rendering;
+﻿using Diorama.Core.Filetypes.GSC.Components;
+using Diorama.Rendering;
 using Diorama.Rendering.Shaders;
 using Diorama.UI.Controls;
 using OpenTK.Graphics.OpenGL4;
@@ -20,8 +21,9 @@ namespace Diorama.Editor
         
         public EditorMaterial Material { get; set; }
         public EditorLightmap Lightmap;
+        
         public RenderMesh Mesh { get; set; }
-
+        public NuTransformMtx OriginalTransform { get; set; }
 
         private Matrix4 transform;
         public Matrix4 Transform
@@ -81,6 +83,7 @@ namespace Diorama.Editor
             var scale = Matrix4.CreateScale(Scale);
 
             transform = scale * rot * translation;
+            OriginalTransform.Update(transform);
         }
 
         public void Draw(Shader shader)

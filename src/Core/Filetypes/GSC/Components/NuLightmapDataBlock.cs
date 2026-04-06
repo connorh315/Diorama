@@ -27,11 +27,11 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 schema.HandleSerializableVector(ref Lightmaps, Version);
             }
 
-            if (Version >= 0xd)
+            if (Version > 0xd)
             {
                 schema.HandleFloat(ref MinU);
                 schema.HandleFloat(ref MaxU);
-                schema.HandleFloat(ref MaxV);
+                schema.HandleFloat(ref MinV);
                 schema.HandleFloat(ref MaxV);
             }
         }

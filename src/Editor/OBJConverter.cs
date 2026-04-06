@@ -130,6 +130,12 @@ namespace Diorama.Editor
             nuMesh.VerticesBase = 0;
             nuMesh.VerticesCount = (uint)vertices.Count;
 
+            for (int i = 0; i < vertexLists.Length; i++)
+            { // fixes a vertex explosion
+                nuMesh.VertexBufferFlags[i] = 0x502;
+                nuMesh.VertexBufferOffsets[i] = 0;
+            }
+
             mesh.OriginalMesh = nuMesh;
 
             if (!hasVertexColours)

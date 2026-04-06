@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,6 +15,20 @@ namespace Diorama
         public static string DatLocation = @"";
 #endif
 
-        public static bool ShouldWriteROTV = true;
+        public static bool ShouldWriteROTV = false;
+
+        public static string BuildDate => Assembly
+            .GetExecutingAssembly()
+            .GetCustomAttributes<AssemblyMetadataAttribute>()
+            .FirstOrDefault(a => a.Key == "BuildDate")
+            ?.Value;
+
+        public static string BuildType => Assembly
+            .GetExecutingAssembly()
+            .GetCustomAttributes<AssemblyMetadataAttribute>()
+            .FirstOrDefault(a => a.Key == "PublishType")
+            ?.Value;
+
+        public const string BuildVersion = "v1.0.0";
     }
 }

@@ -23,6 +23,27 @@
     <PackageReference Include="OpenTK" Version="4.9.4" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <PublishProfile>DEBUG</PublishProfile>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <BuildDate>$([System.DateTime]::Now.ToString("yyyy-MM-dd HH:mm"))</BuildDate>
+    <PublishType>$(PublishProfile)</PublishType>
+  </PropertyGroup>
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>BuildDate</_Parameter1>
+      <_Parameter2>$(BuildDate)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>PublishType</_Parameter1>
+      <_Parameter2>$(PublishType)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+
+  
   <ItemGroup>
     <Reference Include="BrickVault">
       <HintPath>G:\BV\BrickVault\bin\x64\Lib\net8.0\BrickVault.dll</HintPath>

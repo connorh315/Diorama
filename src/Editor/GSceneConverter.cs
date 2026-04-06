@@ -149,11 +149,12 @@ namespace Diorama.Editor
                         case DisplayCommand.Mesh:
                             NuTransformMtx local = display.TransformMtxs[matrixId];
 
-                            Matrix4 mtx = new Matrix4(local.Mtx[0], local.Mtx[1], local.Mtx[2], 0, local.Mtx[3], local.Mtx[4], local.Mtx[5], 0, local.Mtx[6], local.Mtx[7], local.Mtx[8], 0, local.Mtx[9], local.Mtx[10], local.Mtx[11], 1);
+                            Matrix4 mtx = local.AsMatrix();
 
                             RenderMesh mesh = meshes[command.Index];
 
                             EditorGeometryObject obj = new EditorGeometryObject();
+                            obj.OriginalTransform = local;
                             obj.Transform = mtx;
                             obj.Mesh = mesh;
                             if (materialId > -1)
@@ -193,9 +194,10 @@ namespace Diorama.Editor
                     foreach (var el in displayClip.Elements)
                     {
                         NuTransformMtx local = display.TransformMtxs[el.TransformIndex];
-                        Matrix4 mtx = new Matrix4(local.Mtx[0], local.Mtx[1], local.Mtx[2], 0, local.Mtx[3], local.Mtx[4], local.Mtx[5], 0, local.Mtx[6], local.Mtx[7], local.Mtx[8], 0, local.Mtx[9], local.Mtx[10], local.Mtx[11], 1);
+                        Matrix4 mtx = local.AsMatrix();
                         RenderMesh mesh = meshes[el.MeshIndex];
                         EditorGeometryObject obj = new EditorGeometryObject();
+                        obj.OriginalTransform = local;
                         obj.Transform = mtx;
                         obj.Mesh = mesh;
                         if (el.MaterialIndex > -1)
