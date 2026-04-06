@@ -70,7 +70,7 @@ namespace Diorama.Rendering
                 path = sender.OriginalScene.Path.Replace(".GSC", "_1.GSC");
 #endif
 
-                using (RawFile file = new RawFile(path))
+                using (RawFile file = RawFile.Create(path))
                 {
                     GSerializationContext ctx = new GSerializationContext();
                     sender.OriginalScene.Write(file, ctx);

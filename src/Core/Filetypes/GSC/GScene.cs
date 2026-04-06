@@ -82,6 +82,7 @@ namespace Diorama.Core.Filetypes.GSC
                 case 0x4e:
                 case 0x4f:
                 case 0x50:
+                case 0x51:
                 case 0x52:
                 case 0x53:
                 case 0x56:

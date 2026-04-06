@@ -32,7 +32,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
         {
             schema.Expect("LBTN");
             schema.HandleUInt(ref Version);
-            Debug.Assert(Version == 0x4e || Version == 0x4f || Version == 0x50 || Version == 0x52 || Version == 0x53 || Version == 0x56 || Version == 0x57 || Version == 0x58);
+            Debug.Assert(Version == 0x4e || Version == 0x4f || Version == 0x50 || Version == 0x51 || Version == 0x52 || Version == 0x53 || Version == 0x56 || Version == 0x57 || Version == 0x58);
             schema.HandleIntPascalString(ref Names, padding: 1, security: 0xffff); 
         }
 

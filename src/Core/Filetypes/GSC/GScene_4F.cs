@@ -372,7 +372,7 @@ namespace Diorama.Core.Filetypes.GSC
 
             schema.HandleOptional(ref CpuSkinnedBlock, NU20Version);
 
-            schema.Handle(ref DisplayScene, parentVersion);
+            schema.Handle(ref DisplayScene, NU20Version);
 
             schema.Handle(ref TextureAnim3SceneBlock);
 

@@ -222,6 +222,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
                         ctx.AddReference(mesh.FastBlendVBs);
                     }
                 }
+                else
+                {
+                    file.WriteInt(0);
+                }
 
                 if (ctx.GetOrAddReference(mesh.Indices, out int indReference))
                 {
