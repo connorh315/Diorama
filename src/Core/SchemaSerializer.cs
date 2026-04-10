@@ -440,5 +440,10 @@ namespace Diorama.Core
                 value.Handle(this, parentVersion);
             }
         }
+
+        public SchemaRegion HandleRegion()
+        {
+            return new SchemaRegion(this);
+        }
     }
 }
