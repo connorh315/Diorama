@@ -1,4 +1,5 @@
 ﻿using Diorama.Core.Filetypes.GSC;
+using Diorama.Editor.Metadata;
 using Diorama.Rendering;
 using Diorama.Rendering.Shaders;
 using OpenTK.Graphics.OpenGL4;
@@ -20,6 +21,8 @@ namespace Diorama.Editor
         public Matrix4 SceneTransform;
 
         public string Name { get; set; }
+
+        public EditorMetadata Metadata { get; set; }
 
         public List<RenderTexture> Textures;
         public List<EditorMaterial> Materials;

@@ -8,13 +8,13 @@ namespace Diorama.Core.Filetypes.GSC.Components
 {
     public class NuMtlUVBlock : ISchemaSerializable
     {
-        public uint State;
-        public uint UVSet;
+        public int State;
+        public int UVSet;
 
         public void Handle(SchemaSerializer schema, uint parentVersion)
         {
-            schema.HandleUInt(ref State);
-            schema.HandleUInt(ref UVSet);
+            schema.HandleInt(ref State);
+            schema.HandleInt(ref UVSet);
         }
     }
 }

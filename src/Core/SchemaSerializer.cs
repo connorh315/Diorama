@@ -143,6 +143,20 @@ namespace Diorama.Core
             }
         }
 
+        public void HandleBuffer(ref byte[] arr)
+        {
+            if (Writing)
+            {
+                File.WriteInt(arr.Length, true);
+                File.WriteArray(arr);
+            }
+            else
+            {
+                int size = File.ReadInt(true);
+                arr = File.ReadArray(size);
+            }
+        }
+
         public void HandleArray(ref byte[] arr, int size)
         {
             if (Writing)

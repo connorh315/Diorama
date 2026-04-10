@@ -1,4 +1,5 @@
-﻿using Diorama.Core.Filetypes.GSC.Components;
+﻿using Diorama.Core;
+using Diorama.Core.Filetypes.GSC.Components;
 using Diorama.Rendering;
 using System;
 using System.Collections.Generic;
@@ -99,11 +100,52 @@ namespace Diorama.Editor
                     // triangulate (stupid format)
                     for (int i = 1; i < faceIndices.Count - 1; i++)
                     {
-                        indices.Add((ushort)faceIndices[0]);
-                        indices.Add((ushort)faceIndices[i]);
-                        indices.Add((ushort)faceIndices[i + 1]);
+                        var i0 = (ushort)faceIndices[0];
+                        var i1 = (ushort)faceIndices[i];
+                        var i2 = (ushort)faceIndices[i + 1];
+
+                        indices.Add(i0);
+                        indices.Add(i1);
+                        indices.Add(i2);
+
+                        var v0 = vertices[i0];
+                        var v1 = vertices[i1];
+                        var v2 = vertices[i2];
+
+                        Vector3 edge1 = v1.Position - v0.Position;
+                        Vector3 edge2 = v2.Position - v0.Position;
+
+                        Vector2 deltaUV1 = (v1.UVSet01 - v0.UVSet01).ToVector2();
+                        Vector2 deltaUV2 = (v2.UVSet01 - v0.UVSet01).ToVector2();
+
+                        float area = (deltaUV1.X * deltaUV2.Y - deltaUV2.X * deltaUV1.Y);
+                        if (Math.Abs(area) < 1e-6f)
+                            continue;
+
+                        float f = 1f / area;
+
+                        Vector3 tangent = new Vector3(
+                            f * (deltaUV2.Y * edge1.X - deltaUV1.Y * edge2.X),
+                            f * (deltaUV2.Y * edge1.Y - deltaUV1.Y * edge2.Y),
+                            f * (deltaUV2.Y * edge1.Z - deltaUV1.Y * edge2.Z));
+
+                        vertices[i0].Tangent += tangent;
+                        vertices[i0].Tangent += tangent;
+                        vertices[i0].Tangent += tangent;
                     }
                 }
+            }
+
+            for (int i = 0; i < vertices.Count; i++)
+            {
+                var n = vertices[i].Normal;
+                var t = vertices[i].Tangent;
+
+                t = t - n * Vector3.Dot(n, t);
+
+                t = Vector3.Normalize(t);
+
+                vertices[i].Tangent = t;
             }
 
             VertexList[] vertexLists = new VertexList[originalMesh.VertexBuffers.Length];
@@ -175,10 +217,15 @@ namespace Diorama.Editor
                 lines.Add($"v {v.Position.X} {v.Position.Y} {v.Position.Z} {v.ColorSet0.X} {v.ColorSet0.Y} {v.ColorSet0.Z}");
                 lines.Add($"vt {v.UVSet01.X} {v.UVSet01.Y}");
                 lines.Add($"vn {v.Normal.X} {v.Normal.Y} {v.Normal.Z}");
+                //lines.Add($"vn {v.Tangent.X} {v.Tangent.Y} {v.Tangent.Z}");
             }
 
             int iStart = (int)nuMesh.IndicesBase;
             int iEnd = (int)(nuMesh.IndicesBase + nuMesh.IndicesCount);
+
+            Vector3[] tangents = new Vector3[vertices.Length];
+
+            List<string> faces = new();
 
             for (int i = iStart; i < iEnd; i += 3)
             {
@@ -186,8 +233,52 @@ namespace Diorama.Editor
                 ushort i1 = (ushort)(nuMesh.Indices[i + 1] + 1);
                 ushort i2 = (ushort)(nuMesh.Indices[i + 2] + 1);
 
-                lines.Add($"f {i0}/{i0}/{i0} {i1}/{i1}/{i1} {i2}/{i2}/{i2}");
+                faces.Add($"f {i0}/{i0}/{i0} {i1}/{i1}/{i1} {i2}/{i2}/{i2}");
+                
+                var v0 = vertices[i0 - 1];
+                var v1 = vertices[i1 - 1];
+                var v2 = vertices[i2 - 1];
+
+                Vector3 edge1 = v1.Position - v0.Position;
+                Vector3 edge2 = v2.Position - v0.Position;
+
+                Vector2 deltaUV1 = (v1.UVSet01 - v0.UVSet01).ToVector2();
+                Vector2 deltaUV2 = (v2.UVSet01 - v0.UVSet01).ToVector2();
+
+                float denom = (deltaUV1.X * deltaUV2.Y - deltaUV2.X * deltaUV1.Y);
+                if (Math.Abs(denom) < 1e-6f)
+                    continue;
+
+                float f = 1f / denom;
+
+                Vector3 tangent = new Vector3(
+                    f * (deltaUV2.Y * edge1.X - deltaUV1.Y * edge2.X),
+                    f * (deltaUV2.Y * edge1.Y - deltaUV1.Y * edge2.Y),
+                    f * (deltaUV2.Y * edge1.Z - deltaUV1.Y * edge2.Z));
+
+                tangents[i0 - 1] += tangent;
+                tangents[i1 - 1] += tangent;
+                tangents[i2 - 1] += tangent;
             }
+
+            for (int i = 0; i < tangents.Length; i++)
+            {
+                var n = vertices[i].Normal;
+                var t = tangents[i];
+
+                t = t - n * Vector3.Dot(n, t);
+
+                t = Vector3.Normalize(t);
+
+                vertices[i].Tangent = t;
+
+                //lines.Add($"vn {t.X} {t.Y} {t.Z}");
+            }
+
+            //foreach (string line in faces)
+            //{
+            //    lines.Add(line);
+            //}
 
             File.WriteAllLines(path, lines);
         }

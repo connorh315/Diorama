@@ -14,6 +14,8 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
         public Vector3 Normal;
 
+        public Vector3 Tangent;
+
         public Vector4 ColorSet0;
 
         public Vector4 ColorSet1;

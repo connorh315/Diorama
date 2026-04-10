@@ -4,6 +4,7 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Rendering;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Diorama.Rendering;
 using Diorama.UI.Platform;
 using OpenTK.Graphics.OpenGL4;
@@ -52,7 +53,7 @@ namespace Diorama.UI.Controls
 
         private int ScaleCoordinate(int coord)
         {
-            return (int)(coord * this.VisualRoot.RenderScaling);
+            return (int)(coord * this.GetPresentationSource().RenderScaling);
         }
 
         private void SetFramebufferSize()

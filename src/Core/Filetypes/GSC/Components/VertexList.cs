@@ -234,6 +234,9 @@ namespace Diorama.Core.Filetypes.GSC.Components
                     case VertexDefinitionVariableEnum.normal:
                         vertex.Normal = ReadVector(file, def.Type).ToVector3();
                         break;
+                    case VertexDefinitionVariableEnum.tangent:
+                        vertex.Tangent = ReadVector(file, def.Type).ToVector3();
+                        break;
                     case VertexDefinitionVariableEnum.colorSet0:
                         vertex.ColorSet0 = ReadVector(file, def.Type);
                         break;

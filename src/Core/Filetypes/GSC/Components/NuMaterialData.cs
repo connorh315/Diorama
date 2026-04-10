@@ -1067,8 +1067,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             for (int i = 0; i < uvBlocks.Length; i++)
             {
-                schema.HandleUInt(ref uvBlocks[i].State);
-                schema.HandleUInt(ref uvBlocks[i].UVSet);
+                schema.Handle(ref uvBlocks[i]);
 
                 //Console.WriteLine("--- NEXT:");
                 //Console.WriteLine(uvBlocks[i].State);

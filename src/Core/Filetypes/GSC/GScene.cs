@@ -10,6 +10,7 @@ using System.Numerics;
 using System.Security.AccessControl;
 using System.Text;
 using System.Threading.Tasks;
+using Diorama.Core.Filetypes.GSC.Components.RESH;
 
 namespace Diorama.Core.Filetypes.GSC
 {
@@ -18,6 +19,8 @@ namespace Diorama.Core.Filetypes.GSC
         public string Path;
 
         internal RawFile file;
+
+        public NuResourceHeader ResourceHeader;
 
         public byte[] ResourceHeaderBlock;
 
@@ -43,8 +46,7 @@ namespace Diorama.Core.Filetypes.GSC
             SchemaSerializer schema = new SchemaSerializer(file, true);
             schema.SetContext(ctx);
 
-            file.WriteInt(ResourceHeaderBlock.Length, true);
-            file.WriteArray(ResourceHeaderBlock);
+            ResourceHeader.Handle(schema, 0);
 
             using (RawFileSection nu20Section = new RawFileSection(file, false, true))
             {
@@ -65,9 +67,12 @@ namespace Diorama.Core.Filetypes.GSC
         public static GScene Parse(RawFile file)
         {
             GScene gsc;
+            SchemaSerializer schema = new SchemaSerializer(file, false);
 
-            int resourceHeaderSize = file.ReadInt(true);
-            byte[] resourceHeaderBlock = file.ReadArray(resourceHeaderSize);
+            NuResourceHeader header = null;
+            schema.Handle(ref header);
+            //int resourceHeaderSize = file.ReadInt(true);
+            //byte[] resourceHeaderBlock = file.ReadArray(resourceHeaderSize);
             //file.Seek(resourceHeaderSize, SeekOrigin.Current);
 
             uint gscSize = file.ReadUInt(true);
@@ -96,21 +101,22 @@ namespace Diorama.Core.Filetypes.GSC
 
             gsc.NU20Version = nu20Version;
             gsc.file = file;
-            gsc.ResourceHeaderBlock = resourceHeaderBlock;
+            gsc.ResourceHeader = header;
+            //gsc.ResourceHeaderBlock = resourceHeaderBlock;
 
             GSerializationContext context = new GSerializationContext();
 
-            SchemaSerializer schema = new SchemaSerializer(file, false);
+            
             GScene_4F hack = (GScene_4F)gsc;
             hack.Handle(schema, nu20Version);
 
             //gsc.Parse(context);
             gsc.Path = gsc.file.FileLocation;
 
-            if (file.Position != resourceHeaderSize + 4 + 4 + gscSize)
-            {
-                throw new Exception("Did not read entire file size!");
-            }
+            //if (file.Position != resourceHeaderSize + 4 + 4 + gscSize)
+            //{
+            //    throw new Exception("Did not read entire file size!");
+            //}
 
             int length = (int)(file.fileStream.Length - file.Position);
             if (length < 0x100)

@@ -1,0 +1,53 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="Diorama.EditResourceHeaderWindow"
+        Title="EditResourceHeaderWindow">
+  <StackPanel Spacing="10" Grid.IsSharedSizeScope="True" Margin="5">
+    <TextBlock>Resources defined in the resource header of the file:</TextBlock>
+
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="3*"/>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition SharedSizeGroup="Buttons" />
+      </Grid.ColumnDefinitions>
+      
+      <TextBlock Text="File Path:" Grid.Column="0"/>
+      <TextBlock Text="File Type:" Grid.Column="1"/>
+      <TextBlock Text="Platform:" Grid.Column="2"/>
+    </Grid>
+    
+    <ItemsControl ItemsSource="{Binding References}">
+      <ItemsControl.ItemsPanel>
+        <ItemsPanelTemplate>
+          <StackPanel Spacing="10"/>
+        </ItemsPanelTemplate>
+      </ItemsControl.ItemsPanel>
+      
+      <ItemsControl.ItemTemplate>
+        <DataTemplate>
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="3*"/>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" SharedSizeGroup="Buttons" />
+            </Grid.ColumnDefinitions>
+            
+            <TextBox Text="{Binding FilePath}" Grid.Column="0" Margin="0,0,10,0"/>
+            <TextBlock Text="{Binding Type}" Grid.Column="1" Margin="0,0,10,0"/>
+            <TextBox Text="{Binding PlatformsAndClassesHex}" Grid.Column="2" Margin="0,0,10,0"/>
+            <Button Content="X" Command="{Binding $parent[ItemsControl].DataContext.RemoveReferenceCommand}" CommandParameter="{Binding}" Grid.Column="3"/>
+          </Grid>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+
+    <Button Content="Add new entry" HorizontalAlignment="Center" Click="AddNewEntry_Click" />
+  </StackPanel>
+  
+</Window>

@@ -6,6 +6,7 @@ using Diorama.Core.Filetypes.GSC.Components;
 using Diorama.Core.Filetypes.TEXTURES;
 using Diorama.Editor;
 using Diorama.UI;
+using Diorama.UI.ViewModels;
 using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
@@ -21,6 +22,8 @@ namespace Diorama.Rendering
 {
     public class SceneController : INotifyPropertyChanged
     {
+        private MainWindow MainWindow;
+
         public ObservableCollection<EditorScene> Scenes { get; } = new();
         public IDioramaRenderer Renderer;
 
@@ -58,23 +61,16 @@ namespace Diorama.Rendering
 
         public ICommand RemoveSceneCommand { get; }
 
-        public SceneController(IDioramaRenderer renderer)
+        public ICommand EditResourceHeaderCommand { get; }
+
+        public SceneController(IDioramaRenderer renderer, MainWindow window)
         {
             Renderer = renderer;
+            MainWindow = window;
 
             SaveSceneCommand = new RelayCommand<EditorScene>((EditorScene? sender) =>
             {
-                string path = sender.OriginalScene.Path;
-
-#if DEBUG
-                path = sender.OriginalScene.Path.Replace(".GSC", "_1.GSC");
-#endif
-
-                using (RawFile file = RawFile.Create(path))
-                {
-                    GSerializationContext ctx = new GSerializationContext();
-                    sender.OriginalScene.Write(file, ctx);
-                }
+                GSceneConverter.Write(sender);
             });
 
             RemoveSceneCommand = new RelayCommand<EditorScene>((EditorScene? sender) =>
@@ -82,6 +78,18 @@ namespace Diorama.Rendering
                 if (sender != null)
                 {
                     Scenes.Remove(sender);
+                }
+            });
+
+            EditResourceHeaderCommand = new RelayCommand<EditorScene>(async (EditorScene? sender) =>
+            {
+                if (sender != null)
+                {
+                    ResourceHeaderViewModel headerVm = new ResourceHeaderViewModel(sender.Metadata);
+
+                    var modal = new EditResourceHeaderWindow(headerVm);
+
+                    await modal.ShowDialog(MainWindow);
                 }
             });
         }

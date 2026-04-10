@@ -24,6 +24,7 @@ namespace Diorama
             => AppBuilder.Configure<App>()
                 .UsePlatformDetect()
                 .WithInterFont()
+                .WithDataAnnotationsValidation()
                 //.With(new Win32PlatformOptions
                 //{
                 //    RenderingMode = new Collection<Win32RenderingMode> { Win32RenderingMode.Wgl }

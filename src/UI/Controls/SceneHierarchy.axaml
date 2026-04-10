@@ -31,6 +31,7 @@
                   <ContextMenu>
                     <MenuItem Header="Save GScene" Command="{Binding $parent[TreeView].DataContext.SaveSceneCommand}" CommandParameter="{Binding}"/>
                     <MenuItem Header="Remove Scene" Command="{Binding $parent[TreeView].DataContext.RemoveSceneCommand}" CommandParameter="{Binding}"/>
+                    <MenuItem Header="Edit Resource Header" Command="{Binding $parent[TreeView].DataContext.EditResourceHeaderCommand}" CommandParameter="{Binding}"/>
                   </ContextMenu>
                 </TextBlock.ContextMenu>  
               </TextBlock>

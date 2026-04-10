@@ -2,7 +2,9 @@
 using Diorama.Core;
 using Diorama.Core.Filetypes.GSC;
 using Diorama.Core.Filetypes.GSC.Components;
+using Diorama.Core.Filetypes.GSC.Components.RESH;
 using Diorama.Core.Filetypes.TEXTURES;
+using Diorama.Editor.Metadata;
 using Diorama.Rendering;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
@@ -24,6 +26,8 @@ namespace Diorama.Editor
             editorScene.OriginalScene = scene;
             editorScene.Name = Path.GetFileName(filePath);
             editorScene.SceneTransform = Matrix4.CreateScale(1f, 1f, -1f); // All meshes are flipped, so this unflips them
+
+            editorScene.Metadata = GetMetadata(scene);            
 
             Dictionary<ushort[], RenderIndicesBuffer> convertedIBuffer = new();
             Dictionary<VertexList, RenderVertexBuffer> convertedVBuffer = new();
@@ -52,8 +56,6 @@ namespace Diorama.Editor
                 {
                     convertedIBuffer.Add(indices, RenderIndicesBuffer.FromBuffer(indices));
                 }
-
-                
 
                 RenderIndicesBuffer iBuffer = convertedIBuffer[nuMesh.Indices];
 
@@ -295,6 +297,97 @@ namespace Diorama.Editor
                 return RenderTexture.GetWhiteTexture();
 
             return textures[index];
+        }
+
+        static EditorMetadata GetMetadata(GScene scene)
+        {
+            Dictionary<int, string> files = scene.ResourceHeader.FileTree.GetIndexedFiles();
+
+            EditorMetadata metadata = new EditorMetadata();
+            foreach (var reference in scene.ResourceHeader.References)
+            {
+                EditorResourceReference editorRef = new EditorResourceReference();
+                
+                if (!files.TryGetValue((int)reference.Hash, out string path))
+                {
+                    throw new Exception("File not found in resource header!");
+                }
+
+                editorRef.FilePath = path;
+                editorRef.Type = reference.Type;
+                editorRef.PlatformsAndClasses = reference.PlatformsAndClasses;
+                
+                metadata.Resources.Add(editorRef);
+            }
+
+            return metadata;
+        }
+
+        public static void Write(EditorScene scene)
+        {
+            var nuScene = scene.OriginalScene;
+            ConvertMetadata(scene);
+
+            string path = nuScene.Path;
+
+#if DEBUG
+            path = path.Replace(".GSC", "_1.GSC");
+#endif
+
+            using (RawFile file = RawFile.Create(path))
+            {
+                GSerializationContext ctx = new GSerializationContext();
+                nuScene.Write(file, ctx);
+            }
+        }
+
+        public static void ConvertMetadata(EditorScene scene)
+        {
+            var nuScene = scene.OriginalScene;
+            var resources = scene.Metadata.Resources;
+
+            int referenceCount = scene.Metadata.Resources.Count;
+
+            List<NuResourceReference> references = new List<NuResourceReference>();
+
+            string[] paths = new string[referenceCount];
+
+            for (int i = 0; i < referenceCount; i++)
+            {
+                paths[i] = resources[i].FilePath = NuExtensions.StandardiseLower(resources[i].FilePath);
+            }
+
+            NuFileTree filetree = NuFileTree.FromPaths(paths, scene.OriginalScene.ResourceHeader.FileTree.Version);
+
+            Dictionary<int, string> fileDictionary = filetree.GetIndexedFiles();
+
+            foreach (var reference in resources)
+            {
+                int hash = -1;
+                foreach (int key in fileDictionary.Keys)
+                {
+                    if (fileDictionary[key] == reference.FilePath)
+                    {
+                        hash = key;
+                        break;
+                    }
+                }
+
+                if (hash == -1) throw new Exception("Error when serializing resources!");
+
+                NuResourceReference nuReference = new NuResourceReference()
+                {
+                    Type = reference.Type,
+                    Hash = (uint)hash,
+                    PlatformsAndClasses = reference.PlatformsAndClasses,
+                    Discipline = -1
+                };
+
+                references.Add(nuReference);
+            }
+
+            nuScene.ResourceHeader.References = references;
+            nuScene.ResourceHeader.FileTree = filetree;
         }
     }
 }

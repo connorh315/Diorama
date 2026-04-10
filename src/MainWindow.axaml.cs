@@ -21,7 +21,7 @@ namespace Diorama
         {
             InitializeComponent();
 
-            sceneController = new SceneController(new ViewportRenderer());
+            sceneController = new SceneController(new ViewportRenderer(), this);
 
             MainViewport = new ViewportNewControl(sceneController);
             ViewportHost.Content = MainViewport;
@@ -42,15 +42,23 @@ namespace Diorama
 
         private void Window_DragDrop(object sender, DragEventArgs e)
         {
-            var firstFile = e.Data.GetFiles()?.FirstOrDefault();
-            if (firstFile == null)
-                return;
+            string firstFile = string.Empty;
+            if (e.DataTransfer.Formats.Contains(DataFormat.File))
+            {
+                var files = e.DataTransfer.TryGetFiles();
+                if (files != null)
+                {
+                    firstFile = files.First().Path.LocalPath;
+                }
+            }
+
+            if (firstFile == string.Empty) return;
 
 #if DEBUG // When triggering a breakpoint, explorer sort of just freezes until the code continues which is insufferable
-            Dispatcher.UIThread.Invoke(new Action(() =>
+                    Dispatcher.UIThread.Invoke(new Action(() =>
             {
 #endif
-                MainViewport.LoadScene(firstFile.Path.LocalPath);
+                MainViewport.LoadScene(firstFile);
 #if DEBUG
             }), DispatcherPriority.Background);
 #endif
@@ -90,6 +98,10 @@ namespace Diorama
         }
 
         private void SaveFile_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+        }
+
+        private void MenuItem_Click_1(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
         }
     }

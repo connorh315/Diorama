@@ -35,7 +35,7 @@ namespace Diorama.UI.Controls
         {
             Focusable = true;
 
-            sceneController = new SceneController(new ViewportRenderer());
+            //sceneController = new SceneController(new ViewportRenderer());
         }
 
         protected override void OnOpenGlInit(GlInterface gl)
@@ -97,11 +97,11 @@ namespace Diorama.UI.Controls
 
         private void SetFramebufferSize()
         {
-            int fbWidth = (int)(Bounds.Width * this.VisualRoot.RenderScaling);
-            int fbHeight = (int)(Bounds.Height * this.VisualRoot.RenderScaling);
+            //int fbWidth = (int)(Bounds.Width * this.VisualRoot.RenderTransform);
+            //int fbHeight = (int)(Bounds.Height * this.VisualRoot.RenderScaling);
 
-            GL.Viewport(0, 0, fbWidth, fbHeight); // TODO: Probably could just be called on-change rather than per-frame?
-            sceneController.Renderer.SetFramebufferSize(fbWidth, fbHeight);
+            //GL.Viewport(0, 0, fbWidth, fbHeight); // TODO: Probably could just be called on-change rather than per-frame?
+            //sceneController.Renderer.SetFramebufferSize(fbWidth, fbHeight);
         }
 
         protected override void OnOpenGlDeinit(GlInterface gl)
