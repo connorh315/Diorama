@@ -100,6 +100,7 @@ namespace Diorama.Editor
             if (Lightmap != null && Lightmap.AmbientOcclusion != null && ViewportNewControl.ShowLightmaps && Material.LightmapUVSet != -1)
             {
                 Lightmap.AmbientOcclusion.Use(TextureUnit.Texture2);
+                Lightmap.Smooth.Use(TextureUnit.Texture3);
                 shader.SetVector2("lm_offset", new Vector2(Lightmap.Offsets[0], Lightmap.Offsets[1]));
                 shader.SetVector2("lm_scale", new Vector2(Lightmap.Scales[0], Lightmap.Scales[1]));
                 shader.SetInt("lightmap_uvset", Material.LightmapUVSet);
@@ -107,6 +108,7 @@ namespace Diorama.Editor
             else
             {
                 RenderTexture.GetWhiteTexture().Use(TextureUnit.Texture2);
+                RenderTexture.GetWhiteTexture().Use(TextureUnit.Texture3);
             }
 
             Mesh.Draw();

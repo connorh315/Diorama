@@ -14,6 +14,8 @@ namespace Diorama.Editor
 
         public RenderTexture AmbientOcclusion;
 
+        public RenderTexture Smooth;
+
         public float[] Offsets = new float[2];
         public float[] Scales = new float[2];
     }

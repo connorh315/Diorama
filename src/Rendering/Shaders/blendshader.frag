@@ -15,6 +15,7 @@ uniform vec4 mesh_color;
 uniform sampler2D texture0;
 uniform sampler2D texture1;
 uniform sampler2D texture2;
+uniform sampler2D texture3;
 
 uniform vec2 lm_offset;
 uniform vec2 lm_scale;
@@ -54,7 +55,8 @@ void main()
     vec4 detail = texture(texture1, UV1.zw);
 
     vec2 lmUv = GetLightmapUV() * lm_scale + lm_offset;
-    vec4 lm = texture(texture2, lmUv);
+    vec4 ao = texture(texture2, lmUv);
+    vec4 smoothLm = texture(texture3, lmUv);
 
-    FragColor = base * detail * lm * mesh_color * lighting;
+    FragColor = base * detail * smoothLm * ao * mesh_color * lighting;
 }

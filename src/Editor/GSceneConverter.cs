@@ -116,6 +116,7 @@ namespace Diorama.Editor
                 lightmap.Original = nuLightmap;
 
                 lightmap.AmbientOcclusion = ResolveTexture(editorScene.Textures, nuLightmap.AoTID);
+                lightmap.Smooth = ResolveTexture(editorScene.Textures, nuLightmap.SmoothTID);
                 lightmap.Offsets[0] = nuLightmap.TexCoordOffset0;
                 lightmap.Offsets[1] = nuLightmap.TexCoordOffset1;
                 lightmap.Scales[0] = nuLightmap.TexCoordScale0;
