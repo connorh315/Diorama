@@ -190,7 +190,12 @@ namespace Diorama.Core.Filetypes.GSC.Components
                     else
                     {
                         file.WriteUInt((uint)1, true);
-                        file.WriteUInt(mesh.VertexBufferFlags[vList], true);
+                        uint flags = mesh.VertexBufferFlags[vList];
+                        if (flags == 0) // safeguard
+                        {
+                            flags = 0x502;
+                        }
+                        file.WriteUInt(flags, true);
                         buffer.Write(file);
                         file.WriteInt(mesh.VertexBufferOffsets[vList], true);
                     }

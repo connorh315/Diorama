@@ -29,9 +29,11 @@ namespace Diorama.UI.ViewModels
 
             var selectedGeo = Controller.SelectedGeometry;
 
+            var scene = Controller.SelectedGeometry.Parent.SceneOwner;
+
             Controller.EnqueueGL(() =>
             {
-                RenderMesh newMesh = OBJConverter.MeshFromOBJ(path, selectedGeo.Mesh);
+                RenderMesh newMesh = OBJConverter.MeshFromOBJ(path, selectedGeo.Mesh, scene);
 
                 selectedGeo.Mesh = newMesh;
             });

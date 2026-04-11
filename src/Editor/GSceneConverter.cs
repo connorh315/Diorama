@@ -45,7 +45,9 @@ namespace Diorama.Editor
 
                     if (!convertedVBuffer.ContainsKey(buffer))
                     {
-                        convertedVBuffer.Add(buffer, RenderVertexBuffer.FromBuffer(buffer));
+                        var vBuffer = RenderVertexBuffer.FromBuffer(buffer);
+                        convertedVBuffer.Add(buffer, vBuffer);
+                        editorScene.GetOrAdd(vBuffer);
                     }
 
                     vBuffers[j] = convertedVBuffer[buffer];
@@ -54,7 +56,9 @@ namespace Diorama.Editor
                 var indices = nuMesh.Indices;
                 if (!convertedIBuffer.ContainsKey(indices))
                 {
-                    convertedIBuffer.Add(indices, RenderIndicesBuffer.FromBuffer(indices));
+                    var ibu = RenderIndicesBuffer.FromBuffer(indices);
+                    convertedIBuffer.Add(indices, ibu);
+                    editorScene.GetOrAdd(ibu);
                 }
 
                 RenderIndicesBuffer iBuffer = convertedIBuffer[nuMesh.Indices];
@@ -185,7 +189,9 @@ namespace Diorama.Editor
                         geo.Parent = clip; // TODO: Remove
                         geo.Material = materials[el.OldMaterialIndex];
                     }
+
                     allClipObjects.Add(clip);
+                    clip.SceneOwner = editorScene;
                 }
             }
             else
@@ -216,6 +222,7 @@ namespace Diorama.Editor
                         //geometry.Add(i, obj);
                     }
                     allClipObjects.Add(clip);
+                    clip.SceneOwner = editorScene;
                 }
             }
 

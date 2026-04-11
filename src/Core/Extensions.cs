@@ -21,8 +21,8 @@ namespace Diorama.Core
         internal const uint CRC_FNV_OFFSET_32 = 2166136261;
         internal const uint CRC_FNV_PRIME_32 = 0x199933;
 
-        internal const long CRC_FNV_OFFSET_64 = -3750763034362895579;
-        internal const long CRC_FNV_PRIME_64 = 1099511628211;
+        public const long CRC_FNV_OFFSET_64 = -3750763034362895579;
+        public const long CRC_FNV_PRIME_64 = 1099511628211;
 
         public static string Standardise(string s)
         {

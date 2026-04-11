@@ -19,7 +19,7 @@ namespace Diorama.Editor
             return i > 0 ? i - 1 : count + i;
         }
 
-        public static RenderMesh MeshFromOBJ(string path, RenderMesh originalMesh)
+        public static RenderMesh MeshFromOBJ(string path, RenderMesh originalMesh, EditorScene scene)
         {
             string[] lines = File.ReadAllLines(path);
 
@@ -152,11 +152,13 @@ namespace Diorama.Editor
             RenderVertexBuffer[] vertexBuffers = new RenderVertexBuffer[vertexLists.Length];
             for (int i = 0; i < vertexLists.Length; i++)
             {
-                vertexLists[i] = VertexList.FromVertices(vertices, originalMesh.VertexBuffers[i].Attributes);
-                vertexBuffers[i] = RenderVertexBuffer.FromBuffer(vertexLists[i]);
+                var vertexList = VertexList.FromVertices(vertices, originalMesh.VertexBuffers[i].Attributes);
+                var vBuffer = (RenderVertexBuffer)scene.GetOrAdd(RenderVertexBuffer.FromBuffer(vertexList));
+                vertexLists[i] = vBuffer.Original;
+                vertexBuffers[i] = vBuffer;
             }
 
-            RenderIndicesBuffer indicesBuffer = RenderIndicesBuffer.FromBuffer(indices.ToArray());
+            RenderIndicesBuffer indicesBuffer = (RenderIndicesBuffer)scene.GetOrAdd(RenderIndicesBuffer.FromBuffer(indices.ToArray()));
 
             RenderMesh mesh = new RenderMesh(vertexBuffers, indicesBuffer);
             mesh.IndicesBase = 0;
@@ -166,7 +168,7 @@ namespace Diorama.Editor
 
             var nuMesh = originalMesh.OriginalMesh;
             nuMesh.VertexBuffers = vertexLists;
-            nuMesh.Indices = indices.ToArray();
+            nuMesh.Indices = indicesBuffer.Indices;
             nuMesh.IndicesBase = 0;
             nuMesh.IndicesCount = (uint)indices.Count;
             nuMesh.VerticesBase = 0;
@@ -275,10 +277,10 @@ namespace Diorama.Editor
                 //lines.Add($"vn {t.X} {t.Y} {t.Z}");
             }
 
-            //foreach (string line in faces)
-            //{
-            //    lines.Add(line);
-            //}
+            foreach (string line in faces)
+            {
+                lines.Add(line);
+            }
 
             File.WriteAllLines(path, lines);
         }

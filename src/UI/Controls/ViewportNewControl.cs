@@ -53,7 +53,7 @@ namespace Diorama.UI.Controls
 
         private int ScaleCoordinate(int coord)
         {
-            return (int)(coord * this.GetPresentationSource().RenderScaling);
+            return (int)(coord * this.VisualRoot.RenderScaling);
         }
 
         private void SetFramebufferSize()

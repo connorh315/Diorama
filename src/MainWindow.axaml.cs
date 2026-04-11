@@ -35,8 +35,6 @@ namespace Diorama
             Geometry = new GeometryObjectPanel(sceneController);
             GeometryHost.Content = Geometry;
 
-            this.AttachDevTools();
-
             Title = $"Diorama - {Settings.BuildVersion} [{Settings.BuildType}] ({Settings.BuildDate})";
         }
 

@@ -11,6 +11,8 @@ namespace Diorama.Editor
     {
         public EditorSceneObject Parent;
 
+        public EditorScene SceneOwner;
+
         public List<EditorGeometryObject> Elements { get; set; } = new();
 
         public void Draw(Shader shader) 

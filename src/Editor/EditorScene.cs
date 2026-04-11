@@ -1,4 +1,5 @@
 ﻿using Diorama.Core.Filetypes.GSC;
+using Diorama.Core.Filetypes.GSC.Components;
 using Diorama.Editor.Metadata;
 using Diorama.Rendering;
 using Diorama.Rendering.Shaders;
@@ -30,6 +31,25 @@ namespace Diorama.Editor
         public event PropertyChangedEventHandler? PropertyChanged;
 
         public ObservableCollection<EditorSceneObject> Objects { get; }
+
+        private readonly Dictionary<RenderBuffer, RenderBuffer> _buffers = new();
+
+        /// <summary>
+        /// Returns an existing equivalent buffer if found, otherwise adds and returns the new one.
+        /// </summary>
+        public RenderBuffer GetOrAdd(RenderBuffer buffer)
+        {
+            if (_buffers.TryGetValue(buffer, out var existing))
+            {
+                Console.WriteLine("Reusing instance");
+                return existing; // reuse existing instance
+            }
+
+            buffer.Finalise();
+            _buffers[buffer] = buffer;
+            return buffer; // new instance
+        }
+
 
         public EditorScene()
         {
