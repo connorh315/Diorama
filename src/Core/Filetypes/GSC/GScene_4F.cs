@@ -171,7 +171,7 @@ namespace Diorama.Core.Filetypes.GSC
 
             OldWiiMeshSceneBlockLinkArrayCount = file.ReadUInt(true);
 
-            Metadata = NuMetadataBlock.Parse(file);
+            //Metadata = NuMetadataBlock.Parse(file);
 
             if (NameTable.Version < 0x51)
             {

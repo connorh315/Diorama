@@ -80,7 +80,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
             file.WriteUInt(ClipObjectIndex, true);
             file.WriteUInt(Flags, true);
 
-            if (parentVersion > 0x21)
+            if (parentVersion > 0x20)
             {
                 NuSerializer.WriteVectorArray(file, ClipData, 0);
             }

@@ -161,8 +161,13 @@ namespace Diorama.Editor
 
                             EditorGeometryObject obj = new EditorGeometryObject();
                             obj.OriginalTransform = local;
-                            obj.Transform = mtx;
                             obj.Mesh = mesh;
+                            if (local.IsZero())
+                            {
+                                mtx = Matrix4.Identity;
+                                obj.CanEditTransform = false;
+                            }
+                            obj.Transform = mtx;
                             if (materialId > -1)
                             {
                                 obj.Material = materials[materialId];
@@ -323,6 +328,11 @@ namespace Diorama.Editor
                 editorRef.FilePath = path;
                 editorRef.Type = reference.Type;
                 editorRef.PlatformsAndClasses = reference.PlatformsAndClasses;
+
+                if (reference.Checksum != null)
+                {
+                    editorRef.Checksum = reference.Checksum.Checksum;
+                }
                 
                 metadata.Resources.Add(editorRef);
             }
@@ -338,7 +348,7 @@ namespace Diorama.Editor
             string path = nuScene.Path;
 
 #if DEBUG
-            path = path.Replace(".GSC", "_1.GSC");
+            path = path.Replace(".GSC", "_1.GSC").Replace(".GHG", "_1.GHG");
 #endif
 
             using (RawFile file = RawFile.Create(path))
@@ -351,7 +361,9 @@ namespace Diorama.Editor
         public static void ConvertMetadata(EditorScene scene)
         {
             var nuScene = scene.OriginalScene;
-            var resources = scene.Metadata.Resources;
+            var rawResources = scene.Metadata.Resources;
+
+            List<EditorResourceReference> resources = scene.Metadata.Resources.OrderBy(x => x.Type).ToList();
 
             int referenceCount = scene.Metadata.Resources.Count;
 
@@ -361,7 +373,7 @@ namespace Diorama.Editor
 
             for (int i = 0; i < referenceCount; i++)
             {
-                paths[i] = resources[i].FilePath = NuExtensions.StandardiseLower(resources[i].FilePath);
+                paths[referenceCount - 1 - i] = resources[i].FilePath = NuExtensions.StandardiseLower(resources[i].FilePath);
             }
 
             NuFileTree filetree = NuFileTree.FromPaths(paths, scene.OriginalScene.ResourceHeader.FileTree.Version);
@@ -380,7 +392,7 @@ namespace Diorama.Editor
                     }
                 }
 
-                if (hash == -1) throw new Exception("Error when serializing resources!");
+                //if (hash == -1) throw new Exception("Error when serializing resources!");
 
                 NuResourceReference nuReference = new NuResourceReference()
                 {
@@ -389,6 +401,14 @@ namespace Diorama.Editor
                     PlatformsAndClasses = reference.PlatformsAndClasses,
                     Discipline = -1
                 };
+
+                if (reference.Checksum != null)
+                {
+                    nuReference.Checksum = new NuCheckSum()
+                    {
+                        Checksum = reference.Checksum
+                    };
+                }
 
                 references.Add(nuReference);
             }

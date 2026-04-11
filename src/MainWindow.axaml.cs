@@ -62,9 +62,14 @@ namespace Diorama
 #endif
         }
 
-        private void MenuItem_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void LightmapItem_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             ViewportNewControl.ShowLightmaps = !ViewportNewControl.ShowLightmaps;
+        }
+
+        private void CameraLightItem_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            ViewportNewControl.UseCameraLight = !ViewportNewControl.UseCameraLight;
         }
 
         private void OpenFile_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

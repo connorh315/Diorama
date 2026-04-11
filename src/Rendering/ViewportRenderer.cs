@@ -4,6 +4,7 @@ using Diorama.Core.Filetypes.TEXTURES;
 using Diorama.Editor;
 using Diorama.Extensions;
 using Diorama.Rendering.Shaders;
+using Diorama.UI.Controls;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.GraphicsLibraryFramework;
@@ -52,8 +53,10 @@ namespace Diorama.Rendering
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             blendShader.SetMatrix4("projection", Camera.Projection);
+            blendShader.SetFloat("lightingEnabled", ViewportNewControl.UseCameraLight ? 1 : 0);
             foreach (var scene in scenes)
             {
+                blendShader.SetVector3("camera", (scene.SceneTransform * new Vector4(Camera.Position, 1)).Xyz);
                 blendShader.SetMatrix4("view", scene.SceneTransform * Camera.GetViewMatrix());
                 //scene.DebugDraw(blendShader, Camera);
                 scene.Draw(blendShader, Camera);

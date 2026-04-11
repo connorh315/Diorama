@@ -39,7 +39,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
             }
         }
 
-        protected ushort[] GetIndexList(RawFile file, GSerializationContext ctx)
+        protected ushort[] GetIndexList(RawFile file, GSerializationContext ctx, ref uint flags)
         {
             int reference = 0;
             uint indexReference = file.ReadUInt(true);
@@ -51,7 +51,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
             }
             else
             {
-                file.ReadUInt(true); // unknown
+                flags = file.ReadUInt(true); // unknown
                 uint indicesCount = file.ReadUInt(true);
                 uint unknown3 = file.ReadUInt(true);
 
@@ -107,7 +107,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
                     ctx.AddReference(mesh.FastBlendVBs);
                 }
 
-                mesh.Indices = GetIndexList(file, ctx);
+                mesh.Indices = GetIndexList(file, ctx, ref mesh.IndicesFlags);
                 mesh.IndicesBase = file.ReadUInt(true);
                 mesh.IndicesCount = file.ReadUInt(true);
                 mesh.VerticesBase = file.ReadUInt(true);
@@ -240,7 +240,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 else
                 {
                     file.WriteInt(1, true);
-                    file.WriteInt(0x102, true);
+                    file.WriteUInt(mesh.IndicesFlags, true);
                     file.WriteInt(mesh.Indices.Length, true);
                     file.WriteInt(2, true);
 

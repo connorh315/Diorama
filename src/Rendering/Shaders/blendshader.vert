@@ -18,12 +18,15 @@ uniform mat4 projection;
 
 void main()
 {
-	gl_Position = vec4(aPosition, 1.0) * model * view * projection;
-    
-    vec4 worldPos = model * vec4(aPosition, 1.0);
+    gl_Position = vec4(aPosition, 1.0) * model * view * projection;
 
+    vec4 worldPos = vec4(aPosition, 1.0) * model;
     FragPos = worldPos.xyz;
-    Normal = mat3(transpose(inverse(model))) * aNormal;
+
+    vec3 resolved = aNormal * 2 - 1;
+
+    Normal = normalize(resolved * mat3(model));
+
     UV1 = aUv1;
     UV2 = aUv2;
     outColor = aColor;

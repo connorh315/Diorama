@@ -25,6 +25,8 @@ namespace Diorama.Editor
         public RenderMesh Mesh { get; set; }
         public NuTransformMtx OriginalTransform { get; set; }
 
+        public bool CanEditTransform { get; set; } = true;
+
         private Matrix4 transform;
         public Matrix4 Transform
         {

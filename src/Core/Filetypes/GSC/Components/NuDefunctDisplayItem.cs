@@ -23,11 +23,18 @@ namespace Diorama.Core.Filetypes.GSC.Components
         Other = 0x0
     }
 
-    public class NuDefunctDisplayItem : IVectorSerializable
+    public class NuDefunctDisplayItem : ISchemaSerializable, IVectorSerializable
     {
         public DisplayCommand Command;
-        public uint Index;
         public byte Id;
+        public uint Index;
+
+        public void Handle(SchemaSerializer schema, uint parentVersion)
+        {
+            schema.HandleByteEnum(ref Command);
+            schema.HandleByte(ref Id);
+            schema.HandleUInt(ref Index);
+        }
 
         public void Deserialize(RawFile file, uint parentVersion)
         {

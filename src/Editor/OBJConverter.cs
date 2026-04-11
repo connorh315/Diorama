@@ -180,6 +180,8 @@ namespace Diorama.Editor
                 nuMesh.VertexBufferOffsets[i] = 0;
             }
 
+            nuMesh.IndicesFlags = 0x102;
+
             mesh.OriginalMesh = nuMesh;
 
             if (!hasVertexColours)

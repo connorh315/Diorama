@@ -34,6 +34,20 @@ namespace Diorama.Core.Filetypes.GSC.Components
             Mtx[11] = mtx.M43;
         }
 
+        public bool IsZero()
+        {
+            bool zero = true;
+            for (int i = 0; i < Mtx.Length; i++)
+            {
+                if (Mtx[i] != 0)
+                {
+                    zero = false;
+                }
+            }
+
+            return zero;
+        }
+
         public Matrix4 AsMatrix()
         {
             return new Matrix4(Mtx[0], Mtx[1], Mtx[2], 0, Mtx[3], Mtx[4], Mtx[5], 0, Mtx[6], Mtx[7], Mtx[8], 0, Mtx[9], Mtx[10], Mtx[11], 1);

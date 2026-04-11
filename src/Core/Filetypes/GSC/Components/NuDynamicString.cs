@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class NuDynamicString : IVectorSerializable, ISchemaSerializable
+    public class NuDynamicString : ISchemaSerializable
     {
         public string Value;
 

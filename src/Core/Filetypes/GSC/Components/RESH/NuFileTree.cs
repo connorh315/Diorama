@@ -149,17 +149,18 @@ namespace Diorama.Core.Filetypes.GSC.Components.RESH
             Dictionary<int, string> segmentDictionary = new Dictionary<int, string>();
             int currentSegmentOffset = 0;
 
-            ushort fileId = 0;
+            short fileId = (short)0;
             foreach (string rawPath in paths)
             {
                 string sanitised = NuExtensions.StandardiseLower(rawPath);
                 string[] split = sanitised.Split('\\');
 
                 short parent = 0;
+                short thisFile = fileId++;
                 for (int i = 0; i < split.Length; i++)
                 {
                     bool found = false;
-                    short lastChild = 0;
+                    short lastChild = segments[parent].FinalChild;
                     bool isChild = i == split.Length - 1;
                    
                     if (!isChild)
@@ -173,7 +174,6 @@ namespace Diorama.Core.Filetypes.GSC.Components.RESH
                                 break;
                             }
 
-                            lastChild = child;
                         }
                     }
 
@@ -182,11 +182,15 @@ namespace Diorama.Core.Filetypes.GSC.Components.RESH
                         NuResourceSegment childSegment = new NuResourceSegment()
                         {
                             ParentIndex = parent,
-                            FileIndex = (ushort)(isChild ? fileId++ : 0),
+                            FileIndex = (ushort)(isChild ? Math.Abs(thisFile) : 0),
                             PreviousSibling = lastChild,
-                            FinalChild = (short)(isChild ? -1 : 0),
+                            FinalChild = (short)(isChild ? -thisFile : 0),
                             SegmentIndex = currentSegmentOffset
                         };
+                        if (versionToUse == 2 && isChild)
+                        {
+                            childSegment.FinalChild = 0;
+                        }
                         segmentDictionary.Add(currentSegmentOffset, split[i]);
                         currentSegmentOffset += split[i].Length + 2;
 

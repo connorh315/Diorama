@@ -19,7 +19,8 @@
       <MenuItem Header="_File">
         <MenuItem Header="Open" Click="OpenFile_Click"/>
       </MenuItem>
-      <MenuItem Header="Toggle Lightmaps" Click="MenuItem_Click" />
+      <MenuItem Header="Toggle Lightmaps" Click="LightmapItem_Click" />
+      <MenuItem Header="Toggle Camera Lighting" Click="CameraLightItem_Click" />
     </Menu>
     
     <Grid Grid.Row="1">
@@ -29,13 +30,29 @@
         <ColumnDefinition Width="2*" />
       </Grid.ColumnDefinitions>
 
-      <StackPanel Grid.Row="0">
-        <ContentControl x:Name="HierarchyHost" Height="400" />
-        <ContentControl x:Name="InspectorHost" Height="200" />
-        <ContentControl x:Name="GeometryHost" Height="400" />
-      </StackPanel>
-      
-      <!-- editor panels go here -->
+      <Grid Grid.Column="0">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="2*" />
+          <RowDefinition Height="3" />
+          <RowDefinition Height="1*" />
+          <RowDefinition Height="3" />
+          <RowDefinition Height="2*" />
+        </Grid.RowDefinitions>
+        <ContentControl x:Name="HierarchyHost" Grid.Row="0" />
+        <GridSplitter Grid.Row="1"
+                    Height="3"
+                    Background="#444"
+                    ResizeDirection="Rows"
+                    VerticalAlignment="Stretch"/>
+        <ContentControl x:Name="InspectorHost" Grid.Row="2" />
+        <GridSplitter Grid.Row="3"
+                    Height="3"
+                    Background="#444"
+                    ResizeDirection="Rows"
+                    VerticalAlignment="Stretch"/>
+        <ContentControl x:Name="GeometryHost" Grid.Row="4" />
+        
+      </Grid>
       
       <GridSplitter Grid.Column="1"
                     Width="3"

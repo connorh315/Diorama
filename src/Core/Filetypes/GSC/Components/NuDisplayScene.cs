@@ -73,7 +73,8 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             if (Version < 0x22)
             {
-                schema.HandleSerializableVector(ref DisplayItems);
+                schema.HandleSchemaVector(ref DisplayItems);
+                //schema.HandleSerializableVector(ref DisplayItems);
             }
             schema.HandleSchemaVector(ref ClipObjects, Version);
 

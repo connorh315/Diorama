@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class NuFaceOnInstance : IVectorSerializable
+    public class NuFaceOnInstance : IVectorSerializable, ISchemaSerializable
     {
         public Vector3 Loc;
         public float Width;
@@ -20,6 +20,14 @@ namespace Diorama.Core.Filetypes.GSC.Components
             Width = file.ReadFloat(true);
             Height = file.ReadFloat(true);
             Colour = file.ReadUInt(true);
+        }
+
+        public void Handle(SchemaSerializer schema, uint parentVersion)
+        {
+            schema.HandleVector3(ref Loc);
+            schema.HandleFloat(ref Width);
+            schema.HandleFloat(ref Height);
+            schema.HandleUInt(ref Colour);
         }
 
         public void Serialize(RawFile file, uint parentVersion)

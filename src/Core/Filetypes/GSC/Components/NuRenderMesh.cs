@@ -16,6 +16,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
         public uint[] FastBlendFlags;
         public int[] FastBlendOffsets;
         public ushort[] Indices;
+        public uint IndicesFlags; // 0x102 normally, becomes 0x103 on grass
 
         public uint VerticesBase;
         public uint VerticesCount;

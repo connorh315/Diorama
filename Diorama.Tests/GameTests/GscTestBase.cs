@@ -2,9 +2,10 @@
 using BrickVault.Types;
 using Diorama.Core;
 using Diorama.Core.Filetypes.GSC;
+using Diorama.Editor;
 using RawFile = Diorama.Core.RawFile;
 
-namespace Diorama.Tests
+namespace Diorama.Tests.GameTests
 {
     public abstract class GscTestBase
     {

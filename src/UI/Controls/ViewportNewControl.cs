@@ -70,6 +70,8 @@ namespace Diorama.UI.Controls
 
         public static bool ShowLightmaps = false;
 
+        public static bool UseCameraLight = false;
+
         private void Update(double deltaTime)
         {
             if (Keyboard.IsKeyDown(Key.W))

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class NuBlendShapeAnimList : IVectorSerializable, ISchemaSerializable
+    public class NuBlendShapeAnimList : ISchemaSerializable
     {
         public int SpecialObjectIndex;
 

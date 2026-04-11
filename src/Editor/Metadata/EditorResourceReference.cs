@@ -100,6 +100,8 @@ namespace Diorama.Editor.Metadata
             }
         }
 
+        public byte[] Checksum;
+
         protected void OnPropertyChanged([CallerMemberName] string? name = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));

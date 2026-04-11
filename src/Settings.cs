@@ -15,7 +15,7 @@ namespace Diorama
         public static string DatLocation = @"";
 #endif
 
-        public static bool ShouldWriteROTV = false;
+        public static bool ShouldWriteROTV = true;
 
         public static string BuildDate => Assembly
             .GetExecutingAssembly()
@@ -29,6 +29,6 @@ namespace Diorama
             .FirstOrDefault(a => a.Key == "PublishType")
             ?.Value;
 
-        public const string BuildVersion = "v1.0.0";
+        public const string BuildVersion = "v1.1.0";
     }
 }

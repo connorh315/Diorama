@@ -197,14 +197,14 @@ namespace Diorama.Core
             fileStream.Read(array, 0, length);
             if (array[array.Length - 1] == 0)
             {
-                return Encoding.Default.GetString(array, 0, array.Length - 1);
+                return Encoding.Latin1.GetString(array, 0, array.Length - 1);
             }
-            return Encoding.Default.GetString(array);
+            return Encoding.Latin1.GetString(array);
         }
 
         public void WriteString(string toWrite, int padding = 0)
         {
-            byte[] buffer = Encoding.Default.GetBytes(toWrite);
+            byte[] buffer = Encoding.Latin1.GetBytes(toWrite);
             fileStream.Write(buffer, 0, buffer.Length);
             byte[] pad = new byte[padding];
             fileStream.Write(pad, 0, pad.Length);

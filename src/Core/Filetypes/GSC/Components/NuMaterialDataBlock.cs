@@ -135,7 +135,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             if (Version > 0xfc)
             {
-                schema.HandleSerializableVector(ref ExternalMtlPaths);
+                schema.HandleSchemaVector(ref ExternalMtlPaths);
             }
         }
     }

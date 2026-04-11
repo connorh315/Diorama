@@ -24,13 +24,13 @@
         <StackPanel Margin="5" IsVisible="{Binding Controller.SelectedGeometry, Converter={x:Static ObjectConverters.IsNotNull}}">
           <controls:Vec3Input
               Value="{Binding Controller.SelectedGeometry.Position, Mode=TwoWay}"
-              InputLabel="Position" />
+              InputLabel="Position" IsEnabled="{Binding Controller.SelectedGeometry.CanEditTransform}"/>
           <controls:Vec3Input
               Value="{Binding Controller.SelectedGeometry.Rotation, Mode=TwoWay}"
-              InputLabel="Rotation" />
+              InputLabel="Rotation" IsEnabled="{Binding Controller.SelectedGeometry.CanEditTransform}"/>
           <controls:Vec3Input
               Value="{Binding Controller.SelectedGeometry.Scale, Mode=TwoWay}"
-              InputLabel="Scale" />
+              InputLabel="Scale" IsEnabled="{Binding Controller.SelectedGeometry.CanEditTransform}"/>
           
           <controls:ColorInput InputLabel="Material Primary Colour" Color="{Binding Controller.SelectedGeometry.Material.Colour1, Mode=TwoWay}" />
           

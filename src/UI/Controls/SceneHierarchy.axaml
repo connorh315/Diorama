@@ -43,7 +43,7 @@
               <StackPanel Orientation="Horizontal">
                 <TextBlock Text="{Binding Name}" TextDecorations="Underline" VerticalAlignment="Center" Width="150" IsVisible="{Binding IsActive}"/>
                 <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Width="150" IsVisible="{Binding !IsActive}"/>
-                
+                <TextBox Text="{Binding FadeDistance}" VerticalAlignment="Center" ToolTip.Tip="This can, and likely will, be overridden if this is used as an attachment/in animations. Cannot currently be saved back to the GSC."/>
               </StackPanel>
             </TreeDataTemplate>
             <TreeDataTemplate DataType="editor:EditorGeometryObject">

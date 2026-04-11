@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Diorama.Tests
+namespace Diorama.Tests.GameTests
 {
     [TestClass]
-    public class DimensionsTests : GscTestBase
+    public class LmaTests : GscTestBase
     {
-        private const string Path = @"F:\PS4Games\CUSA01176\data";
+        private const string Path = @"G:\SteamLibrary\steamapps\common\LEGO Marvel's Avengers";
 
         [TestMethod]
         public void DeserializeAllGscFiles()

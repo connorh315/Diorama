@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Diorama.Tests
+namespace Diorama.Tests.GameTests
 {
     [TestClass]
-    public class Lb3Tests : GscTestBase
+    public class DimensionsTests : GscTestBase
     {
-        private const string Path = @"G:\SteamLibrary\steamapps\common\LEGO Batman 3 Beyond Gotham";
+        private const string Path = @"F:\PS4Games\CUSA01176\data";
 
         [TestMethod]
         public void DeserializeAllGscFiles()

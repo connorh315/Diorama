@@ -20,6 +20,8 @@ uniform vec2 lm_offset;
 uniform vec2 lm_scale;
 uniform int lightmap_uvset;
 
+uniform float lightingEnabled;
+
 vec2 GetLightmapUV()
 {
     if (lightmap_uvset == 0)
@@ -37,13 +39,16 @@ vec2 GetLightmapUV()
 
 void main()
 {
+    vec3 normal = normalize(Normal);
     vec3 lightDir = normalize(camera - FragPos);
 
-    float diff = max(dot(normalize(Normal), lightDir), 0.0);
+    float diff = max(dot(normal, lightDir), 0.0);
 
-    vec3 baseColor = vec3(outColor); // neutral grey
+    // Your lighting model
+    float lit = 0.2 + diff;
 
-    vec3 color = baseColor * (0.2 + diff); // ambient + diffuse
+    // Branchless toggle
+    float lighting = mix(1.0, lit, lightingEnabled);
 
     vec4 base = texture(texture0, UV1.xy);
     vec4 detail = texture(texture1, UV1.zw);
@@ -51,7 +56,5 @@ void main()
     vec2 lmUv = GetLightmapUV() * lm_scale + lm_offset;
     vec4 lm = texture(texture2, lmUv);
 
-    FragColor = base * detail * lm * mesh_color;
-    //FragColor = base * detail * lm * outColor * mesh_color;
-    // FragColor = vec4(1.0);
+    FragColor = base * detail * lm * mesh_color * lighting;
 }

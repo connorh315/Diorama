@@ -41,7 +41,6 @@ namespace Diorama.Editor
         {
             if (_buffers.TryGetValue(buffer, out var existing))
             {
-                Console.WriteLine("Reusing instance");
                 return existing; // reuse existing instance
             }
 

@@ -107,6 +107,13 @@ namespace Diorama.Core
             }
         }
 
+        public void HandleByteEnum<T>(ref T value) where T : unmanaged, Enum
+        {
+            byte temp = Convert.ToByte(value);
+            HandleByte(ref temp);
+            value = (T)Enum.ToObject(typeof(T), temp);
+        }
+
         public void HandlePascalString(ref string v, int padding = 1)
         {
             if (Writing)
