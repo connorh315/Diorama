@@ -57,7 +57,9 @@ namespace Diorama.Rendering
             blendShader.SetFloat("lightingEnabled", ViewportNewControl.UseCameraLight ? 1 : 0);
             foreach (var scene in scenes)
             {
-                blendShader.SetVector3("camera", (scene.SceneTransform * new Vector4(Camera.Position, 1)).Xyz);
+                Vector3 cameraScenePos = (scene.SceneTransform * new Vector4(Camera.Position, 1)).Xyz;
+                Camera.ScenePosition = cameraScenePos;
+                blendShader.SetVector3("camera", cameraScenePos);
                 blendShader.SetMatrix4("view", scene.SceneTransform * Camera.GetViewMatrix());
                 //scene.DebugDraw(blendShader, Camera);
                 scene.Draw(blendShader, Camera);

@@ -78,15 +78,15 @@ namespace Diorama.Core.Filetypes.GSC.Components
             }
             schema.HandleSchemaVector(ref ClipObjects, Version);
 
-            schema.HandleSerializableVector(ref SpecialObjects, Version);
-            schema.HandleSerializableVector(ref SpecialGroupNodes, Version);
-            schema.HandleSerializableVector(ref BoundsCenterAndDistSqrd);
-            schema.HandleSerializableVector(ref BoundsExtentsAndRadius);
-            schema.HandleSerializableVector(ref SceneInstances, Version);
+            schema.HandleSchemaVector(ref SpecialObjects, Version);
+            schema.HandleSchemaVector(ref SpecialGroupNodes, Version);
+            schema.HandleSchemaVector(ref BoundsCenterAndDistSqrd);
+            schema.HandleSchemaVector(ref BoundsExtentsAndRadius);
+            schema.HandleSchemaVector(ref SceneInstances, Version);
             schema.HandleSerializableVector(ref SceneInstanceFixups);
             schema.HandleSerializableVector(ref AnimMtls);
-            schema.HandleSerializableVector(ref TransformMtxs);
-            schema.HandleSerializableVector(ref FaceOnDisplayItems);
+            schema.HandleSchemaVector(ref TransformMtxs);
+            schema.HandleSchemaVector(ref FaceOnDisplayItems);
             if (parentVersion > 0x52)
             {
                 schema.HandleLegacyVarArray(ref TextureAnimListIndexs2);

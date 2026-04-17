@@ -21,6 +21,8 @@ namespace Diorama.Rendering
 
         public Matrix4 Projection;
 
+        public Vector3 ScenePosition;
+
         public Camera(Vector3 startPosition)
         {
             Position = startPosition;

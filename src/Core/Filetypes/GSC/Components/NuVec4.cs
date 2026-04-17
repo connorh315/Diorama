@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class NuVec4 : IVectorSerializable
+    public class NuVec4 : IVectorSerializable, ISchemaSerializable
     {
         public float X;
         public float Y;
@@ -19,6 +19,14 @@ namespace Diorama.Core.Filetypes.GSC.Components
             Y = file.ReadFloat(true);
             Z = file.ReadFloat(true);
             W = file.ReadFloat(true);
+        }
+
+        public void Handle(SchemaSerializer schema, uint parentVersion)
+        {
+            schema.HandleFloat(ref X);
+            schema.HandleFloat(ref Y);
+            schema.HandleFloat(ref Z);
+            schema.HandleFloat(ref W);
         }
 
         public void Serialize(RawFile file, uint parentVersion)

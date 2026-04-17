@@ -74,7 +74,7 @@ namespace Diorama.Editor
 
                 for (int i = 0; i < Lods.Length; i++)
                 {
-                    if (Vector3.Distance(BoundsCenterAndDistSqrd.Xyz, camera.Position) > Lods[i].FadeDistance && result == -1)
+                    if (Vector3.Distance(BoundsCenterAndDistSqrd.Xyz, camera.ScenePosition) > Lods[i].FadeDistance && result == -1)
                     {
                         result = i;
                         Lods[i].IsActive = true;

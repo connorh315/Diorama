@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class NuSceneInstance : IVectorSerializable
+    public class NuSceneInstance : IVectorSerializable, ISchemaSerializable
     {
         public int Hash;
         public short Flags;
@@ -19,9 +19,50 @@ namespace Diorama.Core.Filetypes.GSC.Components
         public float FadeAlphaCo;
         public Vector3 FadeAlpha;
 
-        public NuSceneInstanceLod[] Lods;
+        public NuSceneInstanceLod[] Lods = new NuSceneInstanceLod[4];
 
         public int[] VertexControlledTint = new int[4];
+
+        public bool HasLods => (Flags & 2) != 0;
+
+        public void Handle(SchemaSerializer schema, uint parentVersion)
+        {
+            schema.HandleInt(ref Hash);
+            schema.HandleShort(ref Flags);
+            schema.HandleShort(ref ClipObjectIndex);
+            schema.HandleFloat(ref ClipDistance);
+
+            for (int i = 0; i < 4; i++)
+            {
+                schema.HandleFloat(ref FadeDistances[i]);
+            }
+
+            schema.HandleFloat(ref ApproxSize);
+
+            if (!HasLods)
+            {
+                schema.HandleFloat(ref FadeAlphaCo);
+                schema.HandleVector3(ref FadeAlpha);
+            }
+            else
+            {
+                for (int lodId = 0; lodId < 4; lodId++)
+                {
+                    schema.HandleByte(ref Lods[lodId].LodHeirarchical);
+                    schema.HandleInt(ref Lods[lodId].HighResSceneFixupId);
+                    schema.HandleInt(ref Lods[lodId].FirstInstance);
+                    schema.HandleInt(ref Lods[lodId].NumInstances);
+                }
+            }
+
+            if (parentVersion > 0x1f)
+            {
+                for (int i = 0; i < 4; i++)
+                {
+                    schema.HandleInt(ref VertexControlledTint[i]);
+                }
+            }
+        }
 
         public void Deserialize(RawFile file, uint parentVersion)
         {

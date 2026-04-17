@@ -250,7 +250,7 @@ namespace Diorama.Editor
                     sceneObject.ClipObject.Parent = sceneObject;
                 }
 
-                if (instance.Lods != null && instance.ClipObjectIndex != -1)
+                if (instance.HasLods && instance.ClipObjectIndex != -1)
                 {
                     sceneObject.Lods = new EditorLodGroup[4];
 

@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class NuSpecialGroupNode : IVectorSerializable
+    public class NuSpecialGroupNode : IVectorSerializable, ISchemaSerializable
     {
-        public List<short> SpecialIndexes { get; set; }
+        public List<short> SpecialIndexes;
 
         public void Deserialize(RawFile file, uint parentVersion)
         {
@@ -20,6 +20,18 @@ namespace Diorama.Core.Filetypes.GSC.Components
             else
             {
                 SpecialIndexes = NuSerializer.ReadVectorArray<short>(file);
+            }
+        }
+
+        public void Handle(SchemaSerializer schema, uint parentVersion)
+        {
+            if (parentVersion < 0x21)
+            {
+                schema.HandleLegacyVarArray(ref SpecialIndexes);
+            }
+            else
+            {
+                schema.HandleSerializableVector(ref SpecialIndexes);
             }
         }
 

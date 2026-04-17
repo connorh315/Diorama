@@ -150,6 +150,18 @@ namespace Diorama.Core
             }
         }
 
+        public void HandleVector4(ref Vector4 v)
+        {
+            if (Writing)
+            {
+                File.WriteVector4(v, true);
+            }
+            else
+            {
+                v = File.ReadVector4(true);
+            }
+        }
+
         public void HandleBuffer(ref byte[] arr)
         {
             if (Writing)
@@ -334,6 +346,18 @@ namespace Diorama.Core
             }
         }
 
+        public void HandleSerializableVector(ref List<short> arr, uint parentVersion = 0)
+        {
+            if (Writing)
+            {
+                NuSerializer.WriteVectorArray(File, arr, parentVersion);
+            }
+            else
+            {
+                arr = NuSerializer.ReadVectorArray<short>(File, parentVersion);
+            }
+        }
+
         public void HandleSerializableVector(ref List<uint> arr, uint parentVersion = 0)
         {
             if (Writing)
@@ -343,6 +367,18 @@ namespace Diorama.Core
             else
             {
                 arr = NuSerializer.ReadVectorArray<uint>(File, parentVersion);
+            }
+        }
+
+        public void HandleSerializableVector(ref List<float> arr)
+        {
+            if (Writing)
+            {
+                NuSerializer.WriteVectorArray(File, arr);
+            }
+            else
+            {
+                arr = NuSerializer.ReadVectorArray<float>(File);
             }
         }
 
@@ -382,6 +418,18 @@ namespace Diorama.Core
             else
             {
                 arr = NuSerializer.ReadLegacyVarArray<ushort>(File);
+            }
+        }
+
+        public void HandleLegacyVarArray(ref List<short> arr)
+        {
+            if (Writing)
+            {
+                NuSerializer.WriteLegacyVarArray(File, arr);
+            }
+            else
+            {
+                arr = NuSerializer.ReadLegacyVarArray<short>(File);
             }
         }
 

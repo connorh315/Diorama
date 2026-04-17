@@ -8,13 +8,8 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class NuSpecialObject : IVectorSerializable
+    public class NuSpecialObject : IVectorSerializable, ISchemaSerializable
     {
-        public virtual List<float> ReadClipData(RawFile file)
-        {
-            return NuSerializer.ReadLegacyVarArray<float>(file);
-        }
-
         public string Name;
         public NuMtx Mtx;
 
@@ -67,6 +62,35 @@ namespace Diorama.Core.Filetypes.GSC.Components
             NameIndex = file.ReadShort(true); // possibly actually "exported"?
         }
 
+        public void Handle(SchemaSerializer schema, uint parentVersion)
+        {
+            schema.HandlePascalString(ref Name, 1);
+            schema.Handle(ref Mtx);
+            schema.HandleVector4(ref Min);
+            schema.HandleVector4(ref Max);
+            schema.HandleVector4(ref Sphere);
+
+            schema.HandleUInt(ref ClipObjectIndex);
+            schema.HandleUInt(ref Flags);
+
+            if (parentVersion > 0x20)
+            {
+                schema.HandleSerializableVector(ref ClipData);
+            }
+            else
+            {
+                schema.HandleLegacyVarArray(ref ClipData);
+            }
+
+            schema.HandleInt(ref InstanceIndex);
+            schema.HandleInt(ref AnimIndex);
+
+            schema.HandleByte(ref WindSpeed);
+            schema.HandleByte(ref WindScale);
+
+            schema.HandleShort(ref NameIndex);
+        }
+
         public void Serialize(RawFile file, uint parentVersion)
         {
             file.WritePascalString(Name, 1);
@@ -97,5 +121,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             file.WriteShort(NameIndex, true);
         }
+
+
     }
 }
