@@ -36,6 +36,17 @@ namespace Diorama
             GeometryHost.Content = Geometry;
 
             Title = $"Diorama - {Settings.BuildVersion} [{Settings.BuildType}] ({Settings.BuildDate})";
+
+            string[] args = Environment.GetCommandLineArgs();
+            if (args.Length > 1)
+            {
+                if (!File.Exists(args[1]))
+                {
+                    Console.WriteLine("Invalid file path provided for scene");
+                    return;
+                }
+                MainViewport.LoadScene(args[1]);
+            }
         }
 
         private void Window_DragDrop(object sender, DragEventArgs e)
