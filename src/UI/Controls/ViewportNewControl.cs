@@ -61,11 +61,7 @@ namespace Diorama.UI.Controls
             int fbWidth = ScaleCoordinate((int)Bounds.Width);
             int fbHeight = ScaleCoordinate((int)Bounds.Height);
 
-            sceneController.EnqueueGL(() =>
-            {
-                GL.Viewport(0, 0, fbWidth, fbHeight);
-                sceneController.Renderer.SetFramebufferSize(fbWidth, fbHeight);
-            });
+            sceneController.SetWidthHeight(fbWidth, fbHeight);
         }
 
         public static bool ShowLightmaps = false;
@@ -74,27 +70,13 @@ namespace Diorama.UI.Controls
 
         private void Update(double deltaTime)
         {
-            if (Keyboard.IsKeyDown(Key.W))
-                sceneController.Renderer.Camera.MoveForward((float)deltaTime);
+            if (Keyboard.IsKeyDown(Key.F))
+            {
+                var geo = sceneController.SelectedGeometry;
+                sceneController.CameraController.FocusOn(geo);
+            }
 
-            if (Keyboard.IsKeyDown(Key.A))
-                sceneController.Renderer.Camera.MoveLeft((float)deltaTime);
-
-            if (Keyboard.IsKeyDown(Key.S))
-                sceneController.Renderer.Camera.MoveBackward((float)deltaTime);
-
-            if (Keyboard.IsKeyDown(Key.D))
-                sceneController.Renderer.Camera.MoveRight((float)deltaTime);
-
-            if (Keyboard.IsKeyDown(Key.Space))
-                sceneController.Renderer.Camera.MoveUp((float)deltaTime);
-
-            if (Keyboard.IsKeyDown(Key.LeftCtrl))
-                sceneController.Renderer.Camera.MoveDown((float)deltaTime);
-
-            //ShowLightmaps = !Keyboard.IsKeyDown(Key.L);
-
-            sceneController.Renderer.Camera.ToggleSpeed(Keyboard.IsKeyDown(Key.LeftShift));
+            sceneController.CameraController.Update(Keyboard, deltaTime);
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -211,7 +193,7 @@ namespace Diorama.UI.Controls
             if (deltaX == 0 && deltaY == 0)
                 return; // ignore warp-generated move
 
-            sceneController.Renderer.Camera.ProcessMouse(deltaX, deltaY);
+            sceneController.CameraController.ProcessMouse(deltaX, deltaY);
 
             // Recenter immediately
             DioramaPlatform.SetCursorPos((int)windowCenter.X, (int)windowCenter.Y);

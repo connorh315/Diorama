@@ -240,6 +240,7 @@ namespace Diorama.Editor
                 editorScene.Objects.Add(sceneObject);
                 sceneObject.Name = $"SceneInstance_{i}";
                 sceneObject.FadeDistances = instance.FadeDistances; // TODO: probably dangerous?
+                sceneObject.ApproxSize = instance.ApproxSize;
 
                 var geoBounds = display.BoundsCenterAndDistSqrd[i];
                 sceneObject.BoundsCenterAndDistSqrd = new Vector4(geoBounds.X, geoBounds.Y, geoBounds.Z, geoBounds.W);

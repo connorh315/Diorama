@@ -9,13 +9,11 @@ namespace Diorama.Rendering
 {
     public interface IDioramaRenderer
     {
-        Camera Camera { get; }
-
         void SetFramebufferSize(int width, int height);
 
         void Initialize();
 
-        void Render(List<EditorScene> scenes);
+        void Render(List<EditorScene> scenes, Camera camera);
 
         void Deinitialize();
     }

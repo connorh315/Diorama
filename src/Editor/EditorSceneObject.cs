@@ -52,21 +52,23 @@ namespace Diorama.Editor
 
         public float[] FadeDistances { get; set; }
 
+        public float ApproxSize { get; set; }
+
         public Vector4 BoundsCenterAndDistSqrd { get; set; }
 
         public bool IsActive = true;
 
         public bool DebugDraw = false;
 
-        public void Draw(Shader shader, Camera camera)
+        public void Draw(Shader shader, RenderContext ctx)
         {
             if (!IsActive)
                 return;
 
-            GetActiveClipObject(camera)?.Draw(shader);
+            GetActiveClipObject(ctx.CameraScenePosition)?.Draw(shader);
         }
 
-        public EditorClipObject? GetActiveClipObject(Camera camera)
+        public EditorClipObject? GetActiveClipObject(Vector3 cameraPos)
         {
             if (UseLodGroups)
             {
@@ -74,7 +76,7 @@ namespace Diorama.Editor
 
                 for (int i = 0; i < Lods.Length; i++)
                 {
-                    if (Vector3.Distance(BoundsCenterAndDistSqrd.Xyz, camera.ScenePosition) > Lods[i].FadeDistance && result == -1)
+                    if (Vector3.Distance(BoundsCenterAndDistSqrd.Xyz, cameraPos) > Lods[i].FadeDistance && result == -1)
                     {
                         result = i;
                         Lods[i].IsActive = true;

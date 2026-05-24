@@ -57,11 +57,11 @@ namespace Diorama.Editor
             Objects = new();
         }
 
-        public void Draw(Shader shader, Camera camera)
+        public void Draw(Shader shader, RenderContext ctx)
         {
             foreach (var obj in Objects)
             {
-                obj.Draw(shader, camera);
+                obj.Draw(shader, ctx);
             }
 
             GL.BindVertexArray(0);

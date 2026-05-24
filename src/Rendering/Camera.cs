@@ -10,58 +10,26 @@ namespace Diorama.Rendering
     public class Camera
     {
         public Vector3 Position;
-        public Vector3 Front = new Vector3(0.0f, 0.0f, -1.0f);
-        public Vector3 Up = new Vector3(0.0f, 1.0f, 0.0f);
+        public Vector3 Up = Vector3.UnitY;
+        //public Vector3 Front = new Vector3(0.0f, 0.0f, -1.0f);
 
         public float Yaw = -90f;
         public float Pitch = 0f;
-        public float Sensitivity = 0.1f;
-
-        public float Speed = 3.0f;
 
         public Matrix4 Projection;
-
-        public Vector3 ScenePosition;
 
         public Camera(Vector3 startPosition)
         {
             Position = startPosition;
         }
 
-        public void SetWidthHeight(int width, int height)
+        public void SetProjection(int width, int height)
         {
             Projection = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(45.0f), (float)width / height, 0.1f, 1000f);
         }
 
-        public void MoveForward(float deltaTime)
-            => Position += Front * Speed * deltaTime;
-
-        public void MoveBackward(float deltaTime)
-            => Position -= Front * Speed * deltaTime;
-
-        public void MoveLeft(float deltaTime)
-            => Position -= Vector3.Normalize(Vector3.Cross(Front, Up)) * Speed * deltaTime;
-
-        public void MoveRight(float deltaTime)
-            => Position += Vector3.Normalize(Vector3.Cross(Front, Up)) * Speed * deltaTime;
-
-        public void MoveUp(float deltaTime)
-            => Position += Up * Speed * deltaTime;
-
-        public void MoveDown(float deltaTime)
-            => Position -= Up * Speed * deltaTime;
-
-        public void ProcessMouse(float deltaX, float deltaY)
+        public Vector3 GetFront()
         {
-            deltaX *= Sensitivity;
-            deltaY *= Sensitivity;
-
-            Yaw += deltaX;
-            Pitch -= deltaY; // invert Y
-
-            // Clamp pitch
-            Pitch = Math.Clamp(Pitch, -89f, 89f);
-
             Vector3 front;
             front.X = MathF.Cos(MathHelper.DegreesToRadians(Yaw)) *
                       MathF.Cos(MathHelper.DegreesToRadians(Pitch));
@@ -71,11 +39,9 @@ namespace Diorama.Rendering
             front.Z = MathF.Sin(MathHelper.DegreesToRadians(Yaw)) *
                       MathF.Cos(MathHelper.DegreesToRadians(Pitch));
 
-            Front = Vector3.Normalize(front);
+            return front.Normalized();
         }
 
-        public void ToggleSpeed(bool toggle) => Speed = (toggle ? 20f : 3.0f);
-
-        public Matrix4 GetViewMatrix() => Matrix4.LookAt(Position, Position + Front, Up);
+        public Matrix4 GetViewMatrix() => Matrix4.LookAt(Position, Position + GetFront(), Up);
     }
 }

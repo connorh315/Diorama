@@ -23,8 +23,6 @@ namespace Diorama.Rendering
     {
         public Shader blendShader;
 
-        public Camera Camera { get; private set; }
-
         private ObjectPicker picker;
 
         public void Initialize()
@@ -41,28 +39,28 @@ namespace Diorama.Rendering
 
             picker = new ObjectPicker();
             picker.Initialize();
-
-            Camera = new Camera(new Vector3(0.0f, 0.0f, 3.0f));
         }
 
         private Stopwatch stopwatch = Stopwatch.StartNew();
 
         private int frameCount;
 
-        public void Render(List<EditorScene> scenes)
+        public void Render(List<EditorScene> scenes, Camera camera)
         {
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-            blendShader.SetMatrix4("projection", Camera.Projection);
+            var ctx = new RenderContext();
+
+            blendShader.SetMatrix4("projection", camera.Projection);
             blendShader.SetFloat("lightingEnabled", ViewportNewControl.UseCameraLight ? 1 : 0);
             foreach (var scene in scenes)
             {
-                Vector3 cameraScenePos = (scene.SceneTransform * new Vector4(Camera.Position, 1)).Xyz;
-                Camera.ScenePosition = cameraScenePos;
+                Vector3 cameraScenePos = (scene.SceneTransform * new Vector4(camera.Position, 1)).Xyz;
+                ctx.CameraScenePosition = cameraScenePos;
                 blendShader.SetVector3("camera", cameraScenePos);
-                blendShader.SetMatrix4("view", scene.SceneTransform * Camera.GetViewMatrix());
+                blendShader.SetMatrix4("view", scene.SceneTransform * camera.GetViewMatrix());
                 //scene.DebugDraw(blendShader, Camera);
-                scene.Draw(blendShader, Camera);
+                scene.Draw(blendShader, ctx);
             }
 
             frameCount++;
@@ -75,7 +73,7 @@ namespace Diorama.Rendering
                 stopwatch.Restart();
             }
 
-            picker.Execute(Camera, scenes);
+            picker.Execute(camera, scenes);
         }
 
         public int Width, Height;
@@ -84,7 +82,6 @@ namespace Diorama.Rendering
             Width = width; 
             Height = height;
 
-            Camera.SetWidthHeight(width, height);
             picker.Resize(width, height);
         }
 

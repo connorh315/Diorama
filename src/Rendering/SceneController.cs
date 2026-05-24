@@ -7,6 +7,7 @@ using Diorama.Core.Filetypes.TEXTURES;
 using Diorama.Editor;
 using Diorama.UI;
 using Diorama.UI.ViewModels;
+using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
@@ -58,15 +59,19 @@ namespace Diorama.Rendering
         }
 
         public ICommand SaveSceneCommand { get; }
-
         public ICommand RemoveSceneCommand { get; }
-
         public ICommand EditResourceHeaderCommand { get; }
+
+        public CameraController CameraController { get; }
+        public Camera Camera { get; }
 
         public SceneController(IDioramaRenderer renderer, MainWindow window)
         {
             Renderer = renderer;
             MainWindow = window;
+
+            Camera = new Camera(Vector3.Zero);
+            CameraController = new CameraController(Camera);
 
             SaveSceneCommand = new RelayCommand<EditorScene>((EditorScene? sender) =>
             {
@@ -150,7 +155,7 @@ namespace Diorama.Rendering
         {
             ExecuteGLQueue();
 
-            Renderer.Render(Scenes.ToList());
+            Renderer.Render(Scenes.ToList(), Camera);
         }
 
         public void OnClick(int x, int y)
@@ -162,6 +167,17 @@ namespace Diorama.Rendering
                     SelectedHierarchyObject = obj;
                 });
             });
+        }
+
+        public void SetWidthHeight(int width, int height)
+        {
+            EnqueueGL(() =>
+            {
+                GL.Viewport(0, 0, width, height);
+                Renderer.SetFramebufferSize(width, height);
+            });
+
+            Camera.SetProjection(width, height);
         }
     }
 }

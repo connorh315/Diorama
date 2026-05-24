@@ -133,11 +133,13 @@ namespace Diorama.Rendering
             {
                 pickingShader.SetMatrix4("view", scene.SceneTransform * camera.GetViewMatrix());
 
+                Vector3 cameraScenePos = camera.Position;
+
                 foreach (var obj in scene.Objects)
                 {
                     //idLookup[id] = obj;
 
-                    var activeClipObject = obj.GetActiveClipObject(camera);
+                    var activeClipObject = obj.GetActiveClipObject(cameraScenePos);
 
                     if (activeClipObject == null) continue;
                     foreach (var geo in activeClipObject.Elements)
