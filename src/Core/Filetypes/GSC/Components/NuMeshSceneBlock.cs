@@ -58,7 +58,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 ushort[] indexBuffer = new ushort[indicesCount];
                 for (int idx = 0; idx < indicesCount; idx++)
                 {
-                    indexBuffer[idx] = file.ReadUShort(false);
+                    indexBuffer[idx] = file.ReadUShort((flags & 0x100) == 0);
                 }
 
                 ctx.AddReference(indexBuffer);
@@ -246,7 +246,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
                     for (int idx = 0; idx < mesh.Indices.Length; idx++)
                     {
-                        file.WriteUShort(mesh.Indices[idx], false);
+                        file.WriteUShort(mesh.Indices[idx], (mesh.IndicesFlags & 0x100) == 0);
                     }
                 }
 
