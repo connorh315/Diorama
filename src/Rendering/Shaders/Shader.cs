@@ -15,8 +15,11 @@ namespace Diorama.Rendering.Shaders
 
         public Shader(string vertexPath, string fragmentPath)
         {
-            string VertexShaderSource = File.ReadAllText(Path.Join("Rendering/Shaders/", vertexPath));
-            string FragmentShaderSource = File.ReadAllText(Path.Join("Rendering/Shaders/", fragmentPath));
+            string exePath = Environment.ProcessPath!;
+            string exeDir = Path.GetDirectoryName(exePath)!;
+
+            string VertexShaderSource = File.ReadAllText(Path.Join(exeDir, "Rendering/Shaders/", vertexPath));
+            string FragmentShaderSource = File.ReadAllText(Path.Join(exeDir, "Rendering/Shaders/", fragmentPath));
 
             int VertexShader = GL.CreateShader(ShaderType.VertexShader);
             GL.ShaderSource(VertexShader, VertexShaderSource);
