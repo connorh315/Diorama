@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using System.Globalization;
 
 namespace Diorama
 {
@@ -9,6 +10,9 @@ namespace Diorama
         public override void Initialize()
         {
             AvaloniaXamlLoader.Load(this);
+
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+            CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
         }
 
         public override void OnFrameworkInitializationCompleted()
