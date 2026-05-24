@@ -84,7 +84,7 @@ namespace Diorama
 
             var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
-                Title = "Open StreamInfo File",
+                Title = "Open GScene File",
                 AllowMultiple = false,
                 FileTypeFilter = new[]
                 {
