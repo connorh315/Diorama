@@ -213,12 +213,18 @@ namespace Diorama.Editor
                         EditorGeometryObject obj = new EditorGeometryObject();
                         obj.OriginalTransform = local;
                         obj.Transform = mtx;
+                        if (local.IsZero())
+                        {
+                            mtx = Matrix4.Identity;
+                            obj.CanEditTransform = false;
+                        }
+                        obj.Transform = mtx;
                         obj.Mesh = mesh;
                         if (el.MaterialIndex > -1)
                         {
                             obj.Material = materials[el.MaterialIndex];
                         }
-                        if (el.LightmapIndex > -1)
+                        if (el.LightmapIndex > -1 && lightmaps.Length > el.LightmapIndex)
                         {
                             obj.Lightmap = lightmaps[el.LightmapIndex];
                         }
