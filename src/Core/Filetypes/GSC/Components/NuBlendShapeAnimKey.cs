@@ -35,10 +35,5 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 schema.HandleByte(ref FlatlineRegion);
             }
         }
-
-        public void Serialize(RawFile file, uint parentVersion)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

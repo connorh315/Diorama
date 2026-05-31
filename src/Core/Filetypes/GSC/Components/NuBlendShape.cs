@@ -1,4 +1,5 @@
-﻿using Diorama.Core.Filetypes.GSC;
+﻿using Avalonia.Controls.Shapes;
+using Diorama.Core.Filetypes.GSC;
 using Diorama.Core.Types;
 using System;
 using System.Collections.Generic;
@@ -13,11 +14,21 @@ namespace Diorama.Core.Filetypes.GSC.Components
     {
         public NuBlendShape Next;
 
+        public uint Id;
+
+        public List<NuVec> Offsets;
+
+        public uint CompressionFormat;
+
+        public byte[] Buffer;
+
+        public List<uint> RunBatchTableV2;
+
         public static NuBlendShape Parse(RawFile file, GSerializationContext ctx, uint parentVersion)
         {
             var shape = new NuBlendShape();
 
-            uint id = file.ReadUInt(true);
+            shape.Id = file.ReadUInt(true);
 
             ctx.AddReference(shape);
 
@@ -29,11 +40,11 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             if (parentVersion < 0xae)
             {
-                List<NuVec> offsets = NuSerializer.ReadLegacyVarArray<NuVec>(file);
+                shape.Offsets = NuSerializer.ReadLegacyVarArray<NuVec>(file);
             }
             else
             {
-                List<NuVec> offsets = NuSerializer.ReadVectorArray<NuVec>(file);
+                shape.Offsets = NuSerializer.ReadVectorArray<NuVec>(file);
             }
 
             if (parentVersion < 0xae)
@@ -41,17 +52,63 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 Debug.Assert(1 == 0, "NuBlendShape section not implemented");
             }
 
-            uint compressionFormat = file.ReadUInt(true);
+            shape.CompressionFormat = file.ReadUInt(true);
             int bufferSize = file.ReadInt(true);
-            byte[] buffer = file.ReadArray(bufferSize);
+            shape.Buffer = file.ReadArray(bufferSize);
             if (bufferSize != 0)
             {
-                ctx.AddReference(buffer);
+                ctx.AddReference(shape.Buffer);
             }
 
-            List<uint> runBatchTableV2 = NuSerializer.ReadVectorArray<uint>(file);
+            shape.RunBatchTableV2 = NuSerializer.ReadVectorArray<uint>(file);
 
             return shape;
+        }
+
+        public void Write(RawFile file, GSerializationContext ctx, uint parentVersion)
+        {
+            file.WriteUInt(Id, true);
+
+            ctx.AddReference(this);
+
+            if (Next != null)
+            {
+                file.WriteUInt(1, true);
+                Next.Write(file, ctx, parentVersion);
+            }
+            else
+            {
+                file.WriteUInt(0, true);
+            }
+
+            if (parentVersion < 0xae)
+            {
+                NuSerializer.WriteLegacyVarArray<NuVec>(file, Offsets);
+            }
+            else
+            {
+                NuSerializer.WriteVectorArray<NuVec>(file, Offsets);
+            }
+
+            if (parentVersion < 0xae)
+            {
+
+            }
+
+            file.WriteUInt(CompressionFormat, true);
+
+            if (Buffer != null)
+            {
+                file.WriteInt(Buffer.Length, true);
+                file.WriteArray(Buffer);
+                ctx.AddReference(Buffer);
+            }
+            else
+            {
+                file.WriteInt(0);
+            }
+
+            NuSerializer.WriteVectorArray<uint>(file, RunBatchTableV2);
         }
     }
 }

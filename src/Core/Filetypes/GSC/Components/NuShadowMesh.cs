@@ -7,8 +7,11 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class NuShadowMesh : IVectorSerializable
+    public class NuShadowMesh : IVectorSerializable, ISchemaSerializable
     {
+        public List<NuVec4> Normals;
+        public List<NuVec4> Verts;
+
         public void Deserialize(RawFile file, uint parentVersion)
         {
             if (parentVersion > 0xe)
@@ -20,6 +23,20 @@ namespace Diorama.Core.Filetypes.GSC.Components
             {
                 List<NuVec4> normals = NuSerializer.ReadLegacyVarArray<NuVec4>(file);
                 List<NuVec4> verts = NuSerializer.ReadLegacyVarArray<NuVec4>(file);
+            }
+        }
+
+        public void Handle(SchemaSerializer schema, uint parentVersion)
+        {
+            if (parentVersion < 0xe)
+            {
+                schema.HandleSchemaVector(ref Normals);
+                schema.HandleSchemaVector(ref Verts);
+            }
+            else
+            {
+                schema.HandleSchemaVarArray(ref Normals);
+                schema.HandleSchemaVarArray(ref Verts);
             }
         }
 

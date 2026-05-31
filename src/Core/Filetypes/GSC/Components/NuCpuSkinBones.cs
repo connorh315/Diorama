@@ -7,8 +7,11 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class NuCpuSkinBones : IVectorSerializable
+    public class NuCpuSkinBones : IVectorSerializable, ISchemaSerializable
     {
+        public List<ushort> VertIndexes;
+        public List<byte> VertWeights;
+
         public void Deserialize(RawFile file, uint parentVersion)
         {
             if (parentVersion < 4)
@@ -19,6 +22,19 @@ namespace Diorama.Core.Filetypes.GSC.Components
             {
                 List<ushort> vertIndexs = NuSerializer.ReadVectorArray<ushort>(file);
                 List<byte> vertWeights = NuSerializer.ReadVectorArray<byte>(file);
+            }
+        }
+
+        public void Handle(SchemaSerializer schema, uint parentVersion)
+        {
+            if (parentVersion < 4)
+            {
+
+            }
+            else
+            {
+                schema.HandleSerializableVector(ref VertIndexes);
+                schema.HandleSerializableVector(ref VertWeights);
             }
         }
 

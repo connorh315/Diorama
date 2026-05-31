@@ -6,8 +6,13 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class NuLayer_SpecialFlags : IVectorSerializable
+    public class NuLayer_SpecialFlags : IVectorSerializable, ISchemaSerializable
     {
+        public byte Type;
+        public byte JointIndex;
+        public short SpecialIndex;
+        public byte Layer;
+
         public void Deserialize(RawFile file, uint parentVersion)
         {
             byte type = file.ReadByte();
@@ -16,6 +21,17 @@ namespace Diorama.Core.Filetypes.GSC.Components
             if (parentVersion > 7)
             {
                 byte layer = file.ReadByte();
+            }
+        }
+
+        public void Handle(SchemaSerializer schema, uint parentVersion)
+        {
+            schema.HandleByte(ref Type);
+            schema.HandleByte(ref JointIndex);
+            schema.HandleShort(ref SpecialIndex);
+            if (parentVersion > 7)
+            {
+                schema.HandleByte(ref Layer);
             }
         }
 

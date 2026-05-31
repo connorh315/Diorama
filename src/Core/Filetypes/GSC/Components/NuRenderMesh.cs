@@ -25,6 +25,12 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
         public uint VbInstBits;
 
+        public List<byte> SkinMtxMap;
+
+        public NuBlendShape Shape;
+
+        public uint DefunctOptFlags;
+
         public Vector4[] CentreExtents = new Vector4[2];
 
         public float DensityDiscDiameter;

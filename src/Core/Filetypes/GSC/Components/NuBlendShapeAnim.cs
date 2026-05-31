@@ -24,10 +24,5 @@ namespace Diorama.Core.Filetypes.GSC.Components
             schema.HandleUInt(ref AnimNameIndex);
             schema.HandleSchemaVarArray(ref Keys, parentVersion);
         }
-
-        public void Serialize(RawFile file, uint parentVersion)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

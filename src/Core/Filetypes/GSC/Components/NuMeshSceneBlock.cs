@@ -119,21 +119,21 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
                 mesh.VbInstBits = file.ReadUInt(true);
 
-                List<byte> skinMtxMap = NuSerializer.ReadLegacyVarArray<byte>(file);
-                if (skinMtxMap.Count != 0)
+                mesh.SkinMtxMap = NuSerializer.ReadLegacyVarArray<byte>(file);
+                if (mesh.SkinMtxMap.Count != 0)
                 {
-                    ctx.AddReference(skinMtxMap);
+                    ctx.AddReference(mesh.SkinMtxMap);
                 }
                 //Debug.Assert(skinMtxMap.Count == 0); // legacy array?
 
-                int nuBlendShape = file.ReadInt(true); // i think
-                if (nuBlendShape != 0)
+                int nuBlendShapeExists = file.ReadInt(true); // i think
+                if (nuBlendShapeExists == 1)
                 {
-                    NuBlendShape.Parse(file, ctx, Version);
+                    mesh.Shape = NuBlendShape.Parse(file, ctx, Version);
                 }
                 //Debug.Assert(defunctOptFlags == 0);
 
-                uint defunctOptFlags = file.ReadUInt(true);
+                mesh.DefunctOptFlags = file.ReadUInt(true);
 
                 for (int j = 0; j < 2; j++)
                 {
@@ -260,11 +260,19 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
                 file.WriteUInt(mesh.VbInstBits, true);
 
-                file.WriteInt(0, true); // skin mtx map legacy array
+                NuSerializer.WriteLegacyVarArray(file, mesh.SkinMtxMap);
 
-                file.WriteInt(0, true); // nu blend shape
+                if (mesh.Shape != null)
+                {
+                    file.WriteInt(1, true);
+                    mesh.Shape.Write(file, ctx, Version);
+                }
+                else
+                {
+                    file.WriteInt(0);
+                }
 
-                file.WriteInt(0, true); // defunct opt flags
+                file.WriteUInt(mesh.DefunctOptFlags, true); // defunct opt flags
 
                 for (int j = 0; j < 2; j++)
                 {

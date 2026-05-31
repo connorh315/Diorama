@@ -396,11 +396,11 @@ namespace Diorama.Core.Filetypes.GSC
 
             if (NameTable.Version < 0x14)
             {
-                schema.HandleSerializableLegacyVarArray(ref CharacterData);
+                schema.HandleSchemaVarArray(ref CharacterData);
             }
             else
             {
-                schema.HandleSerializableVector(ref CharacterData);
+                schema.HandleSchemaVector(ref CharacterData);
             }
 
             schema.HandleUInt(ref OldWiiMeshSceneBlockLinkArrayCount);

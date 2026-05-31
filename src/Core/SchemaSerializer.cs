@@ -346,6 +346,18 @@ namespace Diorama.Core
             }
         }
 
+        public void HandleSerializableVector(ref List<byte> arr, uint parentVersion = 0)
+        {
+            if (Writing)
+            {
+                NuSerializer.WriteVectorArray(File, arr, parentVersion);
+            }
+            else
+            {
+                arr = NuSerializer.ReadVectorArray<byte>(File, parentVersion);
+            }
+        }
+
         public void HandleSerializableVector(ref List<short> arr, uint parentVersion = 0)
         {
             if (Writing)

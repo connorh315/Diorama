@@ -27,7 +27,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
             }
             else
             {
-                schema.HandleSerializableVector(ref CpuSkinLods, parentVersion);
+                schema.HandleSchemaVector(ref CpuSkinLods, parentVersion);
             }
         }
     }

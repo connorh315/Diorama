@@ -6,8 +6,14 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class NuPointOfInterest : IVectorSerializable
+    public class NuPointOfInterest : IVectorSerializable, ISchemaSerializable
     {
+        public string Name;
+
+        public NuMtx Offset;
+
+        public byte ParentJointIdx;
+
         public void Deserialize(RawFile file, uint parentVersion)
         {
             if (parentVersion < 0xb)
@@ -23,6 +29,20 @@ namespace Diorama.Core.Filetypes.GSC.Components
             offset.Deserialize(file, parentVersion);
 
             byte parentJointIdx = file.ReadByte();
+        }
+
+        public void Handle(SchemaSerializer schema, uint parentVersion)
+        {
+            if (parentVersion < 0xb)
+            {
+                Debug.Assert(1 == 0, "unnsupported poi version");
+            }
+            else
+            {
+                schema.HandlePascalString(ref Name);
+                schema.Handle(ref Offset);
+                schema.HandleByte(ref ParentJointIdx);
+            }
         }
 
         public void Serialize(RawFile file, uint parentVersion)
