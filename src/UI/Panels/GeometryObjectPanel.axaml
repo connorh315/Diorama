@@ -21,26 +21,34 @@
   <ControlTheme x:Key="{x:Type controls:GeometryObjectPanel}" TargetType="controls:GeometryObjectPanel">
     <Setter Property="Template">
       <ControlTemplate>
-        <StackPanel Margin="5" IsVisible="{Binding Controller.SelectedGeometry, Converter={x:Static ObjectConverters.IsNotNull}}">
-          <controls:Vec3Input
-              Value="{Binding Controller.SelectedGeometry.Position, Mode=TwoWay}"
-              InputLabel="Position" IsEnabled="{Binding Controller.SelectedGeometry.CanEditTransform}"/>
-          <controls:Vec3Input
-              Value="{Binding Controller.SelectedGeometry.Rotation, Mode=TwoWay}"
-              InputLabel="Rotation" IsEnabled="{Binding Controller.SelectedGeometry.CanEditTransform}"/>
-          <controls:Vec3Input
-              Value="{Binding Controller.SelectedGeometry.Scale, Mode=TwoWay}"
-              InputLabel="Scale" IsEnabled="{Binding Controller.SelectedGeometry.CanEditTransform}"/>
-          
-          <controls:ColorInput InputLabel="Material Primary Colour" Color="{Binding Controller.SelectedGeometry.Material.Colour1, Mode=TwoWay}" />
-          
-          <StackPanel Orientation="Horizontal">
-            <Button Content="Replace mesh" x:Name="ReplaceMesh"/>
-            <Button Content="Export mesh" x:Name="ExportMesh"/>
-          </StackPanel>
+        <TabControl Margin="5" IsVisible="{Binding Controller.SelectedGeometry, Converter={x:Static ObjectConverters.IsNotNull}}">
+          <TabItem Header="Model">
+            <StackPanel Margin="5">
+              <controls:Vec3Input
+                  Value="{Binding Controller.SelectedGeometry.Position, Mode=TwoWay}"
+                  InputLabel="Position" IsEnabled="{Binding Controller.SelectedGeometry.CanEditTransform}"/>
+              <controls:Vec3Input
+                  Value="{Binding Controller.SelectedGeometry.Rotation, Mode=TwoWay}"
+                  InputLabel="Rotation" IsEnabled="{Binding Controller.SelectedGeometry.CanEditTransform}"/>
+              <controls:Vec3Input
+                  Value="{Binding Controller.SelectedGeometry.Scale, Mode=TwoWay}"
+                  InputLabel="Scale" IsEnabled="{Binding Controller.SelectedGeometry.CanEditTransform}"/>
+                
+              <StackPanel Orientation="Horizontal">
+                <Button Content="Replace mesh" x:Name="ReplaceMesh"/>
+                <Button Content="Export mesh" x:Name="ExportMesh"/>
+              </StackPanel>
+            </StackPanel>
+            
+          </TabItem>
+          <TabItem Header="Material">
+            <StackPanel Margin="5">
+              <controls:ListInput InputLabel="Material" Items="{Binding Controller.SelectedGeometry.Parent.SceneOwner.Materials}" SelectedItem="{Binding Controller.SelectedGeometry.Material}"/>
+              <controls:MaterialPanel DataContext="{Binding Controller.SelectedGeometry.Material}"/>
+            </StackPanel>
 
-        </StackPanel>
-        
+          </TabItem>
+        </TabControl>
       </ControlTemplate>
     </Setter>
   </ControlTheme>

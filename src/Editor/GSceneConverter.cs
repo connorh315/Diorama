@@ -101,6 +101,7 @@ namespace Diorama.Editor
                 EditorMaterial material = new EditorMaterial();
 
                 material.Original = nuMaterialData;
+                material.OriginalIndex = i;
 
                 materials[i] = material;
 
@@ -194,6 +195,7 @@ namespace Diorama.Editor
                         clip.Elements.Add(geo);
                         geo.Parent = clip; // TODO: Remove
                         geo.Material = materials[el.OldMaterialIndex];
+                        geo.Original = el;
                     }
 
                     allClipObjects.Add(clip);
@@ -231,6 +233,7 @@ namespace Diorama.Editor
 
                         clip.Elements.Add(obj);
                         obj.Parent = clip;
+                        obj.Original = el;
                         //geometry.Add(i, obj);
                     }
                     allClipObjects.Add(clip);
@@ -299,6 +302,8 @@ namespace Diorama.Editor
                 mat.Normal0 = ResolveTexture(editorScene.Textures, mat.Original.Normal0Index);
 
                 mat.LightmapUVSet = mat.Original.LightmapUVSet;
+
+                mat.Name = mat.Original.MaterialName;
 
                 uint abgr = (uint)mat.Original.Colour1;
                 float a = ((abgr >> 24) & 0xFF) / 255f;

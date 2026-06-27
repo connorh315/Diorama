@@ -1,5 +1,6 @@
 ﻿using Diorama.Core.Filetypes.GSC.Components;
 using Diorama.Rendering;
+using Diorama.UI.Controls;
 using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
@@ -11,9 +12,24 @@ using System.Threading.Tasks;
 
 namespace Diorama.Editor
 {
-    public class EditorMaterial : INotifyPropertyChanged
+    public class EditorMaterial : INotifyPropertyChanged, INamedItem
     {
         public NuMaterialData Original;
+
+        public int OriginalIndex;
+
+        private string name;
+        public string Name
+        {
+            get => name;
+            set
+            {
+                if (name == value) return;
+
+                name = value;
+                OnPropertyChanged();
+            }
+        }
 
         public RenderTexture Diffuse0;
         public RenderTexture Diffuse1;
@@ -51,21 +67,6 @@ namespace Diorama.Editor
                 }
             }
         }
-        //public Vector4 Colour1
-        //{
-        //    get => colour1;
-        //    set
-        //    {
-        //        if (colour1 == value) return;
-        //        colour1 = value;
-        //        OnPropertyChanged(nameof(Colour1));
-
-        //        if (Original != null)
-        //        {
-        //            Original.Colour1 = 
-        //        }
-        //    }
-        //}
 
         public event PropertyChangedEventHandler? PropertyChanged;
 

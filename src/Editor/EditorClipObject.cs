@@ -1,4 +1,5 @@
-﻿using Diorama.Rendering.Shaders;
+﻿using Diorama.Core.Filetypes.GSC.Components;
+using Diorama.Rendering.Shaders;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,7 @@ namespace Diorama.Editor
     {
         public EditorSceneObject Parent;
 
-        public EditorScene SceneOwner;
+        public EditorScene SceneOwner { get; set; }
 
         public List<EditorGeometryObject> Elements { get; set; } = new();
 

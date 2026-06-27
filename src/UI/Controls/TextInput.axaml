@@ -13,12 +13,12 @@
   <Design.PreviewWith>
     <StackPanel Width="400" Spacing="10">      
         <StackPanel Background="{DynamicResource SystemRegionBrush}">
-          <controls:Vec3Input />
+          <controls:TextInput />
         </StackPanel>
     </StackPanel>
   </Design.PreviewWith>
  
-  <ControlTheme x:Key="{x:Type controls:ColorInput}" TargetType="controls:ColorInput">
+  <ControlTheme x:Key="{x:Type controls:TextInput}" TargetType="controls:TextInput">
     <Setter Property="Template">
       <ControlTemplate>
         <Grid>
@@ -27,7 +27,7 @@
             <ColumnDefinition Width="3*" />
           </Grid.ColumnDefinitions>
           <TextBlock Grid.Column="0" Text="{TemplateBinding InputLabel}" VerticalAlignment="Center" />
-          <ColorPicker Grid.Column="1" HorizontalAlignment="Left" Color="{Binding UIColor, RelativeSource={RelativeSource TemplatedParent}}"/>
+          <TextBox Grid.Column="1" Text="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" />
         </Grid>
 
       </ControlTemplate>

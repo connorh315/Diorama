@@ -6,20 +6,41 @@ using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Diorama.Editor
 {
-    public class EditorGeometryObject : IHierarchySelectable
+    public class EditorGeometryObject : IHierarchySelectable, INotifyPropertyChanged
     {
         public string Name => "Geometry Object";
         public IEnumerable<IHierarchySelectable> Children => Enumerable.Empty<IHierarchySelectable>();
 
         public EditorClipObject Parent { get; set; }
-        
-        public EditorMaterial Material { get; set; }
+
+        public NuClipItem Original;
+
+        private EditorMaterial? _material;
+        public EditorMaterial? Material
+        {
+            get => _material;
+            set
+            {
+                if (_material == value || value == null) // value == null is safeguard for silly avalonia behaviour
+                    return;
+
+                _material = value;
+                if (Original != null)
+                {
+                    Original.OldMaterialIndex = value.OriginalIndex;
+                    Original.MaterialIndex = (short)value.OriginalIndex;
+                }
+                OnPropertyChanged();
+            }
+        }
         public EditorLightmap Lightmap;
         
         public RenderMesh Mesh { get; set; }
@@ -68,6 +89,14 @@ namespace Diorama.Editor
         }
 
         private Vector3 scale;
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected void OnPropertyChanged([CallerMemberName] string? name = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+
         public Vector3 Scale
         {
             get => scale;

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public struct NuClipItem
+    public class NuClipItem
     {
         public int OldGeometryIndex;
         public int OldMaterialIndex;
@@ -43,6 +43,9 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             for (int i = 0; i < elementCount; i++)
             {
+                if (!schema.Writing)
+                    Elements[i] = new NuClipItem();
+
                 if (parentVersion < 0x22)
                 {
                     schema.HandleInt(ref Elements[i].OldGeometryIndex);

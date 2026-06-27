@@ -13,23 +13,19 @@
   <Design.PreviewWith>
     <StackPanel Width="400" Spacing="10">      
         <StackPanel Background="{DynamicResource SystemRegionBrush}">
-          <controls:Vec3Input />
+          <controls:MaterialPanel />
         </StackPanel>
     </StackPanel>
   </Design.PreviewWith>
  
-  <ControlTheme x:Key="{x:Type controls:ColorInput}" TargetType="controls:ColorInput">
+  <ControlTheme x:Key="{x:Type controls:MaterialPanel}" TargetType="controls:MaterialPanel">
     <Setter Property="Template">
       <ControlTemplate>
-        <Grid>
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="2*" />
-            <ColumnDefinition Width="3*" />
-          </Grid.ColumnDefinitions>
-          <TextBlock Grid.Column="0" Text="{TemplateBinding InputLabel}" VerticalAlignment="Center" />
-          <ColorPicker Grid.Column="1" HorizontalAlignment="Left" Color="{Binding UIColor, RelativeSource={RelativeSource TemplatedParent}}"/>
-        </Grid>
+        <StackPanel Margin="5">
+          <controls:TextInput InputLabel="Material Name" Value="{Binding Name, Mode=TwoWay}"/>
+          <controls:ColorInput InputLabel="Material Primary Colour" Color="{Binding Colour1, Mode=TwoWay}" />
 
+        </StackPanel>
       </ControlTemplate>
     </Setter>
   </ControlTheme>

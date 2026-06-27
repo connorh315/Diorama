@@ -16,6 +16,8 @@ namespace Diorama.Core.Filetypes.GSC.Components
     {
         public uint DoesMaterialExist;
 
+        public string MaterialName;
+
         public uint Version;
 
         public int Diffuse0Index;
@@ -477,7 +479,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
     {
         public NuMaterialDataBlock Parent;
 
-        public string MaterialName;
+        
         public uint Flags;
 
         public byte[] DummyHashArray;
