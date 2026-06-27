@@ -23,6 +23,8 @@ uniform int lightmap_uvset;
 
 uniform float lightingEnabled;
 
+uniform bool glow;
+
 vec2 GetLightmapUV()
 {
     if (lightmap_uvset == 0)
@@ -58,5 +60,14 @@ void main()
     vec4 ao = texture(texture2, lmUv);
     vec4 smoothLm = texture(texture3, lmUv);
 
-    FragColor = base * detail * smoothLm * ao * mesh_color * lighting;
+    vec4 color = base * detail * smoothLm * ao * mesh_color * lighting;
+
+    float glowAmount = glow ? 1.0 : 0.0;
+
+    vec3 viewDir = normalize(camera - FragPos);
+    float rim = pow(1.0 - max(dot(normal, viewDir), 0.0), 3.0);
+
+    color.rgb += mesh_color.rgb * rim * 1.5 * glowAmount;
+
+    FragColor = color;
 }

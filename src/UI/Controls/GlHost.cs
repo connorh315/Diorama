@@ -1,32 +1,41 @@
-﻿using System;
-using System.Runtime.InteropServices;
-using System.Threading;
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Media;
 using Avalonia.Platform;
+using Diorama.Rendering;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.Common;
-using OpenTK.Windowing.GraphicsLibraryFramework;
 using OpenTK.Windowing.Desktop;
-using Avalonia.Media;
+using OpenTK.Windowing.GraphicsLibraryFramework;
+using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace Diorama.UI.Controls
 {
     public class GlHost : NativeControlHost
     {
         private IntPtr _hwnd;
-        private Thread? _renderThread;
-        private bool _running;
-
-
+        private IntPtr _hdc;
         private IntPtr _originalWndProc;
         private Win32.WndProcDelegate? _wndProcDelegate;
 
-        protected virtual void Initialize() { }
+        public IntPtr Hwnd => _hwnd;
+        public IntPtr Hdc => _hdc;
 
-        protected virtual void Render() { }
+        protected readonly RenderService renderService;
+        protected readonly IRenderer renderer;
+
+        protected RenderSurface surface;
+
+        protected GlHost(IRenderer renderer)
+        {
+            renderService = RenderService.Current;
+            this.renderer = renderer;
+        }
 
         protected virtual void OnPressLeftClick() { }
         protected virtual void OnReleaseLeftClick() { }
@@ -36,16 +45,56 @@ namespace Diorama.UI.Controls
 
         protected virtual void OnMouseMove() { }
 
+        public virtual void Update() { }
+
+        public new int Width, Height;
+        protected override void OnSizeChanged(SizeChangedEventArgs e)
+        {
+            Width = ScaleCoordinate((int)Bounds.Width);
+            Height = ScaleCoordinate((int)Bounds.Height);
+        }
+
+        private int ScaleCoordinate(int coord)
+        {
+            return (int)(coord * this.VisualRoot.RenderScaling);
+        }
 
         protected override IPlatformHandle CreateNativeControlCore(IPlatformHandle parent)
         {
             _hwnd = Win32.CreateChildWindow(parent.Handle);
 
             SubclassChildWindow();
+            _hdc = Win32.GetDC(_hwnd);
+            Win32.SetPixelFormat(_hdc);
 
-            StartRenderThread();
+            surface = new RenderSurface
+            {
+                Host = this,
+                Renderer = renderer
+            };
+
+            renderService.Register(surface);
 
             return new PlatformHandle(_hwnd, "HWND");
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+
+            Console.WriteLine("Debug: Destroying native control as no longer attached to visual tree.");
+
+            if (_hdc != IntPtr.Zero)
+            {
+                Win32.ReleaseDC(_hwnd, _hdc);
+                _hdc = IntPtr.Zero;
+            }
+
+            if (_hwnd != IntPtr.Zero)
+            {
+                Win32.DestroyWindow(_hwnd);
+                _hwnd = IntPtr.Zero;
+            }
         }
 
         private void SubclassChildWindow()
@@ -91,6 +140,8 @@ namespace Diorama.UI.Controls
             // Mouse leave (if tracking enabled)
             const int WM_MOUSELEAVE = 0x02A3;
 
+            const int WM_ERASEBKGND = 0x0014;
+
             switch (msg)
             {
                 case WM_MOUSEMOVE:
@@ -116,6 +167,10 @@ namespace Diorama.UI.Controls
                 case WM_MOUSEWHEEL:
                     break;
 
+                case WM_ERASEBKGND:
+                    surface.IsDirty = true;
+                    return 1;
+
                 case 0x84: // hit test
                     return 1;
             }
@@ -130,69 +185,7 @@ namespace Diorama.UI.Controls
 
         protected override void DestroyNativeControlCore(IPlatformHandle control)
         {
-            _running = false;
-            _renderThread?.Join();
             Win32.DestroyWindow(_hwnd);
-        }
-
-        private void StartRenderThread()
-        {
-            _running = true;
-
-            _renderThread = new Thread(() =>
-            {
-                var hdc = Win32.GetDC(_hwnd);
-                Win32.SetPixelFormat(hdc);
-
-                // Create temporary legacy context
-                var tempContext = Win32.wglCreateContext(hdc);
-                Win32.wglMakeCurrent(hdc, tempContext);
-
-                // Load wgl extensions
-                var wglCreateContextAttribsARB =
-                    Win32.wglGetProcAddressDelegate<Win32.wglCreateContextAttribsARBProc>("wglCreateContextAttribsARB");
-
-                // Create OpenGL 4.6 core context
-                int[] attribs =
-                {
-                    0x2091, 4, // WGL_CONTEXT_MAJOR_VERSION_ARB
-                    0x2092, 6, // WGL_CONTEXT_MINOR_VERSION_ARB
-                    0x9126, 0x00000001, // WGL_CONTEXT_PROFILE_MASK_ARB → CORE
-                    0
-                };
-
-                var glContext = wglCreateContextAttribsARB(hdc, IntPtr.Zero, attribs);
-
-                Win32.wglMakeCurrent(IntPtr.Zero, IntPtr.Zero);
-                Win32.wglDeleteContext(tempContext);
-
-                Win32.wglMakeCurrent(hdc, glContext);
-
-                // Load OpenTK bindings
-                GL.LoadBindings(new WglBindingsContext());
-
-                Initialize();
-
-                RenderLoop(hdc, glContext);
-
-                Win32.wglMakeCurrent(IntPtr.Zero, IntPtr.Zero);
-                Win32.wglDeleteContext(glContext);
-                Win32.ReleaseDC(_hwnd, hdc);
-
-            });
-
-            _renderThread.IsBackground = true;
-            _renderThread.Start();
-        }
-
-        private void RenderLoop(IntPtr hdc, IntPtr context)
-        {
-            while (_running)
-            {
-                Render();
-
-                Win32.SwapBuffers(hdc);
-            }
         }
     }
 }

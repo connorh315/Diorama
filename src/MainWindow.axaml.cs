@@ -21,13 +21,19 @@ namespace Diorama
         {
             InitializeComponent();
 
-            sceneController = new SceneController(new ViewportRenderer(), this);
+            var renderService = new RenderService();
+
+            var viewportRenderer = new ViewportRenderer();
+            sceneController = new SceneController(viewportRenderer, this);
+            viewportRenderer.Controller = sceneController;
 
             MainViewport = new ViewportNewControl(sceneController);
             ViewportHost.Content = MainViewport;
 
             Hierarchy = new SceneHierarchy(sceneController);
             HierarchyHost.Content = Hierarchy;
+
+            //InspectorHost.Content = new TexturePreviewControl(RenderService, new TextureRenderer());
 
             Inspector = new InspectorPanel(sceneController);
             InspectorHost.Content = Inspector;
@@ -47,6 +53,8 @@ namespace Diorama
                 }
                 MainViewport.LoadScene(args[1]);
             }
+
+            this.AttachDevTools();
         }
 
         private void Window_DragDrop(object sender, DragEventArgs e)

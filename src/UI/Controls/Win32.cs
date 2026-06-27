@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 
 namespace Diorama.UI.Controls;
@@ -9,6 +10,10 @@ internal static class Win32
     const int WS_VISIBLE = 0x10000000;
     const int WS_CLIPSIBLINGS = 0x04000000;
     const int WS_DISABLED = 0x08000000;
+
+    const uint CS_VREDRAW = 0x0001;
+    const uint CS_HREDRAW = 0x0002;
+    const uint CS_OWNDC = 0x0020;
 
     [DllImport("user32.dll", EntryPoint = "GetWindowLong")]
     private static extern int GetWindowLong32(IntPtr hWnd, int nIndex);
@@ -38,8 +43,10 @@ internal static class Win32
 
     public static IntPtr CreateChildWindow(IntPtr parent)
     {
+        RegisterGlWindowClass();
+
         return CreateWindowEx(
-            0, "STATIC", "",
+            0, "OpenGLHostWindow", "",
             WS_CHILD | WS_VISIBLE,
             0, 0, 100, 100,
             parent, IntPtr.Zero, GetModuleHandle(null), IntPtr.Zero);
@@ -62,6 +69,26 @@ internal static class Win32
         IntPtr menu,
         IntPtr instance,
         IntPtr param);
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    public struct WNDCLASSEX
+    {
+        public uint cbSize;
+        public uint style;
+        public IntPtr lpfnWndProc;
+        public int cbClsExtra;
+        public int cbWndExtra;
+        public IntPtr hInstance;
+        public IntPtr hIcon;
+        public IntPtr hCursor;
+        public IntPtr hbrBackground;
+        public string lpszMenuName;
+        public string lpszClassName;
+        public IntPtr hIconSm;
+    }
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    public static extern ushort RegisterClassEx(ref WNDCLASSEX lpwcx);
 
     [DllImport("user32.dll")]
     public static extern bool DestroyWindow(IntPtr hwnd);
@@ -86,6 +113,10 @@ internal static class Win32
 
     [DllImport("opengl32.dll")]
     public static extern IntPtr wglGetProcAddress(string name);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool IsWindowVisible(IntPtr hWnd);
 
     public delegate IntPtr WndProcDelegate(
     IntPtr hWnd,
@@ -189,4 +220,52 @@ internal static class Win32
 
     [DllImport("user32.dll")]
     public static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+
+    private static readonly WndProcDelegate DefaultWndProc = DefWindowProc;
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    public static extern IntPtr DefWindowProc(
+        IntPtr hWnd,
+        int msg,
+        IntPtr wParam,
+        IntPtr lParam);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    public static extern IntPtr LoadCursor(
+    IntPtr hInstance,
+    IntPtr lpCursorName);
+
+    public static readonly IntPtr IDC_ARROW = (IntPtr)32512;
+
+    private static bool _registered;
+
+    public static void RegisterGlWindowClass()
+    {
+        if (_registered)
+            return;
+
+        WNDCLASSEX wc = new()
+        {
+            cbSize = (uint)Marshal.SizeOf<WNDCLASSEX>(),
+            style = CS_OWNDC | CS_HREDRAW | CS_VREDRAW,
+
+            lpfnWndProc = Marshal.GetFunctionPointerForDelegate(DefaultWndProc),
+
+            hInstance = GetModuleHandle(null),
+
+            hCursor = LoadCursor(IntPtr.Zero, IDC_ARROW),
+
+            // THIS is the important part
+            hbrBackground = IntPtr.Zero,
+
+            lpszClassName = "OpenGLHostWindow"
+        };
+
+        ushort atom = RegisterClassEx(ref wc);
+
+        if (atom == 0)
+            throw new Win32Exception(Marshal.GetLastWin32Error());
+
+        _registered = true;
+    }
 }

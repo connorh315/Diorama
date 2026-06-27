@@ -1,32 +1,17 @@
-<ResourceDictionary xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:controls="using:Diorama">
-
-  <!--
-    Additional resources 
-    Using Control Themes:
-         https://docs.avaloniaui.net/docs/basics/user-interface/styling/control-themes
-    Using Theme Variants:
-         https://docs.avaloniaui.net/docs/guides/styles-and-resources/how-to-use-theme-variants
-  -->
-  
-  <Design.PreviewWith>
-    <StackPanel Width="400" Spacing="10">      
-        <StackPanel Background="{DynamicResource SystemRegionBrush}">
-          <controls:MaterialPanel />
-        </StackPanel>
-    </StackPanel>
-  </Design.PreviewWith>
- 
-  <ControlTheme x:Key="{x:Type controls:MaterialPanel}" TargetType="controls:MaterialPanel">
-    <Setter Property="Template">
-      <ControlTemplate>
-        <StackPanel Margin="5">
-          <controls:TextInput InputLabel="Material Name" Value="{Binding Name, Mode=TwoWay}"/>
-          <controls:ColorInput InputLabel="Material Primary Colour" Color="{Binding Colour1, Mode=TwoWay}" />
-
-        </StackPanel>
-      </ControlTemplate>
-    </Setter>
-  </ControlTheme>
-</ResourceDictionary>
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Diorama.MaterialPanel"
+             xmlns:controls="using:Diorama">
+  <StackPanel Margin="5">
+    <controls:TextInput InputLabel="Material Name" Value="{Binding Name, Mode=TwoWay}"/>
+    <controls:ColorInput InputLabel="Material Primary Colour" Color="{Binding Colour1, Mode=TwoWay}" />
+    <controls:TextureInput InputLabel="Diffuse Texture" Texture="{Binding Diffuse0}" />
+    <controls:TextureInput InputLabel="Normal Texture" Texture="{Binding Normal0}" />
+    <controls:TextInput InputLabel="Occlusion" Value="{Binding Occlusion, Mode=TwoWay}"/>
+    <controls:CheckboxInput InputLabel="Glow" Value="{Binding Glow, Mode=TwoWay}" />
+    <controls:TextInput InputLabel="Refractive Index" Value="{Binding RefractiveIndex, Mode=TwoWay}"/>
+  </StackPanel>
+</UserControl>

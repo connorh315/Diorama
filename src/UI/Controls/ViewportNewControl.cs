@@ -29,7 +29,7 @@ namespace Diorama.UI.Controls
 
         private bool isRotating = false;
 
-        public ViewportNewControl(SceneController controller)
+        public ViewportNewControl(SceneController controller) : base(controller.Renderer)
         {
             Focusable = true;
 
@@ -38,18 +38,18 @@ namespace Diorama.UI.Controls
 
         public void LoadScene(string path)
         {
-            sceneController.EnqueueGL(() =>
+            renderService.Enqueue(() =>
             {
                 sceneController.AddScene(path);
             });
         }
 
-        protected override void Initialize()
-        {
-            sceneController.Initialize();
+        //protected override void Initialize()
+        //{
+        //    sceneController.Initialize();
 
-            SetFramebufferSize();
-        }
+        //    SetFramebufferSize();
+        //}
 
         private int ScaleCoordinate(int coord)
         {
@@ -61,7 +61,10 @@ namespace Diorama.UI.Controls
             int fbWidth = ScaleCoordinate((int)Bounds.Width);
             int fbHeight = ScaleCoordinate((int)Bounds.Height);
 
-            sceneController.SetWidthHeight(fbWidth, fbHeight);
+            renderService.Enqueue(() =>
+            {
+                sceneController.SetWidthHeight(fbWidth, fbHeight);
+            });
         }
 
         public static bool ShowLightmaps = false;
@@ -93,16 +96,15 @@ namespace Diorama.UI.Controls
             Keyboard.SetKey(e.Key, false);
         }
 
+        double bWidth, bHeight;
         protected override void OnSizeChanged(SizeChangedEventArgs e)
         {
             base.OnSizeChanged(e);
 
-            if (!sceneController.IsInitialized) return;
-
             SetFramebufferSize();
         }
 
-        protected override void Render()
+        public override void Update()
         {
             double currentTime = stopwatch.Elapsed.TotalSeconds;
             double deltaTime = currentTime - lastTime;
@@ -111,9 +113,13 @@ namespace Diorama.UI.Controls
             Keyboard.OnFrame();
 
             Update(deltaTime);
-
-            sceneController.Render();
         }
+
+        //protected override void Render()
+        //{
+
+        //    sceneController.Render();
+        //}
 
         protected override void OnPressLeftClick()
         {
@@ -124,7 +130,7 @@ namespace Diorama.UI.Controls
             int x = ScaleCoordinate((int)point.X);
             int y = ScaleCoordinate((int)point.Y);
 
-            sceneController.EnqueueGL(() =>
+            renderService.Enqueue(() =>
             {
                 sceneController.OnClick(x, y);
             });

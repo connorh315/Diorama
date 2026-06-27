@@ -26,9 +26,7 @@ namespace Diorama.Rendering
         private MainWindow MainWindow;
 
         public ObservableCollection<EditorScene> Scenes { get; } = new();
-        public IDioramaRenderer Renderer;
-
-        public bool IsInitialized = false;
+        public IRenderer Renderer;
 
         public EditorSceneObject? SelectedSceneObject =>
             SelectedHierarchyObject switch
@@ -65,7 +63,7 @@ namespace Diorama.Rendering
         public CameraController CameraController { get; }
         public Camera Camera { get; }
 
-        public SceneController(IDioramaRenderer renderer, MainWindow window)
+        public SceneController(IRenderer renderer, MainWindow window)
         {
             Renderer = renderer;
             MainWindow = window;
@@ -101,9 +99,6 @@ namespace Diorama.Rendering
 
         public void Initialize()
         {
-            IsInitialized = true;
-
-            Renderer.Initialize();
         }
 
         private readonly Queue<Action> glQueue = new();
@@ -153,9 +148,9 @@ namespace Diorama.Rendering
 
         public void Render()
         {
-            ExecuteGLQueue();
+            //ExecuteGLQueue();
 
-            Renderer.Render(Scenes.ToList(), Camera);
+            //Renderer.Render(Scenes.ToList(), Camera);
         }
 
         public void OnClick(int x, int y)
@@ -171,11 +166,11 @@ namespace Diorama.Rendering
 
         public void SetWidthHeight(int width, int height)
         {
-            EnqueueGL(() =>
-            {
-                GL.Viewport(0, 0, width, height);
-                Renderer.SetFramebufferSize(width, height);
-            });
+            //EnqueueGL(() =>
+            //{
+            //    GL.Viewport(0, 0, width, height);
+            //    //Renderer.SetFramebufferSize(width, height);
+            //});
 
             Camera.SetProjection(width, height);
         }

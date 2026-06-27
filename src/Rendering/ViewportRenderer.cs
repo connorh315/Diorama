@@ -19,8 +19,12 @@ using System.Threading.Tasks;
 
 namespace Diorama.Rendering
 {
-    public class ViewportRenderer : IDioramaRenderer
+    public class ViewportRenderer : IRenderer
     {
+        public bool ContinuousRendering => true;
+
+        public SceneController Controller;
+
         public Shader blendShader;
 
         private ObjectPicker picker;
@@ -45,10 +49,25 @@ namespace Diorama.Rendering
 
         private int frameCount;
 
-        public void Render(List<EditorScene> scenes, Camera camera)
+        public int Width, Height;
+        public void Render(RenderSurface surface)
         {
+            if (Width != surface.Host.Width || Height != surface.Host.Height)
+            {
+                Width = surface.Host.Width;
+                Height = surface.Host.Height;
+                picker.Resize(Width, Height);
+            }
+
+            GL.Viewport(0, 0, surface.Host.Width, surface.Host.Height);
+
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
+            Render(Controller.Scenes.ToList(), Controller.Camera);
+        }
+
+        private void Render(List<EditorScene> scenes, Camera camera)
+        {
             var ctx = new RenderContext();
 
             blendShader.SetMatrix4("projection", camera.Projection);
@@ -67,22 +86,13 @@ namespace Diorama.Rendering
 
             if (stopwatch.ElapsedMilliseconds >= 1000)
             {
-                //Console.WriteLine($"FPS: {frameCount}");
+                Console.WriteLine($"FPS: {frameCount}");
 
                 frameCount = 0;
                 stopwatch.Restart();
             }
 
             picker.Execute(camera, scenes);
-        }
-
-        public int Width, Height;
-        public void SetFramebufferSize(int width, int height)
-        {
-            Width = width; 
-            Height = height;
-
-            picker.Resize(width, height);
         }
 
         public void Pick(int x, int y, Action<EditorGeometryObject?>? objectPicked)

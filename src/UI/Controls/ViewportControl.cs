@@ -90,8 +90,6 @@ namespace Diorama.UI.Controls
         {
             base.OnSizeChanged(e);
 
-            if (!sceneController.IsInitialized) return;
-
             SetFramebufferSize();
         }
 

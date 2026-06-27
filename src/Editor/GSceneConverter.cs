@@ -305,6 +305,11 @@ namespace Diorama.Editor
 
                 mat.Name = mat.Original.MaterialName;
 
+                mat.Occlusion = mat.Original.blendMode;
+                mat.Glow = mat.Original.materialFlags_glow;
+
+                mat.RefractiveIndex = mat.Original.KRefractiveIndex;
+
                 uint abgr = (uint)mat.Original.Colour1;
                 float a = ((abgr >> 24) & 0xFF) / 255f;
                 float b = ((abgr >> 16) & 0xFF) / 255f;

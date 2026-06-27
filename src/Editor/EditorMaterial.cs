@@ -31,10 +31,15 @@ namespace Diorama.Editor
             }
         }
 
-        public RenderTexture Diffuse0;
+        public RenderTexture Diffuse0 { get; set; }
         public RenderTexture Diffuse1;
 
-        public RenderTexture Normal0;
+        public RenderTexture Normal0 { get; set; }
+
+        public uint Occlusion { get; set; }
+        public byte Glow { get; set; }
+
+        public float RefractiveIndex { get; set; }
 
         public int LightmapUVSet = -1;
 

@@ -123,6 +123,8 @@ namespace Diorama.Editor
 
             shader.SetVector4("mesh_color", Material.Colour1);
 
+            shader.SetByte("glow", Material.Glow);
+
             Material.Diffuse0?.Use();
             Material.Diffuse1?.Use(TextureUnit.Texture1);
 

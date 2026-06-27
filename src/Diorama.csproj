@@ -17,6 +17,7 @@
     <PackageReference Include="Avalonia" Version="11.3.13" />
     <PackageReference Include="Avalonia.Controls.ColorPicker" Version="11.3.13" />
     <PackageReference Include="Avalonia.Desktop" Version="11.3.12" />
+    <PackageReference Include="Avalonia.Diagnostics" Version="11.3.13" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.12" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.12" />
     <PackageReference Include="OpenTK" Version="4.9.4" />
@@ -66,6 +67,12 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Rendering\Shaders\pickshader.frag">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Rendering\Shaders\trishader.frag">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Rendering\Shaders\trishader.vert">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="src\Rendering\Shaders\blendshader.frag">

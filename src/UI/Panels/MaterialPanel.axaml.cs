@@ -1,7 +1,14 @@
-using Avalonia.Controls.Primitives;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Markup.Xaml;
+using Diorama.Rendering;
 
 namespace Diorama;
 
-public class MaterialPanel : TemplatedControl
+public partial class MaterialPanel : UserControl
 {
+    public MaterialPanel()
+    {
+        InitializeComponent();
+    }
 }
