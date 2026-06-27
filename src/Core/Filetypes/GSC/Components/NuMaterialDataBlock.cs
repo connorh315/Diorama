@@ -64,7 +64,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
         public void HandleMaterialWrite(NuMaterialData mat, SchemaSerializer schema)
         {
-            if (Version < 0x100)
+            if (Version < 0xfe)
             {
                 mat.Handle(schema, Version);
                 return;
