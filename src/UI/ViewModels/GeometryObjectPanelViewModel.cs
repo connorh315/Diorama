@@ -1,5 +1,6 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Platform.Storage;
+using Diorama.Core;
 using Diorama.Editor;
 using Diorama.Rendering;
 using System;
@@ -47,6 +48,21 @@ namespace Diorama.UI.ViewModels
 
             OBJConverter.WriteMeshToOBJ(selectedGeo.Mesh, path);
 
+        }
+
+        public void DebugMesh()
+        {
+            if (Controller.SelectedGeometry == null) return;
+
+            var selectedGeo = Controller.SelectedGeometry;
+
+            using (RawFile file = new RawFile(@"A:\debug.hex"))
+            {
+                foreach (var buff in selectedGeo.Mesh.OriginalMesh.VertexBuffers)
+                {
+                    buff.Write(file);
+                }
+            }
         }
     }
 }

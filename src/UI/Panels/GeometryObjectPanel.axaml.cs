@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Shapes;
 using Avalonia.Platform.Storage;
 using Diorama.Editor;
 using Diorama.Rendering;
@@ -26,6 +27,18 @@ public class GeometryObjectPanel : TemplatedControl
         var exportMeshButton = e.NameScope.Find<Button>("ExportMesh");
         if (exportMeshButton != null)
             exportMeshButton.Click += ExportMeshClick;
+
+        var debugMeshButton = e.NameScope.Find<Button>("DebugMesh");
+        if (debugMeshButton != null)
+            debugMeshButton.Click += DebugMeshClick;
+    }
+
+    private async void DebugMeshClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (DataContext is GeometryObjectPanelViewModel vm)
+        {
+            vm.DebugMesh();
+        }
     }
 
     private async void ReplaceMeshClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

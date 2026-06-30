@@ -57,6 +57,9 @@
     <Compile Update="src\UI\Panels\GeometryObjectPanel.axaml.cs">
       <DependentUpon>GeometryObjectPanel.axaml</DependentUpon>
     </Compile>
+    <Compile Update="UI\Controls\TextureUvInput.axaml.cs">
+      <DependentUpon>TextureUVInput.axaml</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>

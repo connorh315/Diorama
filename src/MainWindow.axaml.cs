@@ -91,6 +91,11 @@ namespace Diorama
             ViewportNewControl.UseCameraLight = !ViewportNewControl.UseCameraLight;
         }
 
+        private void ShadowItem_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            ViewportNewControl.ShowShadowImpostors = !ViewportNewControl.ShowShadowImpostors;
+        }
+
         private void OpenFile_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             OpenFileMenu();

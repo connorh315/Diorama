@@ -32,7 +32,6 @@ namespace Diorama.Rendering
         public void Initialize()
         {
             GL.ClearColor(0.2f, 0.2f, 0.4f, 1f);
-            GL.Enable(EnableCap.DepthTest);
 
             blendShader = new Shader("blendshader.vert", "blendshader.frag");
             blendShader.SetVector3("color", new Vector3(0.7f, 0.7f, 0.7f));
@@ -63,24 +62,46 @@ namespace Diorama.Rendering
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
+            GL.Enable(EnableCap.DepthTest);
+
             Render(Controller.Scenes.ToList(), Controller.Camera);
         }
 
         private void Render(List<EditorScene> scenes, Camera camera)
         {
-            var ctx = new RenderContext();
-
             blendShader.SetMatrix4("projection", camera.Projection);
             blendShader.SetFloat("lightingEnabled", ViewportNewControl.UseCameraLight ? 1 : 0);
+
+            List<RenderContext> ctxs = new();
+
             foreach (var scene in scenes)
             {
-                Vector3 cameraScenePos = (scene.SceneTransform * new Vector4(camera.Position, 1)).Xyz;
-                ctx.CameraScenePosition = cameraScenePos;
-                blendShader.SetVector3("camera", cameraScenePos);
-                blendShader.SetMatrix4("view", scene.SceneTransform * camera.GetViewMatrix());
-                //scene.DebugDraw(blendShader, Camera);
+                var ctx = new RenderContext(scene, camera, blendShader);
+                ctx.Use();
+                ctx.IsOpaquePass = true;
+
                 scene.Draw(blendShader, ctx);
+
+                ctxs.Add(ctx);
             }
+
+            GL.Enable(EnableCap.Blend);
+            GL.DepthMask(false);
+
+            foreach (var ctx in ctxs)
+            {
+                ctx.Use();
+                ctx.IsOpaquePass = false;
+
+                foreach (var obj in ctx.Transparent)
+                {
+                    SetBlendMode(obj.Material.BlendMode);
+                    obj.Draw(ctx.Shader);
+                }
+            }
+
+            GL.DepthMask(true);
+            GL.Disable(EnableCap.Blend);
 
             frameCount++;
 
@@ -93,6 +114,56 @@ namespace Diorama.Rendering
             }
 
             picker.Execute(camera, scenes);
+        }
+
+        private static void SetBlendMode(uint blendMode)
+        {
+            switch (blendMode)
+            {
+                // Opaque
+                case 0:
+                    GL.Disable(EnableCap.Blend);
+                    GL.DepthMask(true);
+                    break;
+
+                // Standard alpha
+                case 1:
+                    GL.Enable(EnableCap.Blend);
+                    GL.BlendEquation(BlendEquationMode.FuncAdd);
+                    GL.BlendFunc(
+                        BlendingFactor.SrcAlpha,
+                        BlendingFactor.OneMinusSrcAlpha);
+                    GL.DepthMask(false);
+                    break;
+
+                // Glass? Premultiplied?
+                case 4:
+                    GL.Enable(EnableCap.Blend);
+                    GL.BlendEquation(BlendEquationMode.FuncAdd);
+                    GL.BlendFunc(
+                        BlendingFactor.One,
+                        BlendingFactor.OneMinusSrcAlpha);
+                    GL.DepthMask(false);
+                    break;
+
+                case 2:
+                    GL.Enable(EnableCap.Blend);
+
+                    GL.BlendEquation(BlendEquationMode.FuncAdd);
+
+                    GL.BlendFunc(
+                        BlendingFactor.SrcAlpha,
+                        BlendingFactor.One);
+
+                    GL.DepthMask(false);
+                    break;
+
+                default:
+
+                    GL.Disable(EnableCap.Blend);
+                    GL.DepthMask(true);
+                    break;
+            }
         }
 
         public void Pick(int x, int y, Action<EditorGeometryObject?>? objectPicked)

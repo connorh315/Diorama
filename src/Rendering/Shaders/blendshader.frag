@@ -6,6 +6,8 @@ in vec3 Normal;
 in vec4 UV1;
 in vec4 UV2;
 in vec4 outColor;
+in vec4 outColor2;
+in vec4 outDiffuse;
 
 out vec4 FragColor;
 
@@ -17,27 +19,44 @@ uniform sampler2D texture1;
 uniform sampler2D texture2;
 uniform sampler2D texture3;
 
+uniform int diffuse0_uvset;
+uniform int diffuse1_uvset;
+
 uniform vec2 lm_offset;
 uniform vec2 lm_scale;
 uniform int lightmap_uvset;
 
 uniform float lightingEnabled;
 
+uniform int alphaTestMode;
+uniform float alphaRef;
+
 uniform bool glow;
 
-vec2 GetLightmapUV()
+uniform float PerLayerUVScale1;
+uniform float PerLayerUVScale2;
+uniform float PerLayerUVScale3;
+uniform float PerLayerUVScale4;
+
+uniform int layer1blendmode;
+uniform int layer2blendmode;
+
+vec2 GetUVSet(int uvset)
 {
-    if (lightmap_uvset == 0)
+    if (uvset == 0)
         return UV1.xy;
 
-    if (lightmap_uvset == 1)
+    if (uvset == 1)
         return UV1.zw;
 
-    if (lightmap_uvset == 2)
+    if (uvset == 2)
         return UV2.xy;
 
-    if (lightmap_uvset == 3)
+    if (uvset == 3)
         return UV2.zw;
+
+    if (uvset == -1)
+        return vec2(0, 0);
 }
 
 void main()
@@ -53,14 +72,44 @@ void main()
     // Branchless toggle
     float lighting = mix(1.0, lit, lightingEnabled);
 
-    vec4 base = texture(texture0, UV1.xy);
-    vec4 detail = texture(texture1, UV1.zw);
+    vec2 baseuv = GetUVSet(diffuse0_uvset) * PerLayerUVScale1;
+    vec4 base = texture(texture0, baseuv);
 
-    vec2 lmUv = GetLightmapUV() * lm_scale + lm_offset;
+    switch (alphaTestMode)
+    {
+        case 5: // GREATER
+            if (base.a <= alphaRef)
+                discard;
+            break;
+
+        case 1: // NEVER
+            break;
+    }
+
+    vec2 diffuse1uv = GetUVSet(diffuse1_uvset) * PerLayerUVScale2   ;
+    vec4 detail = texture(texture1, diffuse1uv);
+
+    vec2 lmUv = GetUVSet(lightmap_uvset) * lm_scale + lm_offset;
     vec4 ao = texture(texture2, lmUv);
     vec4 smoothLm = texture(texture3, lmUv);
 
-    vec4 color = base * detail * smoothLm * ao * mesh_color * lighting;
+    vec3 albedo = base.rgb;
+    switch (layer2blendmode)
+    {
+        case 1:
+            albedo = mix(base.rgb, detail.rgb, outColor2.b);
+            break;
+        case 5: // MAXALPHA
+            if (outColor2.b > base.a)
+                albedo = detail.rgb;
+            break;
+    }
+    if (outColor2.b > base.a)
+        albedo = detail.rgb;
+
+    //vec3 albedo = mix(detail.rgb, base.rgb, 1 - outColor2.b);
+        
+    vec4 color = vec4(albedo, 1) * smoothLm * ao * mesh_color * lighting;
 
     float glowAmount = glow ? 1.0 : 0.0;
 
@@ -68,6 +117,10 @@ void main()
     float rim = pow(1.0 - max(dot(normal, viewDir), 0.0), 3.0);
 
     color.rgb += mesh_color.rgb * rim * 1.5 * glowAmount;
+
+    color.a = base.a;
+
+    //color = vec4(outColor2.b, outColor2.b, outColor2.b, 1);
 
     FragColor = color;
 }

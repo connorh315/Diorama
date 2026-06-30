@@ -5,13 +5,29 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Diorama.MaterialPanel"
              xmlns:controls="using:Diorama">
-  <StackPanel Margin="5">
-    <controls:TextInput InputLabel="Material Name" Value="{Binding Name, Mode=TwoWay}"/>
-    <controls:ColorInput InputLabel="Material Primary Colour" Color="{Binding Colour1, Mode=TwoWay}" />
-    <controls:TextureInput InputLabel="Diffuse Texture" Texture="{Binding Diffuse0}" />
-    <controls:TextureInput InputLabel="Normal Texture" Texture="{Binding Normal0}" />
-    <controls:TextInput InputLabel="Occlusion" Value="{Binding Occlusion, Mode=TwoWay}"/>
-    <controls:CheckboxInput InputLabel="Glow" Value="{Binding Glow, Mode=TwoWay}" />
-    <controls:TextInput InputLabel="Refractive Index" Value="{Binding RefractiveIndex, Mode=TwoWay}"/>
-  </StackPanel>
+  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Margin="5" Spacing="2">
+      <controls:TextInput InputLabel="Material Name" Value="{Binding Name, Mode=TwoWay}"/>
+      <controls:ColorInput InputLabel="Material Primary Colour" Color="{Binding Colour1, Mode=TwoWay}" />
+      <controls:TextureUVInput InputLabel="Diffuse Texture" Texture="{Binding Diffuse0}" SelectedSet="{Binding Diffuse0UVSet, Mode=TwoWay}" />
+      <controls:TextureUVInput InputLabel="Diffuse Texture 1" Texture="{Binding Diffuse1}" SelectedSet="{Binding Diffuse1UVSet, Mode=TwoWay}" />
+      <controls:TextureUVInput InputLabel="Normal Texture" Texture="{Binding Normal0}" SelectedSet="{Binding Normal0UVSet, Mode=TwoWay}" />
+      <controls:TextureUVInput InputLabel="Normal Texture 1" Texture="{Binding Normal1}" SelectedSet="{Binding Normal1UVSet, Mode=TwoWay}" />
+      <controls:TextureUVInput InputLabel="Lightmap Texture" SelectedSet="{Binding LightmapUVSet, Mode=TwoWay}" />
+      <controls:TextInput InputLabel="Occlusion" Value="{Binding Occlusion, Mode=TwoWay}"/>
+      <controls:CheckboxInput InputLabel="Glow" Value="{Binding Glow, Mode=TwoWay}" />
+      <controls:TextInput InputLabel="Refractive Index" Value="{Binding RefractiveIndex, Mode=TwoWay}"/>
+      <controls:TextInput InputLabel="Blend Mode" Value="{Binding BlendMode, Mode=TwoWay}"/>
+      <controls:TextInput InputLabel="AlphaTest" Value="{Binding AlphaTest, Mode=TwoWay}"/>
+      <controls:TextInput InputLabel="Aref" Value="{Binding AlphaRef, Mode=TwoWay}"/>
+      <controls:TextInput InputLabel="Diffuse0" Value="{Binding DiffuseLayerBlend, Mode=TwoWay}"/>
+      <controls:TextInput InputLabel="Diffuse1" Value="{Binding Diffuse1LayerBlend, Mode=TwoWay}"/>
+      <controls:CheckboxInput InputLabel="Can Alpha Blend" Value="{Binding CanAlphaBlend, Mode=TwoWay}"/>
+      <controls:CheckboxInput InputLabel="Opaque" Value="{Binding Opaque, Mode=TwoWay}"/>
+      <controls:CheckboxInput InputLabel="SortLast" Value="{Binding SortLast, Mode=TwoWay}"/>
+      <controls:CheckboxInput InputLabel="Shadow Impostor" Value="{Binding ShadowImpostor, Mode=TwoWay}"/>
+      <controls:CheckboxInput InputLabel="Vertex Controlled Tint" Value="{Binding VertexControlledTint, Mode=TwoWay}"/>
+      <controls:CheckboxInput InputLabel="Debug Trigger" Value="{Binding Debug, Mode=TwoWay}" />
+    </StackPanel>
+  </ScrollViewer>
 </UserControl>

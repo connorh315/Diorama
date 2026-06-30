@@ -71,6 +71,8 @@ namespace Diorama.UI.Controls
 
         public static bool UseCameraLight = false;
 
+        public static bool ShowShadowImpostors = false;
+
         private void Update(double deltaTime)
         {
             if (Keyboard.IsKeyDown(Key.F))

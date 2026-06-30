@@ -191,6 +191,7 @@ namespace Diorama.Editor
                     EditorClipObject clip = new EditorClipObject();
                     foreach (var el in displayClip.Elements)
                     {
+                        if (!geometry.ContainsKey(el.OldGeometryIndex)) continue;
                         var geo = geometry[el.OldGeometryIndex];
                         clip.Elements.Add(geo);
                         geo.Parent = clip; // TODO: Remove
@@ -300,15 +301,37 @@ namespace Diorama.Editor
                 mat.Diffuse1 = ResolveTexture(editorScene.Textures, mat.Original.Diffuse1Index);
 
                 mat.Normal0 = ResolveTexture(editorScene.Textures, mat.Original.Normal0Index);
+                mat.Normal1 = ResolveTexture(editorScene.Textures, mat.Original.Normal1Index);
+
+                mat.DiffuseLayerBlend = mat.Original.baseDiffuseUsage;
+                mat.Diffuse1LayerBlend = mat.Original.layerBlendDiffuse;
+
+                mat.Diffuse0UVSet = mat.Original.uvBlocks[0].UVSet;
+                mat.Diffuse1UVSet = mat.Original.uvBlocks[1].UVSet;
+                mat.Normal0UVSet = mat.Original.uvBlocks[4].UVSet;
+                mat.Normal1UVSet = mat.Original.uvBlocks[5].UVSet;
+
+                mat.PerLayerUVScale1 = mat.Original.PerLayerUVScale1;
+                mat.PerLayerUVScale2 = mat.Original.PerLayerUVScale2;
 
                 mat.LightmapUVSet = mat.Original.LightmapUVSet;
 
                 mat.Name = mat.Original.MaterialName;
 
-                mat.Occlusion = mat.Original.blendMode;
+                mat.Occlusion = mat.Original.occlusion;
                 mat.Glow = mat.Original.materialFlags_glow;
 
                 mat.RefractiveIndex = mat.Original.KRefractiveIndex;
+
+                mat.BlendMode = mat.Original.blendMode;
+                mat.AlphaTest = mat.Original.alphaTest;
+                mat.AlphaRef = mat.Original.Aref / 255f;
+                mat.CanAlphaBlend = mat.Original.miscFlags_canAlphaBlend;
+                mat.Opaque = mat.Original.miscFlags_defunctOpaque;
+                mat.SortLast = mat.Original.SortLast;
+                mat.VertexControlledTint = mat.Original.VertexFlags_VertexControlledTint;
+
+                mat.ShadowImpostor = ConvertToBool(mat.Original.ShadowImpostor);
 
                 uint abgr = (uint)mat.Original.Colour1;
                 float a = ((abgr >> 24) & 0xFF) / 255f;
@@ -319,6 +342,15 @@ namespace Diorama.Editor
             }
 
             return editorScene;
+        }
+
+        private static bool ConvertToBool(byte val)
+        {
+            if (val == 1)
+                return true;
+            if (val == 0)
+                return false;
+            throw new Exception("Invalid variable contents!");
         }
 
         static RenderTexture ResolveTexture(List<RenderTexture> textures, int index)

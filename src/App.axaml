@@ -17,6 +17,7 @@
           <ResourceInclude Source="UI/Controls/ListInput.axaml"/>
           <ResourceInclude Source="UI/Controls/TextInput.axaml"/>
           <ResourceInclude Source="UI/Controls/TextureInput.axaml"/>
+          <ResourceInclude Source="UI/Controls/TextureUVInput.axaml"/>
           <ResourceInclude Source="UI/Controls/CheckboxInput.axaml"/>
           
           <ResourceInclude Source="UI/Panels/InspectorPanel.axaml"/>

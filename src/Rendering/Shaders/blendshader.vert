@@ -3,7 +3,9 @@
 layout (location = 0) in vec3 aPosition;
 layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec4 aColor;
+layout (location = 4) in vec4 aColor2;
 layout (location = 5) in vec4 aUv1;
+layout (location = 6) in vec4 aDiffuse;
 layout (location = 7) in vec4 aUv2;
 
 out vec3 FragPos;
@@ -11,6 +13,8 @@ out vec3 Normal;
 out vec4 UV1;
 out vec4 UV2;
 out vec4 outColor;
+out vec4 outColor2;
+out vec4 outDiffuse;
 
 uniform mat4 model;
 uniform mat4 view;
@@ -30,4 +34,6 @@ void main()
     UV1 = aUv1;
     UV2 = aUv2;
     outColor = aColor;
+    outColor2 = aColor2;
+    outDiffuse = aDiffuse;
 }

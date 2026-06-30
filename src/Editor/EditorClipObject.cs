@@ -1,4 +1,5 @@
 ﻿using Diorama.Core.Filetypes.GSC.Components;
+using Diorama.Rendering;
 using Diorama.Rendering.Shaders;
 using System;
 using System.Collections.Generic;
@@ -16,8 +17,16 @@ namespace Diorama.Editor
 
         public List<EditorGeometryObject> Elements { get; set; } = new();
 
-        public void Draw(Shader shader) 
+        public void Draw(Shader shader, RenderContext ctx) 
         {             
+            foreach (var geo in Elements)
+            {
+                geo.Draw(shader, ctx);
+            }
+        }
+
+        public void Draw(Shader shader)
+        {
             foreach (var geo in Elements)
             {
                 geo.Draw(shader);

@@ -37,15 +37,16 @@
               <StackPanel Orientation="Horizontal">
                 <Button Content="Replace mesh" x:Name="ReplaceMesh"/>
                 <Button Content="Export mesh" x:Name="ExportMesh"/>
+                <Button Content="DEBUG" x:Name="DebugMesh" />
               </StackPanel>
             </StackPanel>
             
           </TabItem>
           <TabItem Header="Material">
-            <StackPanel Margin="5">
-              <controls:ListInput InputLabel="Material" Items="{Binding Controller.SelectedGeometry.Parent.SceneOwner.Materials}" SelectedItem="{Binding Controller.SelectedGeometry.Material}"/>
-              <controls:MaterialPanel DataContext="{Binding Controller.SelectedGeometry.Material}"/>
-            </StackPanel>
+            <Grid Margin="5" RowDefinitions="Auto,*">
+              <controls:ListInput Grid.Row="0" InputLabel="Material" Items="{Binding Controller.SelectedGeometry.Parent.SceneOwner.Materials}" SelectedItem="{Binding Controller.SelectedGeometry.Material}"/>
+              <controls:MaterialPanel Grid.Row="1" DataContext="{Binding Controller.SelectedGeometry.Material}"/>
+            </Grid>
 
           </TabItem>
         </TabControl>

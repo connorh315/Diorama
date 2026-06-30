@@ -65,7 +65,7 @@ namespace Diorama.Editor
             if (!IsActive)
                 return;
 
-            GetActiveClipObject(ctx.CameraScenePosition)?.Draw(shader);
+            GetActiveClipObject(ctx.CameraScenePosition)?.Draw(shader, ctx);
         }
 
         public EditorClipObject? GetActiveClipObject(Vector3 cameraPos)

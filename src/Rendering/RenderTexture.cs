@@ -79,9 +79,9 @@ namespace Diorama.Rendering
             switch (texture.FourCC)
             {
                 case 0x31545844: // DXT1
-                    //if (texture.Discriminator1 == 0x48504c41) // ALPH
-                    //    compressionFormat = InternalFormat.CompressedRgbaS3tcDxt1Ext;
-                    //else //(texture.Discriminator1 == 0x5141504f) // OPAQ
+                    if (texture.Discriminator1 == 0x48504c41) // ALPH
+                        compressionFormat = InternalFormat.CompressedRgbaS3tcDxt1Ext;
+                    else //(texture.Discriminator1 == 0x5141504f) // OPAQ
                         compressionFormat = InternalFormat.CompressedRgbS3tcDxt1Ext;
                     blockSize = 8;
                     break;

@@ -117,16 +117,41 @@ namespace Diorama.Editor
             OriginalTransform.Update(transform);
         }
 
+        public void Draw(Shader shader, RenderContext ctx)
+        {
+            if (ctx.IsOpaquePass && Material.BlendMode != 0)
+            {
+                ctx.Transparent.Add(this);
+            }
+            else
+            {
+                Draw(shader);
+            }
+        }
+
         public void Draw(Shader shader)
         {
+            if (!ViewportNewControl.ShowShadowImpostors && Material.ShadowImpostor) return;
+
             shader.SetMatrix4("model", Transform);
 
             shader.SetVector4("mesh_color", Material.Colour1);
 
             shader.SetByte("glow", Material.Glow);
 
+            shader.SetFloat("alphaRef", Material.AlphaRef);
+            shader.SetInt("alphaTestMode", (int)Material.AlphaTest);
+
             Material.Diffuse0?.Use();
             Material.Diffuse1?.Use(TextureUnit.Texture1);
+
+            shader.SetInt("diffuse0_uvset", Material.Diffuse0UVSet);
+            shader.SetInt("diffuse1_uvset", Material.Diffuse1UVSet);
+
+            shader.SetFloat("PerLayerUVScale1", Material.PerLayerUVScale1);
+            shader.SetFloat("PerLayerUVScale2", Material.PerLayerUVScale2);
+
+            shader.SetInt("layer2blendmode", (int)Material.Diffuse1LayerBlend);
 
             if (Lightmap != null && Lightmap.AmbientOcclusion != null && ViewportNewControl.ShowLightmaps && Material.LightmapUVSet != -1)
             {
