@@ -4,24 +4,54 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Diorama.MaterialPanel"
-             xmlns:controls="using:Diorama">
+             xmlns:controls="using:Diorama"
+             xmlns:editor="using:Diorama.Editor">
   <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
     <StackPanel Margin="5" Spacing="2">
       <controls:TextInput InputLabel="Material Name" Value="{Binding Name, Mode=TwoWay}"/>
       <controls:ColorInput InputLabel="Material Primary Colour" Color="{Binding Colour1, Mode=TwoWay}" />
-      <controls:TextureUVInput InputLabel="Diffuse Texture" Texture="{Binding Diffuse0}" SelectedSet="{Binding Diffuse0UVSet, Mode=TwoWay}" />
-      <controls:TextureUVInput InputLabel="Diffuse Texture 1" Texture="{Binding Diffuse1}" SelectedSet="{Binding Diffuse1UVSet, Mode=TwoWay}" />
-      <controls:TextureUVInput InputLabel="Normal Texture" Texture="{Binding Normal0}" SelectedSet="{Binding Normal0UVSet, Mode=TwoWay}" />
-      <controls:TextureUVInput InputLabel="Normal Texture 1" Texture="{Binding Normal1}" SelectedSet="{Binding Normal1UVSet, Mode=TwoWay}" />
-      <controls:TextureUVInput InputLabel="Lightmap Texture" SelectedSet="{Binding LightmapUVSet, Mode=TwoWay}" />
+      <Expander Header="Textures" HorizontalAlignment="Stretch">
+        <StackPanel>
+          <controls:CheckboxInput InputLabel="Per Layer UV Scale" Value="{Binding PerLayerScale, Mode=TwoWay}"/>
+          <controls:TextureSlotControl 
+            InputLabel="Diffuse 0" 
+            Texture="{Binding Diffuse0, Mode=TwoWay}"
+            SelectedSet="{Binding Diffuse0UVSet, Mode=TwoWay}"
+            Scale="{Binding PerLayerUVScale1, Mode=TwoWay}"
+            LayerBlend="{Binding DiffuseLayerBlend, Mode=TwoWay}"
+            Textures="{Binding Textures, RelativeSource={RelativeSource AncestorType=controls:MaterialPanel}}"/>
+          <controls:TextureSlotControl
+            InputLabel="Diffuse 1"
+            Texture="{Binding Diffuse1, Mode=TwoWay}"
+            SelectedSet="{Binding Diffuse1UVSet, Mode=TwoWay}"
+            Scale="{Binding PerLayerUVScale2, Mode=TwoWay}"
+            LayerBlend="{Binding Diffuse1LayerBlend, Mode=TwoWay}"
+            Textures="{Binding Textures, RelativeSource={RelativeSource AncestorType=controls:MaterialPanel}}"/>
+          <controls:TextureSlotControl
+            InputLabel="Normal 0"
+            Texture="{Binding Normal0, Mode=TwoWay}"
+            SelectedSet="{Binding Normal0UVSet, Mode=TwoWay}"
+            Textures="{Binding Textures, RelativeSource={RelativeSource AncestorType=controls:MaterialPanel}}"/>
+          <controls:TextureSlotControl
+            InputLabel="Normal 1"
+            Texture="{Binding Normal1, Mode=TwoWay}"
+            SelectedSet="{Binding Normal1UVSet, Mode=TwoWay}"
+            Textures="{Binding Textures, RelativeSource={RelativeSource AncestorType=controls:MaterialPanel}}"/>
+          <controls:TextureSlotControl
+            InputLabel="Lightmap"
+            SelectedSet="{Binding LightmapUVSet, Mode=TwoWay}"
+            Textures="{Binding Textures, RelativeSource={RelativeSource AncestorType=controls:MaterialPanel}}"/>
+        </StackPanel>
+      </Expander>
+      
+      <controls:PropertyEditor Property="Glow" />
+      <controls:PropertyEditor Property="KGlow" />
+      
       <controls:TextInput InputLabel="Occlusion" Value="{Binding Occlusion, Mode=TwoWay}"/>
-      <controls:CheckboxInput InputLabel="Glow" Value="{Binding Glow, Mode=TwoWay}" />
       <controls:TextInput InputLabel="Refractive Index" Value="{Binding RefractiveIndex, Mode=TwoWay}"/>
       <controls:TextInput InputLabel="Blend Mode" Value="{Binding BlendMode, Mode=TwoWay}"/>
       <controls:TextInput InputLabel="AlphaTest" Value="{Binding AlphaTest, Mode=TwoWay}"/>
       <controls:TextInput InputLabel="Aref" Value="{Binding AlphaRef, Mode=TwoWay}"/>
-      <controls:TextInput InputLabel="Diffuse0" Value="{Binding DiffuseLayerBlend, Mode=TwoWay}"/>
-      <controls:TextInput InputLabel="Diffuse1" Value="{Binding Diffuse1LayerBlend, Mode=TwoWay}"/>
       <controls:CheckboxInput InputLabel="Can Alpha Blend" Value="{Binding CanAlphaBlend, Mode=TwoWay}"/>
       <controls:CheckboxInput InputLabel="Opaque" Value="{Binding Opaque, Mode=TwoWay}"/>
       <controls:CheckboxInput InputLabel="SortLast" Value="{Binding SortLast, Mode=TwoWay}"/>

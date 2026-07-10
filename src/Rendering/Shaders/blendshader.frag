@@ -32,6 +32,9 @@ uniform int alphaTestMode;
 uniform float alphaRef;
 
 uniform bool glow;
+uniform float glowIntensity;
+
+uniform bool has_vertex_colors;
 
 uniform float PerLayerUVScale1;
 uniform float PerLayerUVScale2;
@@ -77,12 +80,20 @@ void main()
 
     switch (alphaTestMode)
     {
-        case 5: // GREATER
+        case 2: // LESS
+            if (base.a < alphaRef)
+                discard;
+            break;
+
+        case 5: // GREATEREQUAL
             if (base.a <= alphaRef)
                 discard;
             break;
 
         case 1: // NEVER
+            break;
+
+        default:
             break;
     }
 
@@ -103,22 +114,23 @@ void main()
             if (outColor2.b > base.a)
                 albedo = detail.rgb;
             break;
+        case 7: // SCALE
+            albedo = albedo * detail.rgb;
+            break;
     }
-    if (outColor2.b > base.a)
-        albedo = detail.rgb;
 
     //vec3 albedo = mix(detail.rgb, base.rgb, 1 - outColor2.b);
         
-    vec4 color = vec4(albedo, 1) * smoothLm * ao * mesh_color * lighting;
+    vec4 color = vec4(albedo, 1) * (has_vertex_colors ? vec4(outColor.b, outColor.g, outColor.r, 1) : vec4(1)) * smoothLm * ao * mesh_color * lighting;
 
-    float glowAmount = glow ? 1.0 : 0.0;
+    float glowAmount = glow ? glowIntensity : 0.0;
 
     vec3 viewDir = normalize(camera - FragPos);
     float rim = pow(1.0 - max(dot(normal, viewDir), 0.0), 3.0);
 
     color.rgb += mesh_color.rgb * rim * 1.5 * glowAmount;
 
-    color.a = base.a;
+    color.a = base.a * mesh_color.a;
 
     //color = vec4(outColor2.b, outColor2.b, outColor2.b, 1);
 

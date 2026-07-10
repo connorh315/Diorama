@@ -7,6 +7,9 @@
     <Application.Styles>
         <FluentTheme />
         <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml" />
+        <Style Selector="FlyoutPresenter.texturePicker">
+          <Setter Property="MaxWidth" Value="850"/>
+        </Style>
     </Application.Styles>
     <Application.Resources>
       <ResourceDictionary>
@@ -19,9 +22,12 @@
           <ResourceInclude Source="UI/Controls/TextureInput.axaml"/>
           <ResourceInclude Source="UI/Controls/TextureUVInput.axaml"/>
           <ResourceInclude Source="UI/Controls/CheckboxInput.axaml"/>
-          
+          <ResourceInclude Source="UI/Controls/EnumInput.axaml"/>
+
+          <ResourceInclude Source="UI/Controls/TextureSlotControl.axaml"/>
+
           <ResourceInclude Source="UI/Panels/InspectorPanel.axaml"/>
-          <ResourceInclude Source="UI/Panels/GeometryObjectPanel.axaml"/>
+          <ResourceInclude Source="UI/Panels/InspectorPanel.axaml"/>
         </ResourceDictionary.MergedDictionaries>
       </ResourceDictionary>
     </Application.Resources>

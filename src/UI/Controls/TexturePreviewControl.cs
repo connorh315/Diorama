@@ -30,6 +30,13 @@ namespace Diorama
             }
         }
 
+        public Action? OnClick;
+
+        protected override void OnReleaseLeftClick()
+        {
+            OnClick?.Invoke();
+        }
+
         public TexturePreviewControl() : base(new TextureRenderer())
         {
             

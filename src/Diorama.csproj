@@ -54,11 +54,17 @@
     <Compile Update="src\UI\Controls\ColorInput.axaml.cs">
       <DependentUpon>ColorInput.axaml</DependentUpon>
     </Compile>
-    <Compile Update="src\UI\Panels\GeometryObjectPanel.axaml.cs">
-      <DependentUpon>GeometryObjectPanel.axaml</DependentUpon>
+    <Compile Update="src\UI\Panels\InspectorPanel.axaml.cs">
+      <DependentUpon>InspectorPanel.axaml</DependentUpon>
     </Compile>
     <Compile Update="UI\Controls\TextureUvInput.axaml.cs">
       <DependentUpon>TextureUVInput.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\Panels\InspectorPanel.axaml.cs">
+      <DependentUpon>InspectorPanel.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="UI\Panels\InspectorPanel2.axaml.cs">
+      <DependentUpon>InspectorPanel2.axaml</DependentUpon>
     </Compile>
   </ItemGroup>
 

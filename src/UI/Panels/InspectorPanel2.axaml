@@ -1,6 +1,7 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:controls="using:Diorama">
+        xmlns:controls="using:Diorama"
+        xmlns:editor="using:Diorama.Editor">
 
   <!--
     Additional resources 
@@ -13,23 +14,20 @@
   <Design.PreviewWith>
     <StackPanel Width="400" Spacing="10">      
         <StackPanel Background="{DynamicResource SystemRegionBrush}">
-          <controls:TextInput />
+          <controls:InspectorPanel2 />
         </StackPanel>
     </StackPanel>
   </Design.PreviewWith>
  
-  <ControlTheme x:Key="{x:Type controls:TextInput}" TargetType="controls:TextInput">
+  <ControlTheme x:Key="{x:Type controls:InspectorPanel2}" TargetType="controls:InspectorPanel2">
     <Setter Property="Template">
       <ControlTemplate>
-        <Grid>
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="2*" />
-            <ColumnDefinition Width="3*" />
-          </Grid.ColumnDefinitions>
-          <TextBlock Grid.Column="0" Text="{TemplateBinding InputLabel}" VerticalAlignment="Center" />
-          <TextBox Grid.Column="1" Text="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" IsEnabled="{Binding IsEnabled, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" />
-        </Grid>
-
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+          <StackPanel Margin="5" Spacing="10">
+            <TextBox Text="{Binding SelectedSceneObject.Name}" IsEnabled="{Binding SelectedSceneObject.CanEditName}"/>
+            
+          </StackPanel>
+        </ScrollViewer>
       </ControlTemplate>
     </Setter>
   </ControlTheme>

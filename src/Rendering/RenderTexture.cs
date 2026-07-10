@@ -13,7 +13,7 @@ namespace Diorama.Rendering
     {
         public int Handle;
 
-        public string Name;
+        public string Name { get; set; }
 
         private static RenderTexture whiteTexture;
         public static RenderTexture GetWhiteTexture()

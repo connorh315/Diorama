@@ -11,4 +11,14 @@ public partial class MaterialPanel : UserControl
     {
         InitializeComponent();
     }
+
+    public static readonly StyledProperty<IEnumerable<RenderTexture>> TexturesProperty =
+        AvaloniaProperty.Register<MaterialPanel, IEnumerable<RenderTexture>>(
+            nameof(Textures));
+
+    public IEnumerable<RenderTexture> Textures
+    {
+        get => GetValue(TexturesProperty);
+        set => SetValue(TexturesProperty, value);
+    }
 }

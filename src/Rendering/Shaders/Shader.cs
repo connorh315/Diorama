@@ -112,6 +112,13 @@ namespace Diorama.Rendering.Shaders
             GL.Uniform1(location, value);
         }
 
+        public void SetBool(string name, bool value)
+        {
+            Use();
+            int location = GL.GetUniformLocation(Handle, name);
+            GL.Uniform1(location, value ? (byte)1 : (byte)0);
+        }
+
         public void SetFloat(string name, float value)
         {
             Use();

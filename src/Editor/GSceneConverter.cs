@@ -10,6 +10,7 @@ using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -74,7 +75,7 @@ namespace Diorama.Editor
                 meshes[i] = mesh;
             }
 
-            editorScene.Textures = new List<RenderTexture>();
+            var textures = new List<RenderTexture>();
 
             try
             {
@@ -83,7 +84,7 @@ namespace Diorama.Editor
                 {
                     for (int i = 0; i < nxg_textures.Textures.Length; i++)
                     {
-                        editorScene.Textures.Add(RenderTexture.FromNuTexture(nxg_textures.Textures[i]));
+                        textures.Add(RenderTexture.FromNuTexture(nxg_textures.Textures[i]));
                     }
                 }
             }
@@ -116,8 +117,8 @@ namespace Diorama.Editor
                 EditorLightmap lightmap = new EditorLightmap();
                 lightmap.Original = nuLightmap;
 
-                lightmap.AmbientOcclusion = ResolveTexture(editorScene.Textures, nuLightmap.AoTID);
-                lightmap.Smooth = ResolveTexture(editorScene.Textures, nuLightmap.SmoothTID);
+                lightmap.AmbientOcclusion = ResolveTexture(textures, nuLightmap.AoTID);
+                lightmap.Smooth = ResolveTexture(textures, nuLightmap.SmoothTID);
                 lightmap.Offsets[0] = nuLightmap.TexCoordOffset0;
                 lightmap.Offsets[1] = nuLightmap.TexCoordOffset1;
                 lightmap.Scales[0] = nuLightmap.TexCoordScale0;
@@ -297,14 +298,14 @@ namespace Diorama.Editor
             {
                 var mat = materials[i];
 
-                mat.Diffuse0 = ResolveTexture(editorScene.Textures, mat.Original.Diffuse0Index);
-                mat.Diffuse1 = ResolveTexture(editorScene.Textures, mat.Original.Diffuse1Index);
+                mat.Diffuse0 = ResolveTexture(textures, mat.Original.Diffuse0Index);
+                mat.Diffuse1 = ResolveTexture(textures, mat.Original.Diffuse1Index);
 
-                mat.Normal0 = ResolveTexture(editorScene.Textures, mat.Original.Normal0Index);
-                mat.Normal1 = ResolveTexture(editorScene.Textures, mat.Original.Normal1Index);
+                mat.Normal0 = ResolveTexture(textures, mat.Original.Normal0Index);
+                mat.Normal1 = ResolveTexture(textures, mat.Original.Normal1Index);
 
-                mat.DiffuseLayerBlend = mat.Original.baseDiffuseUsage;
-                mat.Diffuse1LayerBlend = mat.Original.layerBlendDiffuse;
+                mat.DiffuseLayerBlend = (EditorDiffuseBlendMode)(mat.Original.baseDiffuseUsage);
+                mat.Diffuse1LayerBlend = (EditorDiffuseBlendMode)mat.Original.layerBlendDiffuse;
 
                 mat.Diffuse0UVSet = mat.Original.uvBlocks[0].UVSet;
                 mat.Diffuse1UVSet = mat.Original.uvBlocks[1].UVSet;
@@ -319,7 +320,6 @@ namespace Diorama.Editor
                 mat.Name = mat.Original.MaterialName;
 
                 mat.Occlusion = mat.Original.occlusion;
-                mat.Glow = mat.Original.materialFlags_glow;
 
                 mat.RefractiveIndex = mat.Original.KRefractiveIndex;
 
@@ -333,6 +333,10 @@ namespace Diorama.Editor
 
                 mat.ShadowImpostor = ConvertToBool(mat.Original.ShadowImpostor);
 
+                mat.PerLayerScale = ConvertToBool(mat.Original.materialFlags_per_layer_uvscale);
+
+                mat.Colour = ConvertToBool(mat.Original.Colour);
+
                 uint abgr = (uint)mat.Original.Colour1;
                 float a = ((abgr >> 24) & 0xFF) / 255f;
                 float b = ((abgr >> 16) & 0xFF) / 255f;
@@ -340,6 +344,8 @@ namespace Diorama.Editor
                 float r = ((abgr >> 0) & 0xFF) / 255f;
                 mat.Colour1 = new Vector4(r, g, b, a);
             }
+
+            editorScene.Textures = new ObservableCollection<RenderTexture>(textures);
 
             return editorScene;
         }
@@ -394,6 +400,7 @@ namespace Diorama.Editor
         {
             var nuScene = scene.OriginalScene;
             ConvertMetadata(scene);
+            ConvertMaterials(scene);
 
             string path = nuScene.Path;
 
@@ -405,6 +412,17 @@ namespace Diorama.Editor
             {
                 GSerializationContext ctx = new GSerializationContext();
                 nuScene.Write(file, ctx);
+            }
+        }
+
+        public static void ConvertMaterials(EditorScene scene)
+        {
+            foreach (var mat in scene.Materials)
+            {
+                mat.Original.Diffuse0Index = scene.Textures.IndexOf(mat.Diffuse0);
+                mat.Original.Diffuse1Index = scene.Textures.IndexOf(mat.Diffuse1);
+                mat.Original.Normal0Index = scene.Textures.IndexOf(mat.Normal0);
+                mat.Original.Normal1Index = scene.Textures.IndexOf(mat.Normal1);
             }
         }
 

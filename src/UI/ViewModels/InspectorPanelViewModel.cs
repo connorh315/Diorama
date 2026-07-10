@@ -13,13 +13,13 @@ using System.Windows.Input;
 
 namespace Diorama.UI.ViewModels
 {
-    public class GeometryObjectPanelViewModel : INotifyPropertyChanged
+    public class InspectorPanelViewModel : INotifyPropertyChanged
     {
         public SceneController Controller { get; }
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        public GeometryObjectPanelViewModel(SceneController controller)
+        public InspectorPanelViewModel(SceneController controller)
         {
             Controller = controller;
         }
@@ -32,7 +32,7 @@ namespace Diorama.UI.ViewModels
 
             var scene = Controller.SelectedGeometry.Parent.SceneOwner;
 
-            Controller.EnqueueGL(() =>
+            RenderService.Current.Enqueue(() =>
             {
                 RenderMesh newMesh = OBJConverter.MeshFromOBJ(path, selectedGeo.Mesh, scene);
 

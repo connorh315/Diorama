@@ -1,0 +1,82 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:Diorama"
+        xmlns:editor="using:Diorama.Editor">
+
+  <!--
+    Additional resources 
+    Using Control Themes:
+         https://docs.avaloniaui.net/docs/basics/user-interface/styling/control-themes
+    Using Theme Variants:
+         https://docs.avaloniaui.net/docs/guides/styles-and-resources/how-to-use-theme-variants
+  -->
+  
+  <Design.PreviewWith>
+    <StackPanel Width="400" Spacing="10">      
+        <StackPanel Background="{DynamicResource SystemRegionBrush}">
+          <controls:TextureSlotControl />
+        </StackPanel>
+    </StackPanel>
+  </Design.PreviewWith>
+ 
+  <ControlTheme x:Key="{x:Type controls:TextureSlotControl}" TargetType="controls:TextureSlotControl">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Expander HorizontalAlignment="Stretch">
+          <Expander.Header>
+            <StackPanel Orientation="Horizontal" Spacing="5">
+              <controls:TexturePreviewControl Grid.Column="1" HorizontalAlignment="Left" Texture="{Binding Texture, RelativeSource={RelativeSource TemplatedParent}}" Width="32" Height="32"/>
+              <TextBlock Text="{TemplateBinding InputLabel}" VerticalAlignment="Center" />
+            </StackPanel>
+          </Expander.Header>
+
+          <StackPanel Spacing="5">
+            <StackPanel Orientation="Horizontal" Spacing="5">
+              <controls:TexturePreviewControl x:Name="PART_MainTexture" Grid.Column="1" HorizontalAlignment="Left" Texture="{Binding Texture, RelativeSource={RelativeSource TemplatedParent}}" Width="96" Height="96">
+
+                <FlyoutBase.AttachedFlyout>
+                  
+                  <Flyout Placement="Top" ShowMode="Transient" FlyoutPresenterClasses="texturePicker">
+                    <controls:TexturePicker ItemsSource="{Binding Textures, RelativeSource={RelativeSource TemplatedParent}}" SelectedTexture="{Binding Texture, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" />
+                  </Flyout>
+                </FlyoutBase.AttachedFlyout>
+              </controls:TexturePreviewControl>
+              <!--
+              <Popup x:Name="PART_TexturePopup"
+                     PlacementTarget="{Binding #PART_MainTexture}"
+                     Placement="Bottom"
+                     IsOpen="{TemplateBinding IsPickerOpen}"
+                     IsHitTestVisible="True">
+                <Border
+                  Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                  BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                  BorderThickness="1"
+                  CornerRadius="4"
+                  Padding="8">
+                  <controls:TexturePicker ItemsSource="{Binding Textures, RelativeSource={RelativeSource TemplatedParent}}" Width="900"/>
+                </Border>
+              </Popup>
+              -->
+              <TextBlock ToolTip.Tip="{Binding Texture.Name, RelativeSource={RelativeSource TemplatedParent}}" MaxWidth="300">
+                <Run Text="Name:" />
+                <Run Text="{Binding Texture.Name, RelativeSource={RelativeSource TemplatedParent}}" />
+              </TextBlock>
+            </StackPanel>
+            <Grid ColumnDefinitions="2*,3*">
+              <TextBlock Grid.Column="0" Text="UV Set" VerticalAlignment="Center" />
+              <ComboBox Grid.Column="1" VerticalAlignment="Center" ItemsSource="{Binding UVSets, RelativeSource={RelativeSource TemplatedParent}}" SelectedValue="{Binding SelectedSet, RelativeSource={RelativeSource TemplatedParent}}" SelectedValueBinding="{Binding Value}">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate>
+                    <TextBlock Text="{Binding Name}" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+            </Grid>
+            <controls:TextInput InputLabel="UV Scale" Value="{Binding Scale, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" IsEnabled="{Binding PerLayerScale}" />
+            <controls:EnumInput InputLabel="Blend Mode" EnumType="{x:Type editor:EditorDiffuseBlendMode}" SelectedValue="{Binding LayerBlend, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" />
+          </StackPanel>
+        </Expander>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+</ResourceDictionary>

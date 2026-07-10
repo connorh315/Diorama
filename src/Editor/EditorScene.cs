@@ -25,7 +25,7 @@ namespace Diorama.Editor
 
         public EditorMetadata Metadata { get; set; }
 
-        public List<RenderTexture> Textures;
+        public ObservableCollection<RenderTexture> Textures { get; set; }
         public ObservableCollection<EditorMaterial> Materials { get; }
 
         public event PropertyChangedEventHandler? PropertyChanged;

@@ -15,7 +15,7 @@ namespace Diorama
         private ViewportNewControl MainViewport;
         private SceneHierarchy Hierarchy;
         private InspectorPanel Inspector;
-        private GeometryObjectPanel Geometry;
+        //private InspectorPanel Geometry;
 
         public MainWindow()
         {
@@ -38,8 +38,8 @@ namespace Diorama
             Inspector = new InspectorPanel(sceneController);
             InspectorHost.Content = Inspector;
 
-            Geometry = new GeometryObjectPanel(sceneController);
-            GeometryHost.Content = Geometry;
+            //Geometry = new InspectorPanel(sceneController);
+            //GeometryHost.Content = Geometry;
 
             Title = $"Diorama - {Settings.BuildVersion} [{Settings.BuildType}] ({Settings.BuildDate})";
 

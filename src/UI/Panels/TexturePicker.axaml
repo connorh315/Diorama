@@ -1,0 +1,63 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Diorama.TexturePicker"
+             xmlns:controls="using:Diorama">
+  <Grid RowDefinitions="Auto,*">
+
+    <Grid ColumnDefinitions="*,80,80">
+      <TextBox
+          Grid.Column="0"
+          Margin="5"
+          Watermark="Search textures..."
+          Text="{Binding SearchText, RelativeSource={RelativeSource AncestorType=controls:TexturePicker}}" />
+      <Button Content="Previous" Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" x:Name="PART_Previous"/>
+      <Button Content="Next" Grid.Column="2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" x:Name="PART_Next"/>
+    </Grid>
+
+    <ItemsControl
+    Grid.Row="1"
+    Margin="5"
+    ItemsSource="{Binding VisibleTextures,
+                          RelativeSource={RelativeSource AncestorType=controls:TexturePicker}}">
+
+      <ItemsControl.ItemsPanel>
+        <ItemsPanelTemplate>
+          <UniformGrid Columns="5"/>
+        </ItemsPanelTemplate>
+      </ItemsControl.ItemsPanel>
+
+      <ItemsControl.ItemTemplate>
+        <DataTemplate>
+
+          <Border
+              Width="96"
+              Height="96"
+              Margin="4">
+
+            <StackPanel>
+
+              <controls:TexturePreviewControl
+                  Width="80"
+                  Height="80"
+                  Texture="{Binding Texture}"
+                  AttachedToVisualTree="TexturePreview_Attached"/>
+
+              <TextBlock
+                  Text="{Binding Texture.Name}"
+                  HorizontalAlignment="Center"
+                  TextTrimming="CharacterEllipsis"/>
+
+            </StackPanel>
+
+          </Border>
+
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+
+    </ItemsControl>
+
+  </Grid>
+</UserControl>

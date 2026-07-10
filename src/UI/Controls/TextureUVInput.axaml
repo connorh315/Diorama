@@ -25,7 +25,8 @@
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*" />
             <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="2*" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
           </Grid.ColumnDefinitions>
           <TextBlock Grid.Column="0" Text="{TemplateBinding InputLabel}" VerticalAlignment="Center" />
           <controls:TexturePreviewControl Grid.Column="1" HorizontalAlignment="Left" Texture="{Binding Texture, RelativeSource={RelativeSource TemplatedParent}}" Width="64" Height="64"/>
@@ -36,6 +37,7 @@
               </DataTemplate>
             </ComboBox.ItemTemplate>
           </ComboBox>
+          <TextBox Grid.Column="3" Text="{Binding Scale, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" VerticalAlignment="Center" />
         </Grid>
       </ControlTemplate>
     </Setter>

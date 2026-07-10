@@ -35,9 +35,7 @@
         <Grid.RowDefinitions>
           <RowDefinition Height="2*" />
           <RowDefinition Height="3" />
-          <RowDefinition Height="1*" />
-          <RowDefinition Height="3" />
-          <RowDefinition Height="2*" />
+          <RowDefinition Height="4*" />
         </Grid.RowDefinitions>
         <ContentControl x:Name="HierarchyHost" Grid.Row="0" />
         <GridSplitter Grid.Row="1"
@@ -46,12 +44,6 @@
                     ResizeDirection="Rows"
                     VerticalAlignment="Stretch"/>
         <ContentControl x:Name="InspectorHost" Grid.Row="2" />
-        <GridSplitter Grid.Row="3"
-                    Height="3"
-                    Background="#444"
-                    ResizeDirection="Rows"
-                    VerticalAlignment="Stretch"/>
-        <ContentControl x:Name="GeometryHost" Grid.Row="4" />
         
       </Grid>
       

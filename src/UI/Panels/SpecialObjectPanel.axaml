@@ -1,0 +1,13 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Diorama.SpecialObjectPanel"
+             xmlns:controls="using:Diorama">
+  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Margin="5" Spacing="2">
+      <controls:TextInput InputLabel="Name" Value="{Binding Name, Mode=TwoWay}" />
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

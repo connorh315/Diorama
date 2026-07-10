@@ -15,6 +15,19 @@ namespace Diorama.Editor
 {
     public class EditorMaterial : INotifyPropertyChanged, INamedItem
     {
+        protected bool Set<T>(
+            ref T field,
+            T value,
+            [CallerMemberName] string? propertyName = null)
+        {
+            if (EqualityComparer<T>.Default.Equals(field, value))
+                return false;
+
+            field = value;
+            OnPropertyChanged(propertyName);
+            return true;
+        }
+
         public NuMaterialData Original;
 
         public int OriginalIndex;
@@ -39,28 +52,78 @@ namespace Diorama.Editor
         public RenderTexture Normal1 { get; set; }
 
         public uint Occlusion { get; set; }
-        public byte Glow { get; set; }
+
+        //private byte glow;
+        //public byte Glow 
+        //{ 
+        //    get => glow; 
+        //    set
+        //    {
+        //        glow = value;
+        //        Original.materialFlags_glow = value;
+        //    }
+        //}
+
+#if DEBUG
+        private bool GetBoolByte(byte value)
+        {
+            if (value == 1) return true;
+            if (value == 0) return false;
+            throw new InvalidOperationException($"Invalid byte value for boolean conversion: {value}");
+        }
+#else
+        private bool GetBoolByte(byte value) => value != 0;
+#endif
+
+        private bool SetBoolByte (ref byte field, bool value, [CallerMemberName] string? propertyName = null)
+        {
+            byte newValue = value ? (byte)1 : (byte)0;
+
+            if (field == newValue)
+                return false;
+
+            field = newValue;
+            OnPropertyChanged(propertyName);
+            return true;
+        }
+
+        [Display("Enable Glow")]
+        public bool Glow
+        {
+            get => GetBoolByte(Original.materialFlags_glow);
+            set => SetBoolByte(ref Original.materialFlags_glow, value);
+        }
+
+        [Display("Glow Intensity")]
+        [VisibleIf(nameof(Glow))]
+        public float KGlow
+        {
+            get => Original.KGlow;
+            set => Set(ref Original.KGlow, value);
+        }
 
         public void DebugFunc()
         {
+            Console.WriteLine(Original.KGlow);
 
-            foreach (var uv in Original.uvBlocks) 
-            { 
-                Console.WriteLine($"{uv.State} - {uv.UVSet}"); 
-            }
+            //foreach (var uv in Original.uvBlocks) 
+            //{ 
+            //    Console.WriteLine($"{uv.State} - {uv.UVSet}"); 
+            //}
 
-            Console.WriteLine($"Diffuse0 - {Original.baseDiffuseUsage}");
-            Console.WriteLine($"Diffuse1 - {Original.layerBlendDiffuse}");
-            Console.WriteLine($"Diffuse2 - {Original.layerBlendDiffuse1}");
-            Console.WriteLine($"Diffuse3 - {Original.layerBlendDiffuse2}");
+            //Console.WriteLine($"Diffuse0 - {Original.baseDiffuseUsage}");
+            //Console.WriteLine($"Diffuse1 - {Original.layerBlendDiffuse}");
+            //Console.WriteLine($"Diffuse2 - {Original.layerBlendDiffuse1}");
+            //Console.WriteLine($"Diffuse3 - {Original.layerBlendDiffuse2}");
 
-            Console.WriteLine($"Layer 1 - {Original.PerLayerUVScale1}");
-            Console.WriteLine($"Layer 2 - {Original.PerLayerUVScale2}");
-            Console.WriteLine($"Layer 3 - {Original.PerLayerUVScale3}");
-            Console.WriteLine($"Layer 4 - {Original.PerLayerUVScale4}");
+            //Console.WriteLine($"Layer 1 - {Original.PerLayerUVScale1}");
+            //Console.WriteLine($"Layer 2 - {Original.PerLayerUVScale2}");
+            //Console.WriteLine($"Layer 3 - {Original.PerLayerUVScale3}");
+            //Console.WriteLine($"Layer 4 - {Original.PerLayerUVScale4}");
         }
 
-        public byte Debug { get; set { DebugFunc(); } }
+        private byte debug;
+        public byte Debug { get => debug; set { DebugFunc(); debug = value; } }
 
         public uint BlendMode { get; set; }
         public uint AlphaTest { get; set; }
@@ -78,13 +141,17 @@ namespace Diorama.Editor
         public int Normal1UVSet { get; set; } = -1;
         public int LightmapUVSet { get; set; } = -1;
 
-        public uint DiffuseLayerBlend { get; set; }
-        public uint Diffuse1LayerBlend { get; set; }
+        public EditorDiffuseBlendMode DiffuseLayerBlend { get; set; }
+        public EditorDiffuseBlendMode Diffuse1LayerBlend { get; set; }
 
+        private bool perLayerScale;
+        public bool PerLayerScale { get => perLayerScale; set { perLayerScale = value; OnPropertyChanged(); } }
         public float PerLayerUVScale1 { get; set; }
         public float PerLayerUVScale2 { get; set; }
 
         public bool ShadowImpostor { get; set; }
+
+        public bool Colour { get; set; }
 
         public int ConvertColour(Vector4 col)
         {

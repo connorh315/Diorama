@@ -1,7 +1,7 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="using:Diorama"
-        xmlns:editor="using:Diorama.Editor">
+        xmlns:views="using:Diorama.UI.ViewModels">
 
   <!--
     Additional resources 
@@ -22,12 +22,37 @@
   <ControlTheme x:Key="{x:Type controls:InspectorPanel}" TargetType="controls:InspectorPanel">
     <Setter Property="Template">
       <ControlTemplate>
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
-          <StackPanel Margin="5" Spacing="10">
-            <TextBox Text="{Binding SelectedSceneObject.Name}" IsEnabled="{Binding SelectedSceneObject.CanEditName}"/>
+        <TabControl Margin="5" IsVisible="{Binding Controller.SelectedGeometry, Converter={x:Static ObjectConverters.IsNotNull}}">
+          <TabItem Header="Model">
+            <StackPanel Margin="5">
+              <controls:Vec3Input
+                  Value="{Binding Controller.SelectedGeometry.Position, Mode=TwoWay}"
+                  InputLabel="Position" IsEnabled="{Binding Controller.SelectedGeometry.CanEditTransform}"/>
+              <controls:Vec3Input
+                  Value="{Binding Controller.SelectedGeometry.Rotation, Mode=TwoWay}"
+                  InputLabel="Rotation" IsEnabled="{Binding Controller.SelectedGeometry.CanEditTransform}"/>
+              <controls:Vec3Input
+                  Value="{Binding Controller.SelectedGeometry.Scale, Mode=TwoWay}"
+                  InputLabel="Scale" IsEnabled="{Binding Controller.SelectedGeometry.CanEditTransform}"/>
+                
+              <StackPanel Orientation="Horizontal">
+                <Button Content="Replace mesh" x:Name="ReplaceMesh"/>
+                <Button Content="Export mesh" x:Name="ExportMesh"/>
+                <Button Content="DEBUG" x:Name="DebugMesh" />
+              </StackPanel>
+            </StackPanel>
             
-          </StackPanel>
-        </ScrollViewer>
+          </TabItem>
+          <TabItem Header="Material">
+            <Grid Margin="5" RowDefinitions="Auto,*">
+              <controls:ListInput Grid.Row="0" InputLabel="Material" Items="{Binding Controller.SelectedGeometry.Parent.SceneOwner.Materials}" SelectedItem="{Binding Controller.SelectedGeometry.Material}"/>
+              <controls:MaterialPanel Grid.Row="1" Textures="{Binding DataContext.Controller.SelectedGeometry.Parent.SceneOwner.Textures, RelativeSource={RelativeSource AncestorType=controls:InspectorPanel}}" DataContext="{Binding Controller.SelectedGeometry.Material}" />
+            </Grid>
+          </TabItem>
+          <TabItem Header="SpecialObject">
+            <controls:SpecialObjectPanel DataContext="{Binding Controller.SelectedSceneObject}" />
+          </TabItem>
+        </TabControl>
       </ControlTemplate>
     </Setter>
   </ControlTheme>

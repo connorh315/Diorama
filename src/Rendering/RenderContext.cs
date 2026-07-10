@@ -21,10 +21,12 @@ namespace Diorama.Rendering
 
         public Camera Camera;
 
+        public Matrix4 View;
+
         public void Use()
         {
             Shader.SetVector3("camera", CameraScenePosition);
-            Shader.SetMatrix4("view", Scene.SceneTransform * Camera.GetViewMatrix());
+            Shader.SetMatrix4("view", View);
         }
 
         public RenderContext(EditorScene scene, Camera camera, Shader blendShader)
@@ -34,6 +36,7 @@ namespace Diorama.Rendering
             Shader = blendShader;
             Camera = camera;
             Scene = scene;
+            View = Scene.SceneTransform * Camera.GetViewMatrix();
         }
     }
 }

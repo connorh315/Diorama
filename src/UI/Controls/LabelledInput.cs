@@ -2,13 +2,15 @@
 using Avalonia.Controls.Primitives;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Diorama
 {
-    public class LabelledInput : TemplatedControl
+    public class LabelledInput : TemplatedControl, INotifyPropertyChanged
     {
         /// <summary>
         /// InputLabel StyledProperty definition
@@ -24,6 +26,13 @@ namespace Diorama
         {
             get => this.GetValue(InputLabelProperty);
             set => SetValue(InputLabelProperty, value);
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

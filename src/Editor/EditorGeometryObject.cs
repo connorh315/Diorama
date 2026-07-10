@@ -137,7 +137,8 @@ namespace Diorama.Editor
 
             shader.SetVector4("mesh_color", Material.Colour1);
 
-            shader.SetByte("glow", Material.Glow);
+            shader.SetBool("glow", Material.Glow);
+            shader.SetFloat("glowIntensity", Material.KGlow);
 
             shader.SetFloat("alphaRef", Material.AlphaRef);
             shader.SetInt("alphaTestMode", (int)Material.AlphaTest);
@@ -151,7 +152,25 @@ namespace Diorama.Editor
             shader.SetFloat("PerLayerUVScale1", Material.PerLayerUVScale1);
             shader.SetFloat("PerLayerUVScale2", Material.PerLayerUVScale2);
 
+            shader.SetByte("has_vertex_colors", (byte)(Material.Colour ? 1 : 0));
+
+            if (Material.Debug == 1)
+            {
+                Console.WriteLine();
+            }
+
             shader.SetInt("layer2blendmode", (int)Material.Diffuse1LayerBlend);
+
+            //switch (Material.Diffuse1LayerBlend)
+            //{
+            //    case 0:
+            //    case 1:
+            //    case 2:
+            //        break;
+            //    default:
+            //        Console.WriteLine($"Unknown blend mode: {Material.Diffuse1LayerBlend}");
+            //        break;
+            //}
 
             if (Lightmap != null && Lightmap.AmbientOcclusion != null && ViewportNewControl.ShowLightmaps && Material.LightmapUVSet != -1)
             {
