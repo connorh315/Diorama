@@ -1,4 +1,5 @@
 ﻿using Avalonia;
+using Avalonia.Input;
 using Diorama.Rendering;
 using Diorama.UI.Controls;
 using System;
@@ -18,6 +19,16 @@ namespace Diorama
             get => GetValue(TextureProperty);
             set => SetValue(TextureProperty, value);
         }
+
+        //public static readonly StyledProperty<Cursor?> CursorProperty =
+        //    AvaloniaProperty.Register<TexturePreviewControl, Cursor?>(
+        //        nameof(Cursor));
+
+        //public Cursor? Cursor
+        //{
+        //    get => GetValue(CursorProperty);
+        //    set => SetValue(CursorProperty, value);
+        //}
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {

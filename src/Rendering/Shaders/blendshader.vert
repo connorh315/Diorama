@@ -3,6 +3,7 @@
 layout (location = 0) in vec3 aPosition;
 layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec4 aColor;
+layout (location = 3) in vec3 aTangent;
 layout (location = 4) in vec4 aColor2;
 layout (location = 5) in vec4 aUv1;
 layout (location = 6) in vec4 aDiffuse;
@@ -11,6 +12,8 @@ layout (location = 7) in vec4 aUv2;
 out vec3 FragPos;
 out vec3 Normal;
 out vec4 UV1;
+out vec3 outTangent;
+out vec3 outBitangent;
 out vec4 UV2;
 out vec4 outColor;
 out vec4 outColor2;
@@ -20,6 +23,12 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
+vec3 ResolveNormalised(vec3 normalised)
+{
+    vec3 resolved = normalised * 2 - 1;
+    return normalize(resolved * mat3(model));
+}
+
 void main()
 {
     gl_Position = vec4(aPosition, 1.0) * model * view * projection;
@@ -27,9 +36,10 @@ void main()
     vec4 worldPos = vec4(aPosition, 1.0) * model;
     FragPos = worldPos.xyz;
 
-    vec3 resolved = aNormal * 2 - 1;
-
-    Normal = normalize(resolved * mat3(model));
+    Normal = ResolveNormalised(aNormal);
+    outTangent = ResolveNormalised(aTangent);
+    outTangent = normalize(outTangent - Normal * dot(Normal, outTangent)); // correction for imperfections
+    outBitangent = normalize(cross(Normal, outTangent));
 
     UV1 = aUv1;
     UV2 = aUv2;

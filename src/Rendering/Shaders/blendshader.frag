@@ -4,6 +4,8 @@
 in vec3 FragPos;
 in vec3 Normal;
 in vec4 UV1;
+in vec3 outTangent;
+in vec3 outBitangent;
 in vec4 UV2;
 in vec4 outColor;
 in vec4 outColor2;
@@ -18,6 +20,10 @@ uniform sampler2D texture0;
 uniform sampler2D texture1;
 uniform sampler2D texture2;
 uniform sampler2D texture3;
+
+uniform sampler2D normal0;
+uniform bool hasNormalMap;
+uniform int normal0_uvset;
 
 uniform int diffuse0_uvset;
 uniform int diffuse1_uvset;
@@ -67,6 +73,21 @@ void main()
     vec3 normal = normalize(Normal);
     vec3 lightDir = normalize(camera - FragPos);
 
+    if (hasNormalMap)
+    {
+        vec3 tangentNormal = texture(normal0, GetUVSet(normal0_uvset) * PerLayerUVScale1).rgb;
+
+        // Decode from [0,1] -> [-1,1]
+        tangentNormal = tangentNormal * 2.0 - 1.0;
+
+        mat3 TBN = mat3(
+            normalize(outTangent),
+            normalize(outBitangent),
+            normalize(Normal));
+
+        normal = normalize(TBN * tangentNormal);
+    }
+
     float diff = max(dot(normal, lightDir), 0.0);
 
     // Your lighting model
@@ -110,7 +131,14 @@ void main()
         case 1:
             albedo = mix(base.rgb, detail.rgb, outColor2.b);
             break;
+        case 3: // SUBTRACT
+            albedo = albedo - detail.rgb;
+            break;
+        case 4: // MULTIPLY
+            albedo = albedo * detail.rgb;
+            break;
         case 5: // MAXALPHA
+        case 10: // MAXALPHABLEND (Not correct)
             if (outColor2.b > base.a)
                 albedo = detail.rgb;
             break;
@@ -135,4 +163,6 @@ void main()
     //color = vec4(outColor2.b, outColor2.b, outColor2.b, 1);
 
     FragColor = color;
+
+    //FragColor = texture(normal0, (GetUVSet(normal0_uvset) * PerLayerUVScale1));
 }

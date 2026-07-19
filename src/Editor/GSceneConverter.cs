@@ -317,21 +317,21 @@ namespace Diorama.Editor
 
                 mat.LightmapUVSet = mat.Original.LightmapUVSet;
 
-                mat.Name = mat.Original.MaterialName;
+                //mat.Name = mat.Original.MaterialName;
 
-                mat.Occlusion = mat.Original.occlusion;
+                //mat.Occlusion = mat.Original.occlusion;
 
-                mat.RefractiveIndex = mat.Original.KRefractiveIndex;
+                //mat.RefractiveIndex = mat.Original.KRefractiveIndex;
 
-                mat.BlendMode = mat.Original.blendMode;
-                mat.AlphaTest = mat.Original.alphaTest;
-                mat.AlphaRef = mat.Original.Aref / 255f;
+                //mat.BlendMode = mat.Original.blendMode;
+                //mat.AlphaTest = mat.Original.alphaTest;
+                //mat.AlphaRef = mat.Original.Aref / 255f;
                 mat.CanAlphaBlend = mat.Original.miscFlags_canAlphaBlend;
                 mat.Opaque = mat.Original.miscFlags_defunctOpaque;
                 mat.SortLast = mat.Original.SortLast;
                 mat.VertexControlledTint = mat.Original.VertexFlags_VertexControlledTint;
 
-                mat.ShadowImpostor = ConvertToBool(mat.Original.ShadowImpostor);
+                //mat.ShadowImpostor = ConvertToBool(mat.Original.ShadowImpostor);
 
                 mat.PerLayerScale = ConvertToBool(mat.Original.materialFlags_per_layer_uvscale);
 

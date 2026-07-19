@@ -60,4 +60,26 @@ namespace Diorama.Editor
         AddGreyscaleFromGreen,
         AddGreyscaleFromBlue
     }
+
+    public enum EditorAlphaTestMode
+    {
+        NeverDraw = 0,
+        Always,
+        Less,
+        LessEqual,
+        Equal,
+        GreaterEqual,
+        Greater,
+        NotEqual,
+        CheapSort
+    }
+
+    public enum EditorRefraction
+    {
+        Disabled = 0,
+        FixedDepth,
+        DynamicDepth,
+        DefunctWiiWater,
+        DefunctWiiGlass
+    }
 }

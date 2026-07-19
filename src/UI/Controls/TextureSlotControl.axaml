@@ -32,7 +32,7 @@
 
           <StackPanel Spacing="5">
             <StackPanel Orientation="Horizontal" Spacing="5">
-              <controls:TexturePreviewControl x:Name="PART_MainTexture" Grid.Column="1" HorizontalAlignment="Left" Texture="{Binding Texture, RelativeSource={RelativeSource TemplatedParent}}" Width="96" Height="96">
+              <controls:TexturePreviewControl x:Name="PART_MainTexture" Grid.Column="1" HorizontalAlignment="Left" Texture="{Binding Texture, RelativeSource={RelativeSource TemplatedParent}}" Width="96" Height="96" Cursor="Hand">
 
                 <FlyoutBase.AttachedFlyout>
                   

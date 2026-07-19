@@ -48,7 +48,8 @@ namespace Diorama
                         Mode = BindingMode.TwoWay
                     });
             }
-            else if (property.PropertyType == typeof(float))
+            else if (property.PropertyType == typeof(float)
+                     || property.PropertyType == typeof(string))
             {
                 editor = new TextInput();
                 editor.Bind(
@@ -60,10 +61,17 @@ namespace Diorama
             }
             else if (property.PropertyType.IsEnum)
             {
-                editor = new EnumInput();
+                editor = new EnumInput()
+                {
+                    EnumType = property.PropertyType
+                };
+
                 editor.Bind(
                     EnumInput.SelectedValueProperty,
-                    new Binding(property.Name));
+                    new Binding(property.Name)
+                    {
+                        Mode = BindingMode.TwoWay
+                    });
             }
             else
             {

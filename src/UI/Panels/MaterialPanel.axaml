@@ -8,7 +8,7 @@
              xmlns:editor="using:Diorama.Editor">
   <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
     <StackPanel Margin="5" Spacing="2">
-      <controls:TextInput InputLabel="Material Name" Value="{Binding Name, Mode=TwoWay}"/>
+      <controls:PropertyEditor Property="Name" />
       <controls:ColorInput InputLabel="Material Primary Colour" Color="{Binding Colour1, Mode=TwoWay}" />
       <Expander Header="Textures" HorizontalAlignment="Stretch">
         <StackPanel>
@@ -48,14 +48,15 @@
       <controls:PropertyEditor Property="KGlow" />
       
       <controls:TextInput InputLabel="Occlusion" Value="{Binding Occlusion, Mode=TwoWay}"/>
-      <controls:TextInput InputLabel="Refractive Index" Value="{Binding RefractiveIndex, Mode=TwoWay}"/>
-      <controls:TextInput InputLabel="Blend Mode" Value="{Binding BlendMode, Mode=TwoWay}"/>
-      <controls:TextInput InputLabel="AlphaTest" Value="{Binding AlphaTest, Mode=TwoWay}"/>
-      <controls:TextInput InputLabel="Aref" Value="{Binding AlphaRef, Mode=TwoWay}"/>
+      <controls:PropertyEditor Property="Refraction" />
+      <controls:PropertyEditor Property="RefractiveIndex" />
+      <controls:PropertyEditor Property="BlendMode" />
+      <controls:PropertyEditor Property="AlphaTest" />
+      <controls:PropertyEditor Property="AlphaRef" />
       <controls:CheckboxInput InputLabel="Can Alpha Blend" Value="{Binding CanAlphaBlend, Mode=TwoWay}"/>
       <controls:CheckboxInput InputLabel="Opaque" Value="{Binding Opaque, Mode=TwoWay}"/>
       <controls:CheckboxInput InputLabel="SortLast" Value="{Binding SortLast, Mode=TwoWay}"/>
-      <controls:CheckboxInput InputLabel="Shadow Impostor" Value="{Binding ShadowImpostor, Mode=TwoWay}"/>
+      <controls:PropertyEditor Property="ShadowImpostor" />
       <controls:CheckboxInput InputLabel="Vertex Controlled Tint" Value="{Binding VertexControlledTint, Mode=TwoWay}"/>
       <controls:CheckboxInput InputLabel="Debug Trigger" Value="{Binding Debug, Mode=TwoWay}" />
     </StackPanel>

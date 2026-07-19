@@ -32,17 +32,11 @@ namespace Diorama.Editor
 
         public int OriginalIndex;
 
-        private string name;
+        [Display("Material Name")]
         public string Name
         {
-            get => name;
-            set
-            {
-                if (name == value) return;
-
-                name = value;
-                OnPropertyChanged();
-            }
+            get => Original.MaterialName;
+            set => Set(ref Original.MaterialName, value);
         }
 
         public RenderTexture Diffuse0 { get; set; }
@@ -51,18 +45,8 @@ namespace Diorama.Editor
         public RenderTexture Normal0 { get; set; }
         public RenderTexture Normal1 { get; set; }
 
-        public uint Occlusion { get; set; }
-
-        //private byte glow;
-        //public byte Glow 
-        //{ 
-        //    get => glow; 
-        //    set
-        //    {
-        //        glow = value;
-        //        Original.materialFlags_glow = value;
-        //    }
-        //}
+        [Display("Occlusion")]
+        public uint Occlusion { get => Original.occlusion; set => Set(ref Original.occlusion, value); }
 
 #if DEBUG
         private bool GetBoolByte(byte value)
@@ -78,6 +62,23 @@ namespace Diorama.Editor
         private bool SetBoolByte (ref byte field, bool value, [CallerMemberName] string? propertyName = null)
         {
             byte newValue = value ? (byte)1 : (byte)0;
+
+            if (field == newValue)
+                return false;
+
+            field = newValue;
+            OnPropertyChanged(propertyName);
+            return true;
+        }
+
+        private float GetFloatByte(byte value)
+        {
+            return value / 255f;
+        }
+
+        private bool SetFloatByte(ref byte field, float value, [CallerMemberName] string? propertyName = null)
+        {
+            byte newValue = (byte)Math.Round(value * 255);
 
             if (field == newValue)
                 return false;
@@ -104,7 +105,7 @@ namespace Diorama.Editor
 
         public void DebugFunc()
         {
-            Console.WriteLine(Original.KGlow);
+            Console.WriteLine(Original.Diffuse0Index);
 
             //foreach (var uv in Original.uvBlocks) 
             //{ 
@@ -125,15 +126,30 @@ namespace Diorama.Editor
         private byte debug;
         public byte Debug { get => debug; set { DebugFunc(); debug = value; } }
 
-        public uint BlendMode { get; set; }
-        public uint AlphaTest { get; set; }
-        public float AlphaRef { get; set; }
+        [Display("Blend Mode")]
+        public EditorBlendMode BlendMode { get => (EditorBlendMode)Original.blendMode; set => Set(ref Original.blendMode, (uint)value); }
+
+        [Display("Alpha Test")]
+        public EditorAlphaTestMode AlphaTest { get => (EditorAlphaTestMode)Original.alphaTest; set { Set(ref Original.alphaTest, (uint)value); OnPropertyChanged(nameof(ShowAlphaRef)); } }
+
+        public bool ShowAlphaRef { get => (uint)AlphaTest > 1; }
+
+        [Display("Alpha Reference")]
+        [VisibleIf(nameof(ShowAlphaRef))]
+        public float AlphaRef { get => GetFloatByte(Original.Aref); set => SetFloatByte(ref Original.Aref, value); }
         public byte CanAlphaBlend { get; set; }
         public byte Opaque { get; set; }
         public byte SortLast { get; set; }
         public byte VertexControlledTint { get; set; }
 
-        public float RefractiveIndex { get; set; }
+        [Display("Refraction")]
+        public EditorRefraction Refraction { get => (EditorRefraction)Original.refraction; set { Set(ref Original.refraction, (uint)value); OnPropertyChanged(nameof(ShowRefractiveIndex)); } }
+
+        public bool ShowRefractiveIndex { get => (uint)Refraction > 0; }
+
+        [Display("Refractive Index")]
+        [VisibleIf(nameof(ShowRefractiveIndex))]
+        public float RefractiveIndex { get => Original.KRefractiveIndex; set => Set(ref Original.KRefractiveIndex, value); }
 
         public int Diffuse0UVSet { get; set; } = -1;
         public int Diffuse1UVSet { get; set; } = -1;
@@ -149,7 +165,8 @@ namespace Diorama.Editor
         public float PerLayerUVScale1 { get; set; }
         public float PerLayerUVScale2 { get; set; }
 
-        public bool ShadowImpostor { get; set; }
+        [Display("Shadow Impostor")]
+        public bool ShadowImpostor { get => GetBoolByte(Original.ShadowImpostor); set => SetBoolByte(ref Original.ShadowImpostor, value); }
 
         public bool Colour { get; set; }
 

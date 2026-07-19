@@ -149,6 +149,10 @@ namespace Diorama.Editor
             shader.SetInt("diffuse0_uvset", Material.Diffuse0UVSet);
             shader.SetInt("diffuse1_uvset", Material.Diffuse1UVSet);
 
+            shader.SetInt("normal0_uvset", Material.Normal0UVSet);
+            shader.SetBool("hasNormalMap", Material.Original.Normal0Index != -1);
+            Material.Normal0.Use(TextureUnit.Texture4);
+
             shader.SetFloat("PerLayerUVScale1", Material.PerLayerUVScale1);
             shader.SetFloat("PerLayerUVScale2", Material.PerLayerUVScale2);
 

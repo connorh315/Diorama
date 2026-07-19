@@ -61,7 +61,7 @@ namespace Diorama.UI.Controls
 
         protected override IPlatformHandle CreateNativeControlCore(IPlatformHandle parent)
         {
-            _hwnd = Win32.CreateChildWindow(parent.Handle);
+            _hwnd = Win32.CreateChildWindow(parent.Handle, Cursor?.ToString());
 
             SubclassChildWindow();
             _hdc = Win32.GetDC(_hwnd);

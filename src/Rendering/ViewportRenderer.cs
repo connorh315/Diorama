@@ -39,6 +39,7 @@ namespace Diorama.Rendering
             blendShader.SetInt("texture1", 1);
             blendShader.SetInt("texture2", 2);
             blendShader.SetInt("texture3", 3);
+            blendShader.SetInt("normal0", 4);
 
             picker = new ObjectPicker();
             picker.Initialize();
@@ -116,18 +117,18 @@ namespace Diorama.Rendering
             picker.Execute(camera, scenes);
         }
 
-        private static void SetBlendMode(uint blendMode)
+        private static void SetBlendMode(EditorBlendMode blendMode)
         {
             switch (blendMode)
             {
                 // Opaque
-                case 0:
+                case EditorBlendMode.Off:
                     GL.Disable(EnableCap.Blend);
                     GL.DepthMask(true);
                     break;
 
                 // Standard alpha
-                case 1:
+                case EditorBlendMode.Blended:
                     GL.Enable(EnableCap.Blend);
                     GL.BlendEquation(BlendEquationMode.FuncAdd);
                     GL.BlendFunc(
@@ -137,7 +138,7 @@ namespace Diorama.Rendering
                     break;
 
                 // Glass? Premultiplied?
-                case 4:
+                case EditorBlendMode.PreMultipliedAlpha:
                     GL.Enable(EnableCap.Blend);
                     GL.BlendEquation(BlendEquationMode.FuncAdd);
                     GL.BlendFunc(
@@ -146,7 +147,7 @@ namespace Diorama.Rendering
                     GL.DepthMask(false);
                     break;
 
-                case 2:
+                case EditorBlendMode.Additive:
                     GL.Enable(EnableCap.Blend);
 
                     GL.BlendEquation(BlendEquationMode.FuncAdd);

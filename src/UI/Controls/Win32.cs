@@ -41,12 +41,17 @@ internal static class Win32
             : (IntPtr)SetWindowLong32(hWnd, nIndex, dwNewLong.ToInt32());
     }
 
-    public static IntPtr CreateChildWindow(IntPtr parent)
+    private static string GetClassName(string cursorType)
     {
-        RegisterGlWindowClass();
+        return "OpenGLHostWindow" + (cursorType == "Hand" ? "Hand" : "");
+    }
+
+    public static IntPtr CreateChildWindow(IntPtr parent, string cursor)
+    {
+        RegisterGlWindowClass(cursor);
 
         return CreateWindowEx(
-            0, "OpenGLHostWindow", "",
+            0, GetClassName(cursor), "",
             WS_CHILD | WS_VISIBLE,
             0, 0, 100, 100,
             parent, IntPtr.Zero, GetModuleHandle(null), IntPtr.Zero);
@@ -236,13 +241,28 @@ internal static class Win32
     IntPtr lpCursorName);
 
     public static readonly IntPtr IDC_ARROW = (IntPtr)32512;
+    public static readonly IntPtr IDC_HAND = (IntPtr)32649;
 
-    private static bool _registered;
+    private static bool registeredHand;
+    private static bool registeredArrow;
 
-    public static void RegisterGlWindowClass()
+    public static void RegisterGlWindowClass(string cursorType)
     {
-        if (_registered)
-            return;
+        IntPtr cursor;
+        if (cursorType == "Hand")
+        {
+            if (registeredHand) return;
+            cursor = LoadCursor(IntPtr.Zero, IDC_HAND);
+            registeredHand = true;
+        }
+        else
+        {
+            if (registeredArrow) return;
+            cursor = LoadCursor(IntPtr.Zero, IDC_ARROW);
+            registeredArrow = true;
+        }
+
+        string className = GetClassName(cursorType);
 
         WNDCLASSEX wc = new()
         {
@@ -253,19 +273,17 @@ internal static class Win32
 
             hInstance = GetModuleHandle(null),
 
-            hCursor = LoadCursor(IntPtr.Zero, IDC_ARROW),
+            hCursor = cursor,
 
             // THIS is the important part
             hbrBackground = IntPtr.Zero,
 
-            lpszClassName = "OpenGLHostWindow"
+            lpszClassName = className
         };
 
         ushort atom = RegisterClassEx(ref wc);
 
         if (atom == 0)
             throw new Win32Exception(Marshal.GetLastWin32Error());
-
-        _registered = true;
     }
 }
