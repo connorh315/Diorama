@@ -49,7 +49,8 @@ namespace Diorama
                     });
             }
             else if (property.PropertyType == typeof(float)
-                     || property.PropertyType == typeof(string))
+                     || property.PropertyType == typeof(string)
+                     || property.PropertyType == typeof(byte))
             {
                 editor = new TextInput();
                 editor.Bind(

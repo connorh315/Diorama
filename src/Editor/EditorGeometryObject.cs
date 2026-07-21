@@ -41,7 +41,7 @@ namespace Diorama.Editor
                 OnPropertyChanged();
             }
         }
-        public EditorLightmap Lightmap;
+        public EditorLightmap Lightmap { get; set; }
         
         public RenderMesh Mesh { get; set; }
         public NuTransformMtx OriginalTransform { get; set; }
@@ -133,6 +133,10 @@ namespace Diorama.Editor
         {
             if (!ViewportNewControl.ShowShadowImpostors && Material.ShadowImpostor) return;
 
+            if (Material.ShowDebugSpheres)
+            {
+            }
+
             shader.SetMatrix4("model", Transform);
 
             shader.SetVector4("mesh_color", Material.Colour1);
@@ -158,12 +162,14 @@ namespace Diorama.Editor
 
             shader.SetByte("has_vertex_colors", (byte)(Material.Colour ? 1 : 0));
 
-            if (Material.Debug == 1)
+            if (Material.Debug == true)
             {
                 Console.WriteLine();
             }
 
             shader.SetInt("layer2blendmode", (int)Material.Diffuse1LayerBlend);
+
+            shader.SetBool("bitangent_flip", Material.BitangentFlip);
 
             //switch (Material.Diffuse1LayerBlend)
             //{

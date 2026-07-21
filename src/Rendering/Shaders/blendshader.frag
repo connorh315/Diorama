@@ -68,14 +68,30 @@ vec2 GetUVSet(int uvset)
         return vec2(0, 0);
 }
 
+uniform vec3 BoundsCenter;
+uniform float BoundsRadius;
+uniform bool RenderSpheres;
+
 void main()
 {
+    //if (RenderSpheres)
+    //{
+    //    float d = distance(FragPos, BoundsCenter);
+    //
+    //    if (d > BoundsRadius)
+    //        FragColor = vec4(1,0,0,1);   // Outside sphere
+    //    else
+    //        FragColor = vec4(0,1,0,1);   // Inside sphere
+    //
+    //    return;
+    //}
+
     vec3 normal = normalize(Normal);
     vec3 lightDir = normalize(camera - FragPos);
 
     if (hasNormalMap)
     {
-        vec3 tangentNormal = texture(normal0, GetUVSet(normal0_uvset) * PerLayerUVScale1).rgb;
+        vec3 tangentNormal = texture(normal0, GetUVSet(normal0_uvset) * PerLayerUVScale1).agb;
 
         // Decode from [0,1] -> [-1,1]
         tangentNormal = tangentNormal * 2.0 - 1.0;
@@ -164,5 +180,5 @@ void main()
 
     FragColor = color;
 
-    //FragColor = texture(normal0, (GetUVSet(normal0_uvset) * PerLayerUVScale1));
+    //FragColor = vec4(textureLod(normal0, (GetUVSet(normal0_uvset) * PerLayerUVScale1), 0).agb, 1);
 }

@@ -1,4 +1,5 @@
 ﻿using Diorama.Core.Filetypes.TEXTURES;
+using Diorama.Editor;
 using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,17 @@ namespace Diorama.Rendering
     {
         public int Handle;
 
-        public string Name { get; set; }
+        public string Name { get => Original?.Header?.Name ?? ""; }
+
+        public bool Deleted { get; private set; } = false;
+
+        public void Delete()
+        {
+            Original?.Header?.Name = "DELETED TEXTURE";
+            Deleted = true;
+        }
+
+        public NuTexture Original;
 
         private static RenderTexture whiteTexture;
         public static RenderTexture GetWhiteTexture()
@@ -27,6 +38,17 @@ namespace Diorama.Rendering
             return whiteTexture;
         }
 
+        private static RenderTexture invalidTexture;
+        public static RenderTexture GetInvalidTexture()
+        {
+            if (invalidTexture == null)
+            {
+                invalidTexture = new RenderTexture();
+                invalidTexture.CreateTextureFromData(new byte[] { 255, 0, 255, 255, 0, 0, 0, 255, 0, 0, 0, 255, 255, 0, 255, 255}, 2, 2); // pink/black checkerboard pattern
+            }
+            return invalidTexture;
+        }
+
         public RenderTexture()
         {
             Handle = GL.GenTexture();
@@ -37,41 +59,40 @@ namespace Diorama.Rendering
         public void Use(TextureUnit unit = TextureUnit.Texture0)
         {
             GL.ActiveTexture(unit);
+            if (Deleted)
+            {
+                GL.BindTexture(TextureTarget.Texture2D, GetInvalidTexture().Handle);
+                return;
+            }
             GL.BindTexture(TextureTarget.Texture2D, Handle);
         }
 
-        private void CreateWhiteTexture()
+        private void CreateTextureFromData(byte[] data, int width, int height)
         {
-            byte[] whitePixel = { 255, 255, 255, 255 }; // RGBA
-
             GL.TexImage2D(
                 TextureTarget.Texture2D,
                 0,
                 PixelInternalFormat.Rgba8,
-                1,
-                1,
+                width,
+                height,
                 0,
                 PixelFormat.Rgba,
                 PixelType.UnsignedByte,
-                whitePixel);
+                data);
 
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
         }
 
-        public static RenderTexture FromNuTexture(NuTexture texture)
+        private void CreateWhiteTexture() => CreateTextureFromData(new byte[] { 255, 255, 255, 255 }, 1, 1);
+
+        public void Reload(NuTexture texture)
         {
-            RenderTexture renderTexture = new RenderTexture();
+            Use();
 
-            renderTexture.Name = texture.Header.Name;
-
-            if (texture.Data == null)
-            {
-                renderTexture.CreateWhiteTexture();
-                return renderTexture;
-            }
+            Original = texture;
 
             int blockSize = 0;
             int uncompressedPixelSize = 0;
@@ -165,18 +186,6 @@ namespace Diorama.Rendering
                         PixelType.Byte,
                         texture.Data.AsSpan(offset, mipSize).ToArray()
                     );
-
-                    //GL.TexImage2D(
-                    //    TextureTarget.Texture2D,
-                    //    i,
-                    //    (PixelInternalFormat)compressionFormat,
-                    //    w,
-                    //    h,
-                    //    0,
-                    //    PixelFormat.Rgba,
-                    //    PixelType.Float,
-                    //    texture.Data.AsSpan(offset, mipSize).ToArray()
-                    //);
                 }
 
                 offset += mipSize;
@@ -184,6 +193,21 @@ namespace Diorama.Rendering
                 width /= 2;
                 height /= 2;
             }
+        }
+
+        public static RenderTexture FromNuTexture(NuTexture texture)
+        {
+            RenderTexture renderTexture = new RenderTexture();
+
+            renderTexture.Original = texture;
+
+            if (texture.Data == null)
+            {
+                renderTexture.CreateWhiteTexture();
+                return renderTexture;
+            }
+
+            renderTexture.Reload(texture);
 
             return renderTexture;
         }

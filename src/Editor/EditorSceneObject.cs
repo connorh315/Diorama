@@ -56,6 +56,8 @@ namespace Diorama.Editor
 
         public Vector4 BoundsCenterAndDistSqrd { get; set; }
 
+        public Vector4 BoundsExtentsAndRadius { get; set; }
+
         public bool IsActive = true;
 
         public bool DebugDraw = false;
@@ -64,6 +66,10 @@ namespace Diorama.Editor
         {
             if (!IsActive)
                 return;
+
+            if (ViewportNewControl.UseFrustumCulling && !ctx.Intersects(BoundsCenterAndDistSqrd.Xyz, BoundsExtentsAndRadius.Xyz))
+                return;
+
 
             GetActiveClipObject(ctx.CameraScenePosition)?.Draw(shader, ctx);
         }

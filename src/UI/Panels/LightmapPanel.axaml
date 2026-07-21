@@ -1,0 +1,38 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Diorama.LightmapPanel"
+             xmlns:controls="using:Diorama"
+             xmlns:editor="using:Diorama.Editor">
+  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Margin="5" Spacing="2">
+      <controls:TextureSlotControl
+            InputLabel="Ambient Occlusion"
+            Texture="{Binding AmbientOcclusion, Mode=TwoWay}"
+            Textures="{Binding Textures, RelativeSource={RelativeSource AncestorType=controls:LightmapPanel}}"/>
+      
+      <controls:TextureSlotControl
+            InputLabel="Smooth"
+            Texture="{Binding Smooth, Mode=TwoWay}"
+            Textures="{Binding Textures, RelativeSource={RelativeSource AncestorType=controls:LightmapPanel}}"/>
+
+      <controls:TextureSlotControl
+            InputLabel="0"
+            Texture="{Binding Directional0, Mode=TwoWay}"
+            Textures="{Binding Textures, RelativeSource={RelativeSource AncestorType=controls:LightmapPanel}}"/>
+
+      <controls:TextureSlotControl
+            InputLabel="1"
+            Texture="{Binding Directional1, Mode=TwoWay}"
+            Textures="{Binding Textures, RelativeSource={RelativeSource AncestorType=controls:LightmapPanel}}"/>
+
+      <controls:TextureSlotControl
+            InputLabel="2"
+            Texture="{Binding Directional2, Mode=TwoWay}"
+            Textures="{Binding Textures, RelativeSource={RelativeSource AncestorType=controls:LightmapPanel}}"/>
+    </StackPanel>
+  </ScrollViewer>
+  
+</UserControl>

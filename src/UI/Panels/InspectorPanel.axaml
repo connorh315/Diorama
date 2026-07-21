@@ -52,6 +52,9 @@
           <TabItem Header="SpecialObject">
             <controls:SpecialObjectPanel DataContext="{Binding Controller.SelectedSceneObject}" />
           </TabItem>
+          <TabItem Header="Lightmap">
+            <controls:LightmapPanel DataContext="{Binding Controller.SelectedGeometry.Lightmap}" />
+          </TabItem>
         </TabControl>
       </ControlTemplate>
     </Setter>

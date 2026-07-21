@@ -66,6 +66,9 @@
     <Compile Update="UI\Panels\InspectorPanel2.axaml.cs">
       <DependentUpon>InspectorPanel2.axaml</DependentUpon>
     </Compile>
+    <Compile Update="UI\Panels\LightmapPanel.axaml.cs">
+      <DependentUpon>LightmapPanel.axaml</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
@@ -73,6 +76,12 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Rendering\Shaders\blendshader.vert">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Rendering\Shaders\debugshader.frag">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Rendering\Shaders\debugshader.vert">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Rendering\Shaders\pickshader.frag">

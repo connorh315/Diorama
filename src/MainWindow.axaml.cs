@@ -96,6 +96,11 @@ namespace Diorama
             ViewportNewControl.ShowShadowImpostors = !ViewportNewControl.ShowShadowImpostors;
         }
 
+        private void CullingItem_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            ViewportNewControl.UseFrustumCulling = !ViewportNewControl.UseFrustumCulling;
+        }
+
         private void OpenFile_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             OpenFileMenu();

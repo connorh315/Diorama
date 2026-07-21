@@ -59,6 +59,8 @@ namespace Diorama.Rendering
         public ICommand SaveSceneCommand { get; }
         public ICommand RemoveSceneCommand { get; }
         public ICommand EditResourceHeaderCommand { get; }
+        public ICommand EditTexturesCommand { get; }
+        public ICommand SaveTexturesCommand { get; }
 
         public CameraController CameraController { get; }
         public Camera Camera { get; }
@@ -93,6 +95,43 @@ namespace Diorama.Rendering
                     var modal = new EditResourceHeaderWindow(headerVm);
 
                     await modal.ShowDialog(MainWindow);
+                }
+            });
+
+            EditTexturesCommand = new RelayCommand<EditorScene>(async (EditorScene? sender) =>
+            {
+                if (sender != null)
+                {
+                    EditTexturesViewModel editTexturesVm = new EditTexturesViewModel(sender.Textures);
+
+                    var modal = new EditTexturesWindow(editTexturesVm);
+
+                    await modal.ShowDialog(MainWindow);
+                }
+            });
+
+            SaveTexturesCommand = new RelayCommand<EditorScene>(async (EditorScene? sender) =>
+            {
+                var nxg_textures = sender.OriginalTextures;
+
+                int newTextureCount = sender.Textures.Count;
+
+                var rebuiltSet = new NuTextureSet(nxg_textures.TextureSet.Version, nxg_textures.TextureSet.ConversionDate);
+                rebuiltSet.Textures = new NuTexture[newTextureCount];
+                rebuiltSet.TextureHeaders = new List<NuTexGenHdr>();
+
+                for (int i = 0; i < newTextureCount; i++)
+                {
+                    rebuiltSet.Textures[i] = sender.Textures[i].Original;
+                    rebuiltSet.TextureHeaders.Add(sender.Textures[i].Original.Header);
+                }
+
+                sender.OriginalTextures.TextureSet = rebuiltSet;
+
+                using (RawFile file = RawFile.Create(sender.OriginalTextures.Path))
+                {
+                    SchemaSerializer schema = new SchemaSerializer(file, true);
+                    sender.OriginalTextures.Handle(schema, 0);
                 }
             });
         }

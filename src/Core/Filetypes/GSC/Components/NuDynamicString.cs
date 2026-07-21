@@ -24,5 +24,12 @@ namespace Diorama.Core.Filetypes.GSC.Components
         {
             file.WritePascalString(Value, 1);
         }
+
+        public NuDynamicString() { }
+
+        public NuDynamicString(string value)
+        {
+            Value = value;
+        }
     }
 }

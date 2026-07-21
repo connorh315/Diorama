@@ -73,6 +73,8 @@ namespace Diorama.UI.Controls
 
         public static bool ShowShadowImpostors = false;
 
+        public static bool UseFrustumCulling = false;
+
         private void Update(double deltaTime)
         {
             if (Keyboard.IsKeyDown(Key.F))

@@ -37,10 +37,6 @@
             Texture="{Binding Normal1, Mode=TwoWay}"
             SelectedSet="{Binding Normal1UVSet, Mode=TwoWay}"
             Textures="{Binding Textures, RelativeSource={RelativeSource AncestorType=controls:MaterialPanel}}"/>
-          <controls:TextureSlotControl
-            InputLabel="Lightmap"
-            SelectedSet="{Binding LightmapUVSet, Mode=TwoWay}"
-            Textures="{Binding Textures, RelativeSource={RelativeSource AncestorType=controls:MaterialPanel}}"/>
         </StackPanel>
       </Expander>
       
@@ -50,15 +46,16 @@
       <controls:TextInput InputLabel="Occlusion" Value="{Binding Occlusion, Mode=TwoWay}"/>
       <controls:PropertyEditor Property="Refraction" />
       <controls:PropertyEditor Property="RefractiveIndex" />
+      <controls:PropertyEditor Property="RefractiveThickness" />
       <controls:PropertyEditor Property="BlendMode" />
       <controls:PropertyEditor Property="AlphaTest" />
       <controls:PropertyEditor Property="AlphaRef" />
-      <controls:CheckboxInput InputLabel="Can Alpha Blend" Value="{Binding CanAlphaBlend, Mode=TwoWay}"/>
-      <controls:CheckboxInput InputLabel="Opaque" Value="{Binding Opaque, Mode=TwoWay}"/>
-      <controls:CheckboxInput InputLabel="SortLast" Value="{Binding SortLast, Mode=TwoWay}"/>
+      <controls:PropertyEditor Property="CanAlphaBlend" />
       <controls:PropertyEditor Property="ShadowImpostor" />
-      <controls:CheckboxInput InputLabel="Vertex Controlled Tint" Value="{Binding VertexControlledTint, Mode=TwoWay}"/>
-      <controls:CheckboxInput InputLabel="Debug Trigger" Value="{Binding Debug, Mode=TwoWay}" />
+      <controls:PropertyEditor Property="BitangentFlip" />
+      <controls:PropertyEditor Property="BakedLighting" />
+      <controls:PropertyEditor Property="UVAnimation" />
+      <controls:PropertyEditor Property="Debug" />
     </StackPanel>
   </ScrollViewer>
 </UserControl>

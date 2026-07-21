@@ -82,4 +82,15 @@ namespace Diorama.Editor
         DefunctWiiWater,
         DefunctWiiGlass
     }
+
+    public enum EditorBakedLightingMode
+    {
+        None = 0,
+        FlatLit,
+        TextureLit,
+        VertexLit,
+        QuadraticSH,
+        DefunctViewSpaceShaded,
+        DefunctTextureNXGVertWii
+    }
 }

@@ -103,28 +103,24 @@ namespace Diorama.Editor
             set => Set(ref Original.KGlow, value);
         }
 
+        public bool ShowDebugSpheres = false;
+
         public void DebugFunc()
         {
+            ShowDebugSpheres = !ShowDebugSpheres;
             Console.WriteLine(Original.Diffuse0Index);
-
-            //foreach (var uv in Original.uvBlocks) 
-            //{ 
-            //    Console.WriteLine($"{uv.State} - {uv.UVSet}"); 
-            //}
-
-            //Console.WriteLine($"Diffuse0 - {Original.baseDiffuseUsage}");
-            //Console.WriteLine($"Diffuse1 - {Original.layerBlendDiffuse}");
-            //Console.WriteLine($"Diffuse2 - {Original.layerBlendDiffuse1}");
-            //Console.WriteLine($"Diffuse3 - {Original.layerBlendDiffuse2}");
-
-            //Console.WriteLine($"Layer 1 - {Original.PerLayerUVScale1}");
-            //Console.WriteLine($"Layer 2 - {Original.PerLayerUVScale2}");
-            //Console.WriteLine($"Layer 3 - {Original.PerLayerUVScale3}");
-            //Console.WriteLine($"Layer 4 - {Original.PerLayerUVScale4}");
         }
 
-        private byte debug;
-        public byte Debug { get => debug; set { DebugFunc(); debug = value; } }
+        private bool debug;
+#if DEBUG
+        public bool IsDebug { get => true; }
+#else
+        public bool IsDebug { get => false; }
+#endif
+
+        [Display("Debug Trigger")]
+        [VisibleIf(nameof(IsDebug))]
+        public bool Debug { get => debug; set { DebugFunc(); Set(ref debug, value); } }
 
         [Display("Blend Mode")]
         public EditorBlendMode BlendMode { get => (EditorBlendMode)Original.blendMode; set => Set(ref Original.blendMode, (uint)value); }
@@ -137,19 +133,32 @@ namespace Diorama.Editor
         [Display("Alpha Reference")]
         [VisibleIf(nameof(ShowAlphaRef))]
         public float AlphaRef { get => GetFloatByte(Original.Aref); set => SetFloatByte(ref Original.Aref, value); }
-        public byte CanAlphaBlend { get; set; }
+
+        [Display("Can Alpha Blend")]
+        public bool CanAlphaBlend { get => GetBoolByte(Original.miscFlags_canAlphaBlend); set => SetBoolByte(ref Original.miscFlags_canAlphaBlend, value); }
+        
         public byte Opaque { get; set; }
         public byte SortLast { get; set; }
         public byte VertexControlledTint { get; set; }
 
         [Display("Refraction")]
-        public EditorRefraction Refraction { get => (EditorRefraction)Original.refraction; set { Set(ref Original.refraction, (uint)value); OnPropertyChanged(nameof(ShowRefractiveIndex)); } }
+        public EditorRefraction Refraction { get => (EditorRefraction)Original.refraction; set { Set(ref Original.refraction, (uint)value); OnPropertyChanged(nameof(ShowRefractiveProperties)); } }
 
-        public bool ShowRefractiveIndex { get => (uint)Refraction > 0; }
+        public bool ShowRefractiveProperties { get => (uint)Refraction > 0; }
 
         [Display("Refractive Index")]
-        [VisibleIf(nameof(ShowRefractiveIndex))]
+        [VisibleIf(nameof(ShowRefractiveProperties))]
         public float RefractiveIndex { get => Original.KRefractiveIndex; set => Set(ref Original.KRefractiveIndex, value); }
+
+        [Display("Refractive Thickness")]
+        [VisibleIf(nameof(ShowRefractiveProperties))]
+        public float RefractiveThickness { get => Original.KRefractiveThicknessFactor; set => Set(ref Original.KRefractiveThicknessFactor, value); }
+
+        [Display("Baked Lighting")]
+        public EditorBakedLightingMode BakedLighting { get => (EditorBakedLightingMode)Original.bakedLighting; set => Set(ref Original.bakedLighting, (uint)value); }
+
+        [Display("UV Animation")]
+        public bool UVAnimation { get => GetBoolByte(Original.miscFlags_UVAnimation); set => SetBoolByte(ref Original.miscFlags_UVAnimation, value); }
 
         public int Diffuse0UVSet { get; set; } = -1;
         public int Diffuse1UVSet { get; set; } = -1;
@@ -167,6 +176,9 @@ namespace Diorama.Editor
 
         [Display("Shadow Impostor")]
         public bool ShadowImpostor { get => GetBoolByte(Original.ShadowImpostor); set => SetBoolByte(ref Original.ShadowImpostor, value); }
+
+        [Display("Bitangent Flip")]
+        public bool BitangentFlip { get => GetBoolByte(Original.BitangentFlip); set => SetBoolByte(ref Original.BitangentFlip, value); }
 
         public bool Colour { get; set; }
 

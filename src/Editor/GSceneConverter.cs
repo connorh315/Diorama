@@ -82,10 +82,11 @@ namespace Diorama.Editor
                 var nxg_textures = NxgTextures.Read(Path.ChangeExtension(filePath, "nxg_textures"));
                 if (nxg_textures != null)
                 {
-                    for (int i = 0; i < nxg_textures.Textures.Length; i++)
+                    for (int i = 0; i < nxg_textures.TextureSet.Textures.Length; i++)
                     {
-                        textures.Add(RenderTexture.FromNuTexture(nxg_textures.Textures[i]));
+                        textures.Add(RenderTexture.FromNuTexture(nxg_textures.TextureSet.Textures[i]));
                     }
+                    editorScene.OriginalTextures = nxg_textures;
                 }
             }
             catch (FileNotFoundException)
@@ -119,6 +120,9 @@ namespace Diorama.Editor
 
                 lightmap.AmbientOcclusion = ResolveTexture(textures, nuLightmap.AoTID);
                 lightmap.Smooth = ResolveTexture(textures, nuLightmap.SmoothTID);
+                lightmap.Directional0 = ResolveTexture(textures, nuLightmap.DirectionalTIDs0);
+                lightmap.Directional1 = ResolveTexture(textures, nuLightmap.DirectionalTIDs1);
+                lightmap.Directional2 = ResolveTexture(textures, nuLightmap.DirectionalTIDs2);
                 lightmap.Offsets[0] = nuLightmap.TexCoordOffset0;
                 lightmap.Offsets[1] = nuLightmap.TexCoordOffset1;
                 lightmap.Scales[0] = nuLightmap.TexCoordScale0;
@@ -256,6 +260,10 @@ namespace Diorama.Editor
                 var geoBounds = display.BoundsCenterAndDistSqrd[i];
                 sceneObject.BoundsCenterAndDistSqrd = new Vector4(geoBounds.X, geoBounds.Y, geoBounds.Z, geoBounds.W);
 
+                var extents = display.BoundsExtentsAndRadius[i];
+                sceneObject.BoundsExtentsAndRadius = new Vector4(extents.X, extents.Y, extents.Z, extents.W);
+
+
                 if (instance.ClipObjectIndex > -1)
                 {
                     sceneObject.ClipObject = allClipObjects[instance.ClipObjectIndex];
@@ -317,6 +325,11 @@ namespace Diorama.Editor
 
                 mat.LightmapUVSet = mat.Original.LightmapUVSet;
 
+                if (mat.Original.miscFlags_UVAnimation != 0)
+                {
+                    Console.WriteLine();
+                }
+
                 //mat.Name = mat.Original.MaterialName;
 
                 //mat.Occlusion = mat.Original.occlusion;
@@ -326,7 +339,7 @@ namespace Diorama.Editor
                 //mat.BlendMode = mat.Original.blendMode;
                 //mat.AlphaTest = mat.Original.alphaTest;
                 //mat.AlphaRef = mat.Original.Aref / 255f;
-                mat.CanAlphaBlend = mat.Original.miscFlags_canAlphaBlend;
+                //mat.CanAlphaBlend = mat.Original.miscFlags_canAlphaBlend;
                 mat.Opaque = mat.Original.miscFlags_defunctOpaque;
                 mat.SortLast = mat.Original.SortLast;
                 mat.VertexControlledTint = mat.Original.VertexFlags_VertexControlledTint;
@@ -399,8 +412,10 @@ namespace Diorama.Editor
         public static void Write(EditorScene scene)
         {
             var nuScene = scene.OriginalScene;
-            ConvertMetadata(scene);
+            ConvertResourceHeader(scene);
             ConvertMaterials(scene);
+            ConvertMetadata(scene);
+
 
             string path = nuScene.Path;
 
@@ -423,10 +438,12 @@ namespace Diorama.Editor
                 mat.Original.Diffuse1Index = scene.Textures.IndexOf(mat.Diffuse1);
                 mat.Original.Normal0Index = scene.Textures.IndexOf(mat.Normal0);
                 mat.Original.Normal1Index = scene.Textures.IndexOf(mat.Normal1);
+
+                mat.Original.OldTid = mat.Original.Diffuse0Index;
             }
         }
 
-        public static void ConvertMetadata(EditorScene scene)
+        public static void ConvertResourceHeader(EditorScene scene)
         {
             var nuScene = scene.OriginalScene;
             var rawResources = scene.Metadata.Resources;
@@ -483,6 +500,19 @@ namespace Diorama.Editor
 
             nuScene.ResourceHeader.References = references;
             nuScene.ResourceHeader.FileTree = filetree;
+        }
+
+        public static void ConvertMetadata(EditorScene scene)
+        {
+            GScene_4F originalScene = (GScene_4F)scene.OriginalScene;
+
+            List<NuDynamicString> textureStrings = new List<NuDynamicString>();
+            foreach (var tex in scene.Textures)
+            {
+                textureStrings.Add(new NuDynamicString(tex.Name));
+            }
+
+            originalScene.Metadata.MetaStrings = textureStrings;
         }
     }
 }

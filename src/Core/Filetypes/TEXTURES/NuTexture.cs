@@ -1,17 +1,19 @@
-﻿using Diorama.Core.Filetypes.GSC.Components;
+﻿using Avalonia.Input;
+using Diorama.Core.Filetypes.GSC.Components;
 using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.TEXTURES
 {
-    public class NuTexture
+    public class NuTexture : ISchemaSerializable
     {
-        public NuTextureHeader Header;
+        public NuTexGenHdr Header;
 
         public long Offset;
         public uint Size;
@@ -30,13 +32,14 @@ namespace Diorama.Core.Filetypes.TEXTURES
 
         public bool IsCubemap;
 
+        public byte[] ImageHeader;
         public byte[] Data;
 
         public bool IsCompressed = true;
 
         public uint Dx10Format;
 
-        private int Calculate(RawFile file)
+        internal int Calculate(RawFile file)
         {
             long startPos = file.Position;
             Debug.Assert(file.ReadString(4) == "DDS ");
@@ -117,21 +120,49 @@ namespace Diorama.Core.Filetypes.TEXTURES
             if (IsCubemap)
                 totalDataSize *= 6;
 
-            file.Seek(startPos + 4 + HeaderSize, SeekOrigin.Begin);
-
+            file.Seek(startPos, SeekOrigin.Begin);
+            ImageHeader = file.ReadArray(4 + HeaderSize);
             Data = file.ReadArray(totalDataSize);
 
             return 4 + HeaderSize + totalDataSize;
         }
 
-        public static NuTexture Load(RawFile file)
+        public static NuTexture Load(RawFile file, NuTexGenHdr header)
         {
+            SchemaSerializer schema = new SchemaSerializer(file, false);
+
             NuTexture texture = new NuTexture();
-
-            texture.Offset = file.Position;
-            texture.Size = (uint)texture.Calculate(file);
-
+            texture.Header = header;
+            texture.Handle(schema, 0);
+            header.Level = (uint)texture.MipCount;
             return texture;
+        }
+
+        public static NuTexture Load(string filePath, NuTexGenHdr header)
+        {
+            using (RawFile file = new RawFile(filePath))
+            {
+                return Load(file, header);
+            }
+        }
+
+        public void Handle(SchemaSerializer schema, uint parentVersion)
+        {
+            if (schema.Writing)
+            {
+                schema.HandleArray(ref ImageHeader, ImageHeader.Length);
+                if (Header.Name != string.Empty)
+                {
+                    schema.HandleArray(ref Data, Data.Length);
+                }
+            }
+            else
+            {
+                if (Header.Name != string.Empty)
+                {
+                    Size = (uint)Calculate(schema.File);
+                }
+            }
         }
     }
 }

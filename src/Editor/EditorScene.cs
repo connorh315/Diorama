@@ -1,5 +1,6 @@
 ﻿using Diorama.Core.Filetypes.GSC;
 using Diorama.Core.Filetypes.GSC.Components;
+using Diorama.Core.Filetypes.TEXTURES;
 using Diorama.Editor.Metadata;
 using Diorama.Rendering;
 using Diorama.Rendering.Shaders;
@@ -18,6 +19,8 @@ namespace Diorama.Editor
     public class EditorScene : INotifyPropertyChanged
     {
         public GScene OriginalScene;
+
+        public NxgTextures OriginalTextures;
 
         public Matrix4 SceneTransform;
 

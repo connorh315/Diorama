@@ -12,9 +12,13 @@ namespace Diorama.Editor
     {
         public NuLightmapData Original;
 
-        public RenderTexture AmbientOcclusion;
+        public RenderTexture AmbientOcclusion { get; set; }
 
-        public RenderTexture Smooth;
+        public RenderTexture Smooth { get; set; }
+
+        public RenderTexture Directional0 { get; set; }
+        public RenderTexture Directional1 { get; set; }
+        public RenderTexture Directional2 { get; set; }
 
         public float[] Offsets = new float[2];
         public float[] Scales = new float[2];

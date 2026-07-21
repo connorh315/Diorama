@@ -23,6 +23,8 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
+uniform bool bitangent_flip;
+
 vec3 ResolveNormalised(vec3 normalised)
 {
     vec3 resolved = normalised * 2 - 1;
@@ -40,6 +42,8 @@ void main()
     outTangent = ResolveNormalised(aTangent);
     outTangent = normalize(outTangent - Normal * dot(Normal, outTangent)); // correction for imperfections
     outBitangent = normalize(cross(Normal, outTangent));
+    if (bitangent_flip)
+        outBitangent = -outBitangent;
 
     UV1 = aUv1;
     UV2 = aUv2;

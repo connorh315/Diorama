@@ -43,6 +43,8 @@ namespace Diorama.Rendering
 
             picker = new ObjectPicker();
             picker.Initialize();
+
+            debugRenderer = new DebugRenderer();
         }
 
         private Stopwatch stopwatch = Stopwatch.StartNew();
@@ -68,6 +70,8 @@ namespace Diorama.Rendering
             Render(Controller.Scenes.ToList(), Controller.Camera);
         }
 
+        private DebugRenderer debugRenderer;
+
         private void Render(List<EditorScene> scenes, Camera camera)
         {
             blendShader.SetMatrix4("projection", camera.Projection);
@@ -77,11 +81,14 @@ namespace Diorama.Rendering
 
             foreach (var scene in scenes)
             {
-                var ctx = new RenderContext(scene, camera, blendShader);
+                var ctx = new RenderContext(scene, camera, blendShader, debugRenderer, Controller.SelectedSceneObject);
+                debugRenderer.Reset(scene, camera);
                 ctx.Use();
                 ctx.IsOpaquePass = true;
 
                 scene.Draw(blendShader, ctx);
+
+                //ctx.Debug.DrawSphere(Vector3.Zero, 10);
 
                 ctxs.Add(ctx);
             }
@@ -99,10 +106,13 @@ namespace Diorama.Rendering
                     SetBlendMode(obj.Material.BlendMode);
                     obj.Draw(ctx.Shader);
                 }
+                //Console.WriteLine($"Not Drawn: {ctx.NotDrawn}");
             }
 
             GL.DepthMask(true);
             GL.Disable(EnableCap.Blend);
+
+            debugRenderer.Render();
 
             frameCount++;
 

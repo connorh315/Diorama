@@ -22,6 +22,7 @@
       <MenuItem Header="Toggle Lightmaps" Click="LightmapItem_Click" />
       <MenuItem Header="Toggle Camera Lighting" Click="CameraLightItem_Click" />
       <MenuItem Header="Toggle Shadow Impostors" Click="ShadowItem_Click" />
+      <MenuItem Header="Toggle Frustum Culling" Click="CullingItem_Click" />
     </Menu>
     
     <Grid Grid.Row="1">

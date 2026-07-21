@@ -1,0 +1,39 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="Diorama.EditTexturesWindow"
+        xmlns:controls="using:Diorama"
+        Width="1300"
+        Height="700"
+        Title="EditTexturesWindow">
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*"/>
+      <ColumnDefinition Width="600"/>
+      
+      
+    </Grid.ColumnDefinitions>
+    
+    <controls:TexturePicker Grid.Column="0" ItemsSource="{Binding Textures}" SelectedTexture="{Binding Texture, Mode=TwoWay}" x:Name="TexturePicker" />
+
+    <Grid Grid.Column="1" Margin="5">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="300" />
+        <RowDefinition Height="*" />
+      </Grid.RowDefinitions>
+      <StackPanel HorizontalAlignment="Center" Grid.Row="0" Orientation="Horizontal">
+        <Button x:Name="AddNewTexture" Width="140" HorizontalContentAlignment="Center">Add new texture</Button>
+        <Button x:Name="RemoveTexture" Width="140" HorizontalContentAlignment="Center" Background="Red" Foreground="White">Delete texture</Button>
+      </StackPanel>
+      <controls:TexturePreviewControl VerticalAlignment="Center" Grid.Row="1" Texture="{Binding Texture}" Width="256" Height="256" Cursor="Hand" x:Name="PART_MainTexture" />
+      <StackPanel Grid.Row="2" DataContext="{Binding EditorTexture}">
+        <controls:PropertyEditor Property="Path" />
+        <controls:PropertyEditor Property="Name" />
+        <controls:PropertyEditor Property="NutType" />
+      </StackPanel>
+    </Grid>
+  </Grid>
+</Window>

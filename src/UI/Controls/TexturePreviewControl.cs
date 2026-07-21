@@ -48,6 +48,11 @@ namespace Diorama
             OnClick?.Invoke();
         }
 
+        public void Reload()
+        {
+            surface.IsDirty = true;
+        }
+
         public TexturePreviewControl() : base(new TextureRenderer())
         {
             

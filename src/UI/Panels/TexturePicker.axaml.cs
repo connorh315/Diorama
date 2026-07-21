@@ -8,6 +8,7 @@ using Diorama.Rendering;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading.Channels;
 
 namespace Diorama;
 
@@ -62,6 +63,12 @@ public partial class TexturePicker : UserControl
         var next = this.FindControl<Button>("PART_Next");
         if (next != null)
             next.Click += (e, sender) => { UpdateIndex(20); };
+
+        AddHandler(
+            InputElement.PointerWheelChangedEvent,
+            OnPointerWheelChanged,
+            RoutingStrategies.Tunnel | RoutingStrategies.Bubble,
+            handledEventsToo: true);
     }
 
     int firstVisibleIndex = 0;
@@ -79,6 +86,37 @@ public partial class TexturePicker : UserControl
         }
     }
 
+    public int GetSlot(RenderTexture texture)
+    {
+        for (int i = 0; i < VisibleTextures.Count; i++)
+        {
+            if (VisibleTextures[i].Texture == texture)
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    public void SetSlot(int slot, RenderTexture texture)
+    {
+        VisibleTextures[slot].Texture = texture;
+    }
+
+    public void RefreshTexture(RenderTexture texture)
+    {
+        for (int i = 0; i < VisibleTextures.Count; i++)
+        {
+            if (VisibleTextures[i].Texture == texture)
+            {
+                VisibleTextures[i].Texture = texture;
+
+                break;
+            }
+        }
+    }
+
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         if (change.Property == ItemsSourceProperty)
@@ -92,7 +130,7 @@ public partial class TexturePicker : UserControl
         }
     }
 
-    private void ApplyFilter()
+    public void ApplyFilter()
     {
         FilteredTextures.Clear();
 
@@ -102,7 +140,7 @@ public partial class TexturePicker : UserControl
         foreach (var texture in ItemsSource)
         {
             if (string.IsNullOrWhiteSpace(SearchText) ||
-                texture.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase))
+                texture.Original.Header.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase))
             {
                 FilteredTextures.Add(texture);
             }
@@ -119,6 +157,14 @@ public partial class TexturePicker : UserControl
         UpdateVisibleTextures();
     }
 
+    public void MakeVisible(int index)
+    {
+        int lastPageStart = ((FilteredTextures.Count - 1) / 20) * 20;
+        firstVisibleIndex = Math.Clamp((index / 20) * 20, 0, lastPageStart);
+
+        UpdateVisibleTextures();
+    }
+
     private void TexturePreview_Attached(object? sender, VisualTreeAttachmentEventArgs e)
     {
         var preview = (TexturePreviewControl)sender!;
@@ -126,6 +172,11 @@ public partial class TexturePicker : UserControl
         {
             SelectedTexture = preview.Texture;
         };
+    }
+
+    private void OnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
+    {
+        UpdateIndex((int)-e.Delta.Y * 20);
     }
 }
 
