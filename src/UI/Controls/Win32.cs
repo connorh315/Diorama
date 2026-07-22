@@ -286,4 +286,40 @@ internal static class Win32
         if (atom == 0)
             throw new Win32Exception(Marshal.GetLastWin32Error());
     }
+
+    private const int GWL_STYLE = -16;
+
+    private const int WS_MINIMIZEBOX = 0x00020000;
+    private const int WS_MAXIMIZEBOX = 0x00010000;
+
+    private const uint SWP_NOMOVE = 0x0002;
+    private const uint SWP_NOSIZE = 0x0001;
+    private const uint SWP_NOZORDER = 0x0004;
+    private const uint SWP_FRAMECHANGED = 0x0020;
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool SetWindowPos(
+    nint hWnd,
+    nint hWndInsertAfter,
+    int X,
+    int Y,
+    int cx,
+    int cy,
+    uint uFlags);
+
+    public static void RemoveMinMaxButtons(nint hwnd)
+    {
+        var style = GetWindowLongPtr(hwnd, GWL_STYLE).ToInt64();
+
+        style &= ~WS_MINIMIZEBOX;
+        style &= ~WS_MAXIMIZEBOX;
+
+        SetWindowLongPtr(hwnd, GWL_STYLE, (nint)style);
+
+        SetWindowPos(
+            hwnd,
+            nint.Zero,
+            0, 0, 0, 0,
+            SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+    }
 }

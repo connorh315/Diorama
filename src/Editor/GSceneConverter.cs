@@ -298,10 +298,6 @@ namespace Diorama.Editor
                     var sceneObject = editorScene.Objects[specialObject.InstanceIndex];
                     sceneObject.Name = specialObject.Name;
                     sceneObject.SpecialObject = specialObject;
-                    for (int j = 0; j < 16; j++)
-                    {
-                        sceneObject.SpecialObject.Mtx.mtx[j] = 0;
-                    }
                 }
             }
 
@@ -333,11 +329,6 @@ namespace Diorama.Editor
                 //mat.PerLayerUVScale2 = mat.Original.PerLayerUVScale2;
 
                 mat.LightmapUVSet = mat.Original.LightmapUVSet;
-
-                if (mat.Original.miscFlags_UVAnimation != 0)
-                {
-                    Console.WriteLine();
-                }
 
                 //mat.Name = mat.Original.MaterialName;
 

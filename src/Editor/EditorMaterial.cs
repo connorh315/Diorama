@@ -178,6 +178,24 @@ namespace Diorama.Editor
         public byte SortLast { get; set; }
         public byte VertexControlledTint { get; set; }
 
+        [Display("Substance mode")]
+        public EditorSubstanceMode Substance { get => (EditorSubstanceMode)Original.substanceMode; set { Set(ref Original.substanceMode, (uint)value); OnPropertyChanged(nameof(ShowSubstanceFactor)); } }
+
+        public bool ShowSubstanceFactor => Substance == EditorSubstanceMode.Constant;
+
+        [Display("Substance factor")]
+        [VisibleIf(nameof(ShowSubstanceFactor))]
+        public float SubstanceFactor { get => Original.KBaseSubstance; set => Set(ref Original.KBaseSubstance, value); }
+
+        [Display("Reflection")]
+        public EditorReflectionMode Reflection { get => (EditorReflectionMode)Original.reflection; set { Set(ref Original.reflection, (uint)value); OnPropertyChanged(nameof(ShowReflectiveFactor)); } }
+
+        public bool ShowReflectiveFactor => Reflection != EditorReflectionMode.Disabled;
+
+        [Display("Reflectivity")]
+        [VisibleIf(nameof(ShowReflectiveFactor))]
+        public float Reflectivity { get => Original.KBaseReflectivity; set => Set(ref Original.KBaseReflectivity, value); }
+
         [Display("Refraction")]
         public EditorRefraction Refraction { get => (EditorRefraction)Original.refraction; set { Set(ref Original.refraction, (uint)value); OnPropertyChanged(nameof(ShowRefractiveProperties)); } }
 
@@ -286,6 +304,12 @@ namespace Diorama.Editor
         [Display("Colour")] // might be "has vertex colours"
         public bool Colour { get => GetBoolByte(Original.Colour); set => SetBoolByte(ref Original.Colour, value); }
 
+        [Display("Generate cubemap")]
+        public bool GenerateCubemap { get => GetBoolByte(Original.materialFlags_generateCubeMap); set => SetBoolByte(ref Original.materialFlags_generateCubeMap, value); }
+
+        [Display("Force default cubemap")]
+        public bool ForceDefaultCubemap { get => GetBoolByte(Original.BForceDefaultCubeMap); set => SetBoolByte(ref Original.BForceDefaultCubeMap, value); }
+
         public int ConvertColour(Vector4 col)
         {
             uint r = (uint)(Math.Clamp(col.X, 0f, 1f) * 255f);
@@ -313,6 +337,56 @@ namespace Diorama.Editor
                 {
                     Original.Colour1 = ConvertColour(value);
                 }
+            }
+        }
+
+        public void Rebuild(RenderMesh mesh, out List<string> problems)
+        {
+            VertexDefinition[] newList = new VertexDefinition[Original.VertexLayout.Definitions.Length];
+            var layout = Original.VertexLayout;
+            var meshLayout = mesh.VertexBuffers;
+
+            problems = new();
+
+            for (int i = 0; i < layout.Definitions.Length; i++)
+            {
+                var thisDef = layout.Definitions[i];
+                int variable = (int)thisDef.Variable;
+
+                bool found = false;
+                for (int j = 0; j < meshLayout.Length; j++)
+                {
+                    foreach (var def in meshLayout[j].Attributes)
+                    {
+                        if ((int)def.Variable == variable)
+                        {
+                            int buffer = j == 0 ? 0 : j + 1;
+
+                            VertexDefinition newDef = new VertexDefinition()
+                            {
+                                Type = (VertexDefinitionStorageEnum)((int)def.Type | (buffer << 4)),
+                                Offset = def.Offset,
+                                Variable = def.Variable
+                            };
+
+                            newList[i] = newDef;
+
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (found)
+                        break;
+                }
+
+                if (!found)
+                    problems.Add($"Could not find vertex attribute: {thisDef.Type}");
+            }
+
+            if (problems.Count == 0)
+            {
+                Original.VertexLayout.Definitions = newList;
             }
         }
 

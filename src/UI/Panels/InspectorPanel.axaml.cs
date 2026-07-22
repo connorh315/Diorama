@@ -29,8 +29,20 @@ public class InspectorPanel : TemplatedControl
             exportMeshButton.Click += ExportMeshClick;
 
         var debugMeshButton = e.NameScope.Find<Button>("DebugMesh");
+
         if (debugMeshButton != null)
+        {
+#if DEBUG
+            debugMeshButton?.IsVisible = true;
+#else
+            debugMeshButton?.IsVisible = false;
+#endif
             debugMeshButton.Click += DebugMeshClick;
+        }
+
+        var rebuildButton = e.NameScope.Find<Button>("RebuildVertexDescriptors");
+        if (rebuildButton != null)
+            rebuildButton.Click += RebuildButtonClick;
     }
 
     private async void DebugMeshClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -38,6 +50,25 @@ public class InspectorPanel : TemplatedControl
         if (DataContext is InspectorPanelViewModel vm)
         {
             vm.DebugMesh();
+        }
+    }
+
+    private async void RebuildButtonClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (DataContext is InspectorPanelViewModel vm)
+        {
+            List<string> problems = vm.RebuildMaterialVertex();
+            if (problems == null || problems.Count == 0) return;
+
+
+            var window = TopLevel.GetTopLevel(this) as Window;
+
+            if (window != null)
+            {
+                problems.Add("The material has not been changed.");
+                var message = new MessageWindow("Could not rebuild material", problems);
+                await message.ShowDialog(window);
+            }
         }
     }
 

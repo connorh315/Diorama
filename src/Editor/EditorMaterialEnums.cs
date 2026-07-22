@@ -92,6 +92,16 @@ namespace Diorama.Editor
         DefunctWiiGlass
     }
 
+    public enum EditorReflectionMode
+    {
+        Disabled = 0,
+        CustomEnvironmentMap,
+        BakedEnvironmentMap,
+        LightEnvironmentMap,
+        ScaledBakedEnvironmentMap,
+        PBREnvironmentMap
+    }
+
     public enum EditorBakedLightingMode
     {
         None = 0,
@@ -125,5 +135,13 @@ namespace Diorama.Editor
         Ry_x,
         RyZx,
         RdYSdX
+    }
+
+    public enum EditorSubstanceMode
+    {
+        NonMetal = 0,
+        Constant,
+        Varying,
+        Metal
     }
 }

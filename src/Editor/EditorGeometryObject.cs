@@ -39,8 +39,59 @@ namespace Diorama.Editor
                     Original.MaterialIndex = (short)value.OriginalIndex;
                 }
                 OnPropertyChanged();
+                UpdateCompatibility();
             }
         }
+
+        public void UpdateCompatibility()
+        {
+            var layout = Material.Original.VertexLayout;
+
+            var meshLayout = Mesh.VertexBuffers;
+
+            bool compatible = true;
+
+            for (int i = 0; i < layout.Definitions.Length; i++)
+            {
+                var thisDef = layout.Definitions[i];
+                int type = (int)thisDef.Type;
+                int offset = thisDef.Offset;
+
+
+                int buffer = (type & 0xf0) >> 4;
+                if (buffer != 0)
+                    buffer--;
+                type = type & 0xf;
+
+                if (buffer >= meshLayout.Length)
+                {
+                    compatible = false;
+                    break;
+                }
+
+                bool found = false;
+                foreach (var definition in meshLayout[buffer].Attributes)
+                {
+                    if ((int)definition.Type == type && definition.Offset == offset && definition.Variable == thisDef.Variable)
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                {
+                    compatible = false;
+                    break;
+                }
+            }
+
+            MaterialCompatible = compatible;
+            OnPropertyChanged(nameof(MaterialCompatible));
+        }
+
+        public bool MaterialCompatible { get; set; } = true;
+
         public EditorLightmap Lightmap { get; set; }
         
         public RenderMesh Mesh { get; set; }

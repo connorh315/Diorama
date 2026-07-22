@@ -413,6 +413,8 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
         public uint DefaultRenderStage;
 
+        public VertexList VertexLayout;
+
         //public static NuMaterialData[] Read(RawFile file)
         //{
         //    Debug.Assert(file.ReadString(4) == "LTMU");
@@ -420,7 +422,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
         //    uint count = file.ReadUInt(true);
         //    NuMaterialData[] materials = new NuMaterialData[count];
 
-            
+
         //    if (version > 0x100) // Just a guess
         //    {
         //        int correction = file.ReadInt(true);
@@ -485,7 +487,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
         public byte[] DummyHashArray;
         public byte[] DummyHashArray2;
 
-        public VertexList VertexLayout;
+        
         
         public uint RimLightBlendMode;
         private uint shaderFxCodeHash;

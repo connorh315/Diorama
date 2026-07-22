@@ -64,5 +64,18 @@ namespace Diorama.UI.ViewModels
                 }
             }
         }
+
+        public List<string> RebuildMaterialVertex()
+        {
+            if (Controller.SelectedGeometry == null) return null;
+
+            var selectedGeo = Controller.SelectedGeometry;
+
+            selectedGeo.Material.Rebuild(selectedGeo.Mesh, out List<string> problems);
+
+            selectedGeo.UpdateCompatibility();
+
+            return problems;
+        }
     }
 }

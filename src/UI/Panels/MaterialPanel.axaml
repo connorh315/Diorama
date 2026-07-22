@@ -85,11 +85,17 @@
       <controls:PropertyEditor Property="Glow" />
       <controls:PropertyEditor Property="KGlow" />
 
+      <controls:PropertyEditor Property="Substance" />
+      <controls:PropertyEditor Property="SubstanceFactor" />
+
+      <controls:PropertyEditor Property="Reflection" />
+      <controls:PropertyEditor Property="Reflectivity" />
+
+
       <controls:PropertyEditor Property="Roughness" />
       <controls:PropertyEditor Property="BaseRoughness" />
       <controls:PropertyEditor Property="RoughnessMod" />
 
-      <controls:TextInput InputLabel="Occlusion" Value="{Binding Occlusion, Mode=TwoWay}"/>
       <controls:PropertyEditor Property="Refraction" />
       <controls:PropertyEditor Property="RefractiveIndex" />
       <controls:PropertyEditor Property="RefractiveThickness" />
@@ -101,6 +107,8 @@
       <controls:PropertyEditor Property="BitangentFlip" />
       <controls:PropertyEditor Property="BakedLighting" />
       <controls:PropertyEditor Property="UVAnimation" />
+      <controls:PropertyEditor Property="GenerateCubemap" />
+      <controls:PropertyEditor Property="ForceDefaultCubemap" />
       <controls:PropertyEditor Property="Debug" />
       <controls:PropertyEditor Property="Dump" />
     </StackPanel>
