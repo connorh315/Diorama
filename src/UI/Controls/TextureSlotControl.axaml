@@ -41,22 +41,7 @@
                   </Flyout>
                 </FlyoutBase.AttachedFlyout>
               </controls:TexturePreviewControl>
-              <!--
-              <Popup x:Name="PART_TexturePopup"
-                     PlacementTarget="{Binding #PART_MainTexture}"
-                     Placement="Bottom"
-                     IsOpen="{TemplateBinding IsPickerOpen}"
-                     IsHitTestVisible="True">
-                <Border
-                  Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
-                  BorderBrush="{DynamicResource ThemeBorderMidBrush}"
-                  BorderThickness="1"
-                  CornerRadius="4"
-                  Padding="8">
-                  <controls:TexturePicker ItemsSource="{Binding Textures, RelativeSource={RelativeSource TemplatedParent}}" Width="900"/>
-                </Border>
-              </Popup>
-              -->
+
               <TextBlock ToolTip.Tip="{Binding Texture.Name, RelativeSource={RelativeSource TemplatedParent}}" MaxWidth="300">
                 <Run Text="Name:" />
                 <Run Text="{Binding Texture.Name, RelativeSource={RelativeSource TemplatedParent}}" />
@@ -72,8 +57,12 @@
                 </ComboBox.ItemTemplate>
               </ComboBox>
             </Grid>
+            <ContentPresenter Content="{TemplateBinding Content}" />
+            <!--
+            <ItemsControl ItemsSource="{TemplateBinding Content}" />
             <controls:TextInput InputLabel="UV Scale" Value="{Binding Scale, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" IsEnabled="{Binding PerLayerScale}" />
             <controls:EnumInput InputLabel="Blend Mode" EnumType="{x:Type editor:EditorDiffuseBlendMode}" SelectedValue="{Binding LayerBlend, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" />
+            -->
           </StackPanel>
         </Expander>
       </ControlTemplate>

@@ -53,7 +53,7 @@
             <controls:SpecialObjectPanel DataContext="{Binding Controller.SelectedSceneObject}" />
           </TabItem>
           <TabItem Header="Lightmap">
-            <controls:LightmapPanel DataContext="{Binding Controller.SelectedGeometry.Lightmap}" />
+            <controls:LightmapPanel Textures="{Binding DataContext.Controller.SelectedGeometry.Parent.SceneOwner.Textures, RelativeSource={RelativeSource AncestorType=controls:InspectorPanel}}" DataContext="{Binding Controller.SelectedGeometry.Lightmap}" />
           </TabItem>
         </TabControl>
       </ControlTemplate>

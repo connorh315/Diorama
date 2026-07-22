@@ -22,5 +22,8 @@ namespace Diorama.Editor
 
         [Display("Texture Type")]
         public byte NutType { get => Texture?.Original.Header.NutType ?? 0; set => Set(ref Texture.Original.Header.NutType, value); }
+
+        [Display("Texture Fixup")]
+        public byte FixupType { get => Texture?.Original.Header.FixupType ?? 0; set => Set(ref Texture.Original.Header.FixupType, value); }
     }
 }

@@ -162,11 +162,6 @@ namespace Diorama.Editor
 
             shader.SetByte("has_vertex_colors", (byte)(Material.Colour ? 1 : 0));
 
-            if (Material.Debug == true)
-            {
-                Console.WriteLine();
-            }
-
             shader.SetInt("layer2blendmode", (int)Material.Diffuse1LayerBlend);
 
             shader.SetBool("bitangent_flip", Material.BitangentFlip);
@@ -185,7 +180,7 @@ namespace Diorama.Editor
             if (Lightmap != null && Lightmap.AmbientOcclusion != null && ViewportNewControl.ShowLightmaps && Material.LightmapUVSet != -1)
             {
                 Lightmap.AmbientOcclusion.Use(TextureUnit.Texture2);
-                Lightmap.Smooth.Use(TextureUnit.Texture3);
+                Lightmap.Directional0.Use(TextureUnit.Texture3);
                 shader.SetVector2("lm_offset", new Vector2(Lightmap.Offsets[0], Lightmap.Offsets[1]));
                 shader.SetVector2("lm_scale", new Vector2(Lightmap.Scales[0], Lightmap.Scales[1]));
                 shader.SetInt("lightmap_uvset", Material.LightmapUVSet);

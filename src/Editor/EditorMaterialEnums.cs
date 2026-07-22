@@ -61,6 +61,15 @@ namespace Diorama.Editor
         AddGreyscaleFromBlue
     }
 
+    public enum EditorNormalBlendMode
+    {
+        Disabled = 0,
+        Over,
+        Detail,
+        RoughDetail,
+        BackFace
+    }
+
     public enum EditorAlphaTestMode
     {
         NeverDraw = 0,
@@ -92,5 +101,29 @@ namespace Diorama.Editor
         QuadraticSH,
         DefunctViewSpaceShaded,
         DefunctTextureNXGVertWii
+    }
+
+    public enum EditorRoughnessMode
+    {
+        FullySmooth = 0,
+        FullyRough,
+        DefunctConstantLowRoughness,
+        DefunctConstantHighRoughness,
+        DefunctVaryingLowRoughness,
+        DefunctVaryingHighRoughness,
+        DefunctFullRange,
+        Constant,
+        Varying
+    }
+
+    public enum EditorSurfaceMapFormat
+    {
+        xyzh = 0,
+        hyzx,
+        xyZh,
+        hyZx,
+        Ry_x,
+        RyZx,
+        RdYSdX
     }
 }

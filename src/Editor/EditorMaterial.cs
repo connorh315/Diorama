@@ -1,4 +1,5 @@
 ﻿using Avalonia.Remote.Protocol;
+using Diorama.Core;
 using Diorama.Core.Filetypes.GSC.Components;
 using Diorama.Rendering;
 using Diorama.UI.Controls;
@@ -15,6 +16,8 @@ namespace Diorama.Editor
 {
     public class EditorMaterial : INotifyPropertyChanged, INamedItem
     {
+        public static List<NuMaterialData> Comparer = new();
+
         protected bool Set<T>(
             ref T field,
             T value,
@@ -44,6 +47,11 @@ namespace Diorama.Editor
 
         public RenderTexture Normal0 { get; set; }
         public RenderTexture Normal1 { get; set; }
+
+        public RenderTexture Specular0 { get; set; }
+
+
+        public RenderTexture EnvMap { get; set; }
 
         [Display("Occlusion")]
         public uint Occlusion { get => Original.occlusion; set => Set(ref Original.occlusion, value); }
@@ -108,7 +116,22 @@ namespace Diorama.Editor
         public void DebugFunc()
         {
             ShowDebugSpheres = !ShowDebugSpheres;
-            Console.WriteLine(Original.Diffuse0Index);
+            int i = 0;
+            foreach (var uvSet in Original.uvBlocks)
+            {
+                Console.WriteLine($"Set {i++} - {uvSet.UVSet}");
+            }
+
+            if (debug)
+            {
+                Comparer.Add(Original);
+            }
+            else
+            {
+                Comparer.Remove(Original);
+            }
+
+            Console.WriteLine();
         }
 
         private bool debug;
@@ -120,7 +143,21 @@ namespace Diorama.Editor
 
         [Display("Debug Trigger")]
         [VisibleIf(nameof(IsDebug))]
-        public bool Debug { get => debug; set { DebugFunc(); Set(ref debug, value); } }
+        public bool Debug { get => debug; set { Set(ref debug, value); DebugFunc(); } }
+
+        public void DebugDump()
+        {
+            using (RawFile file = new RawFile($@"A:\{Original.MaterialName.Replace("_","")}.mat"))
+            {
+                SchemaSerializer schema = new SchemaSerializer(file, true);
+
+                Original.Handle(schema, 0);
+            }
+        }
+
+        [Display("Debug Dump")]
+        [VisibleIf(nameof(IsDebug))]
+        public bool Dump { get => false; set { DebugDump(); OnPropertyChanged(); } }
 
         [Display("Blend Mode")]
         public EditorBlendMode BlendMode { get => (EditorBlendMode)Original.blendMode; set => Set(ref Original.blendMode, (uint)value); }
@@ -160,19 +197,85 @@ namespace Diorama.Editor
         [Display("UV Animation")]
         public bool UVAnimation { get => GetBoolByte(Original.miscFlags_UVAnimation); set => SetBoolByte(ref Original.miscFlags_UVAnimation, value); }
 
-        public int Diffuse0UVSet { get; set; } = -1;
-        public int Diffuse1UVSet { get; set; } = -1;
-        public int Normal0UVSet { get; set; } = -1;
-        public int Normal1UVSet { get; set; } = -1;
+        [Display("Roughness")]
+        public EditorRoughnessMode Roughness { get => (EditorRoughnessMode)Original.roughnessMode; set => Set(ref Original.roughnessMode, (uint)value); }
+
+        [Display("Base Roughness")]
+        public float BaseRoughness { get => Original.KBaseRoughness; set => Set(ref Original.KBaseRoughness, value); }
+
+        [Display("Roughness Mod")]
+        public byte RoughnessMod { get => Original.vertexFlags_vertexRoughnessMod; set => Set(ref Original.vertexFlags_vertexRoughnessMod, value); }
+
+        [Display("Normal 0 Strength")]
+        public float KNormal0 { get => Original.KNormal0; set => Set(ref Original.KNormal0, value); }
+
+        [Display("Normal 1 Strength")]
+        public float KNormal1 { get => Original.KNormal1; set => Set(ref Original.KNormal1, value); }
+
+        private bool SetUVBlock(ref NuMtlUVBlock block, int idx, [CallerMemberName] string? propertyName = null)
+        {
+            block.State = idx != -1 ? 1 : 0;
+            block.UVSet = idx;
+            OnPropertyChanged(propertyName);
+            return true;
+        }
+
+        public int Diffuse0UVSet { get => Original.uvBlocks[0].UVSet; set => SetUVBlock(ref Original.uvBlocks[0], value); }
+        public int Diffuse1UVSet { get => Original.uvBlocks[1].UVSet; set => SetUVBlock(ref Original.uvBlocks[1], value); }
+        public int Normal0UVSet { get => Original.uvBlocks[4].UVSet; set => SetUVBlock(ref Original.uvBlocks[4], value); }
+        public int Normal1UVSet { get => Original.uvBlocks[5].UVSet; set => SetUVBlock(ref Original.uvBlocks[5], value); }
+        public int Specular0UVSet { get => Original.uvBlocks[12].UVSet; set => SetUVBlock(ref Original.uvBlocks[12], value); }
         public int LightmapUVSet { get; set; } = -1;
+        public int EnvMapUVSet { get => Original.uvBlocks[16].UVSet; set => SetUVBlock(ref Original.uvBlocks[16], value); }
 
-        public EditorDiffuseBlendMode DiffuseLayerBlend { get; set; }
-        public EditorDiffuseBlendMode Diffuse1LayerBlend { get; set; }
+        [Display("Diffuse 0 Blend")]
+        public EditorDiffuseBlendMode DiffuseLayerBlend { get => (EditorDiffuseBlendMode)Original.baseDiffuseUsage; set => Set(ref Original.baseDiffuseUsage, (uint)value); }
 
-        private bool perLayerScale;
-        public bool PerLayerScale { get => perLayerScale; set { perLayerScale = value; OnPropertyChanged(); } }
-        public float PerLayerUVScale1 { get; set; }
-        public float PerLayerUVScale2 { get; set; }
+        [Display("Diffuse 1 Blend")]
+        public EditorDiffuseBlendMode Diffuse1LayerBlend { get => (EditorDiffuseBlendMode)Original.layerBlendDiffuse; set => Set(ref Original.layerBlendDiffuse, (uint)value); }
+
+        [Display("Normal 0 Blend")]
+        public EditorNormalBlendMode Normal0LayerBlend { get => (EditorNormalBlendMode)Original.layerBlendNormal0; set => Set(ref Original.layerBlendNormal0, (uint)value); }
+
+        [Display("Normal 1 Blend")]
+        public EditorNormalBlendMode Normal1LayerBlend { get => (EditorNormalBlendMode)Original.layerBlendNormal1; set => Set(ref Original.layerBlendNormal1, (uint)value); }
+
+        [Display("Normal Map 0 Format")]
+        public EditorSurfaceMapFormat Normal0Format { get => (EditorSurfaceMapFormat)Original.surfaceMapFormat0; set => Set(ref Original.surfaceMapFormat0, (uint)value); }
+
+        [Display("Normal Map 1 Format")]
+        public EditorSurfaceMapFormat Normal1Format { get => (EditorSurfaceMapFormat)Original.surfaceMapFormat1; set => Set(ref Original.surfaceMapFormat1, (uint)value); }
+
+        [Display("Normal Map 2 Format")]
+        public EditorSurfaceMapFormat Normal2Format { get => (EditorSurfaceMapFormat)Original.surfaceMapFormat2; set => Set(ref Original.surfaceMapFormat2, (uint)value); }
+
+        [Display("Normal Map 3 Format")]
+        public EditorSurfaceMapFormat Normal3Format { get => (EditorSurfaceMapFormat)Original.surfaceMapFormat3; set => Set(ref Original.surfaceMapFormat3, (uint)value); }
+
+        [Display("Num Alpha Layers")]
+        public byte NumAlphaLayers { get => Original.vertexFlags_numAlphaLayers; set => Set(ref Original.vertexFlags_numAlphaLayers, value); }
+
+        [Display("Layer 1 Vertex Albedo")]
+        public byte VertLayer1Albedo { get => Original.vertexFlags_layer1VertAlbedo; set => Set(ref Original.vertexFlags_layer1VertAlbedo, value); }
+
+        [Display("Layer 2 Vertex Albedo")]
+        public byte VertLayer2Albedo { get => Original.vertexFlags_layer2VertAlbedo; set => Set(ref Original.vertexFlags_layer2VertAlbedo, value); }
+
+        [Display("Layer 3 Vertex Albedo")]
+        public byte VertLayer3Albedo { get => Original.vertexFlags_layer3VertAlbedo; set => Set(ref Original.vertexFlags_layer3VertAlbedo, value); }
+
+        [Display("Ignore Vertex Opacity")]
+        public byte IgnoreVertexOpacity { get => Original.vertexFlags_ignoreVertexOpacity; set => Set(ref Original.vertexFlags_ignoreVertexOpacity, value); }
+
+        public bool PerLayerScale { get => GetBoolByte(Original.materialFlags_per_layer_uvscale); set { SetBoolByte(ref Original.materialFlags_per_layer_uvscale, value); } }
+
+        [Display("Layer 0 Scale")]
+        [EnabledIf(nameof(PerLayerScale))]
+        public float PerLayerUVScale1 { get => Original.PerLayerUVScale1; set => Set(ref Original.PerLayerUVScale1, value); }
+
+        [Display("Layer 1 Scale")]
+        [EnabledIf(nameof(PerLayerScale))]
+        public float PerLayerUVScale2 { get => Original.PerLayerUVScale2; set => Set(ref Original.PerLayerUVScale2, value); }
 
         [Display("Shadow Impostor")]
         public bool ShadowImpostor { get => GetBoolByte(Original.ShadowImpostor); set => SetBoolByte(ref Original.ShadowImpostor, value); }
@@ -180,7 +283,8 @@ namespace Diorama.Editor
         [Display("Bitangent Flip")]
         public bool BitangentFlip { get => GetBoolByte(Original.BitangentFlip); set => SetBoolByte(ref Original.BitangentFlip, value); }
 
-        public bool Colour { get; set; }
+        [Display("Colour")] // might be "has vertex colours"
+        public bool Colour { get => GetBoolByte(Original.Colour); set => SetBoolByte(ref Original.Colour, value); }
 
         public int ConvertColour(Vector4 col)
         {

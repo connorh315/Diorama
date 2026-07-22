@@ -1,10 +1,12 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using Diorama.Rendering;
 using Diorama.UI.Controls;
+using Diorama.UI.ViewModels;
 
 namespace Diorama
 {
@@ -37,6 +39,8 @@ namespace Diorama
 
             Inspector = new InspectorPanel(sceneController);
             InspectorHost.Content = Inspector;
+
+            RenderOptionsPanel.DataContext = new RenderOptions();
 
             //Geometry = new InspectorPanel(sceneController);
             //GeometryHost.Content = Geometry;

@@ -5,6 +5,7 @@ using Diorama.Editor;
 using Diorama.Extensions;
 using Diorama.Rendering.Shaders;
 using Diorama.UI.Controls;
+using Diorama.UI.ViewModels;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.GraphicsLibraryFramework;
@@ -76,6 +77,17 @@ namespace Diorama.Rendering
         {
             blendShader.SetMatrix4("projection", camera.Projection);
             blendShader.SetFloat("lightingEnabled", ViewportNewControl.UseCameraLight ? 1 : 0);
+
+            blendShader.SetBool("debug_color0", RenderOptions.Color0);
+            blendShader.SetBool("debug_color0r", RenderOptions.Color0R);
+            blendShader.SetBool("debug_color0g", RenderOptions.Color0G);
+            blendShader.SetBool("debug_color0b", RenderOptions.Color0B);
+            blendShader.SetBool("debug_color0a", RenderOptions.Color0A);
+            blendShader.SetBool("debug_color1", RenderOptions.Color1);
+            blendShader.SetBool("debug_color1r", RenderOptions.Color1R);
+            blendShader.SetBool("debug_color1g", RenderOptions.Color1G);
+            blendShader.SetBool("debug_color1b", RenderOptions.Color1B);
+            blendShader.SetBool("debug_color1a", RenderOptions.Color1A);
 
             List<RenderContext> ctxs = new();
 

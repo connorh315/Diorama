@@ -1172,6 +1172,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
             schema.HandleByte(ref materialFlags_semi_lit);
             schema.HandleByte(ref materialFlags_refractionNearFix);
             schema.HandleByte(ref materialFlags_metallic_specular);
+            if (materialFlags_metallic_specular != 0)
+            {
+                Console.WriteLine();
+            }
             schema.HandleByte(ref materialFlags_dontreceiveshadow);
             schema.HandleByte(ref materialFlags_lateshader);
             schema.HandleByte(ref materialFlags_diffreflmaps);

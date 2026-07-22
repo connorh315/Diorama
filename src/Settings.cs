@@ -15,7 +15,7 @@ namespace Diorama
         public static string DatLocation = @"";
 #endif
 
-        public static bool ShouldWriteROTV = true;
+        public static bool ShouldWriteROTV = false;
 
         public static string BuildDate => Assembly
             .GetExecutingAssembly()

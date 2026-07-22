@@ -27,7 +27,7 @@
           <ResourceInclude Source="UI/Controls/TextureSlotControl.axaml"/>
 
           <ResourceInclude Source="UI/Panels/InspectorPanel.axaml"/>
-          <ResourceInclude Source="UI/Panels/InspectorPanel.axaml"/>
+          <ResourceInclude Source="UI/Panels/RenderOptionsPanel.axaml"/>
         </ResourceDictionary.MergedDictionaries>
       </ResourceDictionary>
     </Application.Resources>

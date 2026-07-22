@@ -72,6 +72,20 @@ uniform vec3 BoundsCenter;
 uniform float BoundsRadius;
 uniform bool RenderSpheres;
 
+uniform bool debug_color0;
+uniform bool debug_color1;
+
+uniform bool debug_color0r;
+uniform bool debug_color0g;
+uniform bool debug_color0b;
+uniform bool debug_color0a;
+
+uniform bool debug_color1r;
+uniform bool debug_color1g;
+uniform bool debug_color1b;
+uniform bool debug_color1a;
+
+
 void main()
 {
     //if (RenderSpheres)
@@ -138,14 +152,18 @@ void main()
     vec4 detail = texture(texture1, diffuse1uv);
 
     vec2 lmUv = GetUVSet(lightmap_uvset) * lm_scale + lm_offset;
-    vec4 ao = texture(texture2, lmUv);
+    float ao = mix(texture(texture2, lmUv).r, outColor.a, 0.3);
     vec4 smoothLm = texture(texture3, lmUv);
 
     vec3 albedo = base.rgb;
     switch (layer2blendmode)
     {
         case 1:
+            //albedo = (base.rgb * outColor.abg) + (detail.rgb * outColor2.abg);
             albedo = mix(base.rgb, detail.rgb, outColor2.b);
+            break;
+        case 2: // ADD
+            albedo = base.rgb + detail.rgb;
             break;
         case 3: // SUBTRACT
             albedo = albedo - detail.rgb;
@@ -154,9 +172,11 @@ void main()
             albedo = albedo * detail.rgb;
             break;
         case 5: // MAXALPHA
-        case 10: // MAXALPHABLEND (Not correct)
-            if (outColor2.b > base.a)
+            if ((detail.a * outColor2.b) > (base.a * outColor2.g))
                 albedo = detail.rgb;
+            break;
+        case 10: // MAXALPHABLEND (Not correct)
+            albedo = mix(base.rgb, detail.rgb, outColor2.b);
             break;
         case 7: // SCALE
             albedo = albedo * detail.rgb;
@@ -181,4 +201,36 @@ void main()
     FragColor = color;
 
     //FragColor = vec4(textureLod(normal0, (GetUVSet(normal0_uvset) * PerLayerUVScale1), 0).agb, 1);
+
+    //FragColor = vec4(outColor.a);
+
+    if (debug_color0)
+        FragColor = outColor.bgra;
+
+    if (debug_color0r)
+        FragColor = vec4(outColor.r);
+
+    if (debug_color0g)
+        FragColor = vec4(outColor.g);
+
+    if (debug_color0b)
+        FragColor = vec4(outColor.b);
+
+    if (debug_color0a)
+        FragColor = vec4(outColor.a);
+
+    if (debug_color1)
+        FragColor = outColor2;
+
+    if (debug_color1r)
+        FragColor = vec4(outColor2.r);
+
+    if (debug_color1g)
+        FragColor = vec4(outColor2.g);
+
+    if (debug_color1b)
+        FragColor = vec4(outColor2.b);
+
+    if (debug_color1a)
+        FragColor = vec4(outColor2.a);
 }

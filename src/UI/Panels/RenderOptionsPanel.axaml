@@ -1,0 +1,42 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:Diorama">
+
+  <!--
+    Additional resources 
+    Using Control Themes:
+         https://docs.avaloniaui.net/docs/basics/user-interface/styling/control-themes
+    Using Theme Variants:
+         https://docs.avaloniaui.net/docs/guides/styles-and-resources/how-to-use-theme-variants
+  -->
+  
+  <Design.PreviewWith>
+    <StackPanel Width="400" Spacing="10">      
+        <StackPanel Background="{DynamicResource SystemRegionBrush}">
+          <controls:RenderOptionsPanel />
+        </StackPanel>
+    </StackPanel>
+  </Design.PreviewWith>
+ 
+  <ControlTheme x:Key="{x:Type controls:RenderOptionsPanel}" TargetType="controls:RenderOptionsPanel">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <StackPanel>
+          <controls:PropertyEditor Property="Color0" />
+          <controls:PropertyEditor Property="Color0R" />
+          <controls:PropertyEditor Property="Color0G" />
+          <controls:PropertyEditor Property="Color0B" />
+          <controls:PropertyEditor Property="Color0A" />
+
+
+
+          <controls:PropertyEditor Property="Color1" />
+          <controls:PropertyEditor Property="Color1R" />
+          <controls:PropertyEditor Property="Color1G" />
+          <controls:PropertyEditor Property="Color1B" />
+          <controls:PropertyEditor Property="Color1A" />
+        </StackPanel>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+</ResourceDictionary>

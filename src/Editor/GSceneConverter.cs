@@ -263,7 +263,6 @@ namespace Diorama.Editor
                 var extents = display.BoundsExtentsAndRadius[i];
                 sceneObject.BoundsExtentsAndRadius = new Vector4(extents.X, extents.Y, extents.Z, extents.W);
 
-
                 if (instance.ClipObjectIndex > -1)
                 {
                     sceneObject.ClipObject = allClipObjects[instance.ClipObjectIndex];
@@ -299,6 +298,10 @@ namespace Diorama.Editor
                     var sceneObject = editorScene.Objects[specialObject.InstanceIndex];
                     sceneObject.Name = specialObject.Name;
                     sceneObject.SpecialObject = specialObject;
+                    for (int j = 0; j < 16; j++)
+                    {
+                        sceneObject.SpecialObject.Mtx.mtx[j] = 0;
+                    }
                 }
             }
 
@@ -312,16 +315,22 @@ namespace Diorama.Editor
                 mat.Normal0 = ResolveTexture(textures, mat.Original.Normal0Index);
                 mat.Normal1 = ResolveTexture(textures, mat.Original.Normal1Index);
 
-                mat.DiffuseLayerBlend = (EditorDiffuseBlendMode)(mat.Original.baseDiffuseUsage);
-                mat.Diffuse1LayerBlend = (EditorDiffuseBlendMode)mat.Original.layerBlendDiffuse;
+                mat.Specular0 = ResolveTexture(textures, mat.Original.Specular0Index);
 
-                mat.Diffuse0UVSet = mat.Original.uvBlocks[0].UVSet;
-                mat.Diffuse1UVSet = mat.Original.uvBlocks[1].UVSet;
-                mat.Normal0UVSet = mat.Original.uvBlocks[4].UVSet;
-                mat.Normal1UVSet = mat.Original.uvBlocks[5].UVSet;
+                mat.EnvMap = ResolveTexture(textures, mat.Original.EnvMap);
 
-                mat.PerLayerUVScale1 = mat.Original.PerLayerUVScale1;
-                mat.PerLayerUVScale2 = mat.Original.PerLayerUVScale2;
+                //mat.DiffuseLayerBlend = (EditorDiffuseBlendMode)(mat.Original.baseDiffuseUsage);
+                //mat.Diffuse1LayerBlend = (EditorDiffuseBlendMode)mat.Original.layerBlendDiffuse;
+
+                //mat.Diffuse0UVSet = mat.Original.uvBlocks[0].UVSet;
+                //mat.Diffuse1UVSet = mat.Original.uvBlocks[1].UVSet;
+                //mat.Normal0UVSet = mat.Original.uvBlocks[4].UVSet;
+                //mat.Normal1UVSet = mat.Original.uvBlocks[5].UVSet;
+                //mat.Specular0UVSet = mat.Original.uvBlocks[12].UVSet;
+                //mat.EnvMapUVSet = mat.Original.uvBlocks[16].UVSet;
+
+                //mat.PerLayerUVScale1 = mat.Original.PerLayerUVScale1;
+                //mat.PerLayerUVScale2 = mat.Original.PerLayerUVScale2;
 
                 mat.LightmapUVSet = mat.Original.LightmapUVSet;
 
@@ -346,7 +355,7 @@ namespace Diorama.Editor
 
                 //mat.ShadowImpostor = ConvertToBool(mat.Original.ShadowImpostor);
 
-                mat.PerLayerScale = ConvertToBool(mat.Original.materialFlags_per_layer_uvscale);
+                //mat.PerLayerScale = ConvertToBool(mat.Original.materialFlags_per_layer_uvscale);
 
                 mat.Colour = ConvertToBool(mat.Original.Colour);
 
@@ -438,6 +447,8 @@ namespace Diorama.Editor
                 mat.Original.Diffuse1Index = scene.Textures.IndexOf(mat.Diffuse1);
                 mat.Original.Normal0Index = scene.Textures.IndexOf(mat.Normal0);
                 mat.Original.Normal1Index = scene.Textures.IndexOf(mat.Normal1);
+
+                mat.Original.Specular0Index = scene.Textures.IndexOf(mat.Specular0);
 
                 mat.Original.OldTid = mat.Original.Diffuse0Index;
             }

@@ -1,4 +1,5 @@
 ﻿using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Diorama
 {
-    public class LabelledInput : TemplatedControl, INotifyPropertyChanged
+    public class LabelledInput : ContentControl, INotifyPropertyChanged
     {
         /// <summary>
         /// InputLabel StyledProperty definition

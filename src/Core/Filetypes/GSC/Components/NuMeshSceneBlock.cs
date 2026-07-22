@@ -261,6 +261,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 file.WriteUInt(mesh.VbInstBits, true);
 
                 NuSerializer.WriteLegacyVarArray(file, mesh.SkinMtxMap);
+                if (mesh.SkinMtxMap != null && mesh.SkinMtxMap.Count != 0)
+                {
+                    ctx.AddReference(mesh.SkinMtxMap);
+                }
 
                 if (mesh.Shape != null)
                 {

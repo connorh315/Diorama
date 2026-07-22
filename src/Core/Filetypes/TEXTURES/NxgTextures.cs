@@ -40,15 +40,32 @@ namespace Diorama.Core.Filetypes.TEXTURES
 
         public static NxgTextures Read(string filePath)
         {
-            SchemaSerializer schema = new SchemaSerializer(new RawFile(filePath), false);
+            if (!System.IO.Path.Exists(filePath))
+            {
+                return null;
+            }
 
-            NxgTextures textures = new NxgTextures();
+            try
+            {
+                using (RawFile nxgFile = new RawFile(filePath))
+                {
+                    SchemaSerializer schema = new SchemaSerializer(nxgFile, false);
 
-            textures.Path = filePath;
+                    NxgTextures textures = new NxgTextures();
 
-            textures.Handle(schema, 0);
+                    textures.Path = filePath;
 
-            return textures;
+                    textures.Handle(schema, 0);
+
+                    return textures;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Failed to open nxg_textures file, will use blank texture sheet");
+
+                return null;
+            }
         }
 
         public static NxgTextures Read(RawFile file)

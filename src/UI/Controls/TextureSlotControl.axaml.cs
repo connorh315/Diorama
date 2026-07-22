@@ -1,7 +1,10 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.VisualTree;
 using Diorama.Rendering;
+using Diorama.UI.Panels;
+using System.Collections.ObjectModel;
 
 namespace Diorama;
 
@@ -9,7 +12,7 @@ public class TextureSlotControl : LabelledInput
 {
     public static readonly StyledProperty<RenderTexture?> TextureProperty =
         AvaloniaProperty.Register<TextureSlotControl, RenderTexture?>(
-            nameof(Texture));
+            nameof(Texture), defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);
 
     public RenderTexture? Texture
     {
@@ -19,7 +22,7 @@ public class TextureSlotControl : LabelledInput
 
     public static readonly StyledProperty<IEnumerable<RenderTexture>> TexturesProperty =
         AvaloniaProperty.Register<TextureSlotControl, IEnumerable<RenderTexture>>(
-            nameof(Textures));
+            nameof(Textures), defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);
 
     public IEnumerable<RenderTexture> Textures
     {
@@ -39,7 +42,7 @@ public bool IsPickerOpen
 
     public static readonly StyledProperty<float?> ScaleProperty =
         AvaloniaProperty.Register<TextureSlotControl, float?>(
-            nameof(Scale));
+            nameof(Scale), defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);
 
     public float? Scale
     {
@@ -64,7 +67,7 @@ public bool IsPickerOpen
 
     public static readonly StyledProperty<int?> SelectedSetProperty =
         AvaloniaProperty.Register<TextureSlotControl, int?>(
-            nameof(SelectedSet));
+            nameof(SelectedSet), defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);
 
     public int? SelectedSet
     {
@@ -73,7 +76,7 @@ public bool IsPickerOpen
     }
 
     public static readonly StyledProperty<object?> LayerBlendProperty =
-        AvaloniaProperty.Register<TextureSlotControl, object?>(nameof(LayerBlend));
+        AvaloniaProperty.Register<TextureSlotControl, object?>(nameof(LayerBlend), defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);
 
     public object? LayerBlend
     {
@@ -99,6 +102,10 @@ public bool IsPickerOpen
 
         if (mainPreview != null)
             mainPreview.OnClick += OnTextureButtonClick;
+
+        var panel = this.FindAncestorOfType<ITexturesPanel>();
+        if (panel != null)
+            Textures = panel.Textures;
     }
 
     private void OnTextureButtonClick()

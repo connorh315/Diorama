@@ -33,6 +33,7 @@
         <controls:PropertyEditor Property="Path" />
         <controls:PropertyEditor Property="Name" />
         <controls:PropertyEditor Property="NutType" />
+        <controls:PropertyEditor Property="FixupType" />
       </StackPanel>
     </Grid>
   </Grid>

@@ -11,38 +11,84 @@
       <controls:PropertyEditor Property="Name" />
       <controls:ColorInput InputLabel="Material Primary Colour" Color="{Binding Colour1, Mode=TwoWay}" />
       <Expander Header="Textures" HorizontalAlignment="Stretch">
-        <StackPanel>
+        <StackPanel Spacing="5">
+          <controls:PropertyEditor Property="NumAlphaLayers" />
+          <controls:PropertyEditor Property="VertLayer1Albedo" />
+          <controls:PropertyEditor Property="VertLayer2Albedo" />
+          <controls:PropertyEditor Property="VertLayer3Albedo" />
+          <controls:PropertyEditor Property="IgnoreVertexOpacity" />
           <controls:CheckboxInput InputLabel="Per Layer UV Scale" Value="{Binding PerLayerScale, Mode=TwoWay}"/>
-          <controls:TextureSlotControl 
-            InputLabel="Diffuse 0" 
-            Texture="{Binding Diffuse0, Mode=TwoWay}"
-            SelectedSet="{Binding Diffuse0UVSet, Mode=TwoWay}"
-            Scale="{Binding PerLayerUVScale1, Mode=TwoWay}"
-            LayerBlend="{Binding DiffuseLayerBlend, Mode=TwoWay}"
-            Textures="{Binding Textures, RelativeSource={RelativeSource AncestorType=controls:MaterialPanel}}"/>
+          <controls:TextureSlotControl
+            InputLabel="Diffuse 0"
+            Texture="{Binding Diffuse0}"
+            SelectedSet="{Binding Diffuse0UVSet}">
+            
+            <StackPanel Spacing="5">
+              <controls:PropertyEditor Property="PerLayerUVScale1" />
+              <controls:PropertyEditor Property="DiffuseLayerBlend" />
+            </StackPanel>
+          </controls:TextureSlotControl>
           <controls:TextureSlotControl
             InputLabel="Diffuse 1"
-            Texture="{Binding Diffuse1, Mode=TwoWay}"
-            SelectedSet="{Binding Diffuse1UVSet, Mode=TwoWay}"
-            Scale="{Binding PerLayerUVScale2, Mode=TwoWay}"
-            LayerBlend="{Binding Diffuse1LayerBlend, Mode=TwoWay}"
-            Textures="{Binding Textures, RelativeSource={RelativeSource AncestorType=controls:MaterialPanel}}"/>
+            Texture="{Binding Diffuse1}"
+            SelectedSet="{Binding Diffuse1UVSet}">
+
+            <StackPanel Spacing="5">
+              <controls:PropertyEditor Property="PerLayerUVScale2" />
+              <controls:PropertyEditor Property="Diffuse1LayerBlend" />
+            </StackPanel>
+          </controls:TextureSlotControl>
           <controls:TextureSlotControl
             InputLabel="Normal 0"
-            Texture="{Binding Normal0, Mode=TwoWay}"
-            SelectedSet="{Binding Normal0UVSet, Mode=TwoWay}"
-            Textures="{Binding Textures, RelativeSource={RelativeSource AncestorType=controls:MaterialPanel}}"/>
+            Texture="{Binding Normal0}"
+            SelectedSet="{Binding Normal0UVSet}">
+
+            <StackPanel Spacing="5">
+              <controls:PropertyEditor Property="Normal0LayerBlend" />
+              <controls:PropertyEditor Property="KNormal0" />
+              <controls:PropertyEditor Property="Normal0Format" />
+            </StackPanel>
+          </controls:TextureSlotControl>
           <controls:TextureSlotControl
             InputLabel="Normal 1"
-            Texture="{Binding Normal1, Mode=TwoWay}"
-            SelectedSet="{Binding Normal1UVSet, Mode=TwoWay}"
-            Textures="{Binding Textures, RelativeSource={RelativeSource AncestorType=controls:MaterialPanel}}"/>
+            Texture="{Binding Normal1}"
+            SelectedSet="{Binding Normal1UVSet}">
+
+            <StackPanel Spacing="5">
+              <controls:PropertyEditor Property="Normal1LayerBlend" />
+              <controls:PropertyEditor Property="KNormal1" />
+              <controls:PropertyEditor Property="Normal1Format" />
+            </StackPanel>
+          </controls:TextureSlotControl>
+          <controls:TextureSlotControl
+            InputLabel="Specular 0"
+            Texture="{Binding Specular0}"
+            SelectedSet="{Binding Specular0UVSet}">
+
+            <StackPanel Spacing="5">
+            </StackPanel>
+          </controls:TextureSlotControl>
+          <controls:TextureSlotControl
+            InputLabel="Environment Map"
+            Texture="{Binding EnvMap}"
+            SelectedSet="{Binding Specular0UVSet}">
+
+            <StackPanel Spacing="5">
+            </StackPanel>
+          </controls:TextureSlotControl>
         </StackPanel>
       </Expander>
-      
+
+      <controls:PropertyEditor Property="Colour" />
+
+
       <controls:PropertyEditor Property="Glow" />
       <controls:PropertyEditor Property="KGlow" />
-      
+
+      <controls:PropertyEditor Property="Roughness" />
+      <controls:PropertyEditor Property="BaseRoughness" />
+      <controls:PropertyEditor Property="RoughnessMod" />
+
       <controls:TextInput InputLabel="Occlusion" Value="{Binding Occlusion, Mode=TwoWay}"/>
       <controls:PropertyEditor Property="Refraction" />
       <controls:PropertyEditor Property="RefractiveIndex" />
@@ -56,6 +102,7 @@
       <controls:PropertyEditor Property="BakedLighting" />
       <controls:PropertyEditor Property="UVAnimation" />
       <controls:PropertyEditor Property="Debug" />
+      <controls:PropertyEditor Property="Dump" />
     </StackPanel>
   </ScrollViewer>
 </UserControl>
