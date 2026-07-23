@@ -1,4 +1,5 @@
-﻿using Avalonia;
+﻿global using Common;
+using Avalonia;
 using BrickVault.Types;
 using Diorama.Core;
 using Diorama.Core.Filetypes.GSC;
@@ -9,6 +10,7 @@ using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.Diagnostics.Metrics;
 using System.Reflection.PortableExecutable;
+
 
 namespace Diorama
 {
@@ -68,7 +70,7 @@ namespace Diorama
                 var dat = DATFile.Open(datPath);
 
 
-                using (var datFile = new BrickVault.RawFile(dat.FileLocation))
+                using (var datFile = new RawFile(dat.FileLocation))
                 {
                     foreach (var entry in dat.Files)
                     {

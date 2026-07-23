@@ -22,8 +22,7 @@ public class ResourceHeaderTests
             DATFile dat = DATFile.Open(datPath);
             if (dat == null) continue;
 
-            var extractionCtx = dat.GetExtractionContext();
-
+            using (DatExtractionContext extractionCtx = dat.GetExtractionContext())
             using (RawFile memoryFile = new RawFile(new MemoryStream()))
             {
                 foreach (var gscFile in dat.GetFilesWithExtension(".GSC"))

@@ -101,6 +101,8 @@ namespace Diorama.Rendering
             startYaw = Camera.Yaw;
             startPitch = Camera.Pitch;
 
+            if (obj == null) return;
+
             Vector3 target = EditorUtils.FlipCoordSpace(obj.Parent.Parent.BoundsCenterAndDistSqrd.Xyz);
 
             float approxSize = obj.Parent.Parent.ApproxSize;

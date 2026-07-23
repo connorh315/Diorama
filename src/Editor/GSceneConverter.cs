@@ -19,16 +19,14 @@ namespace Diorama.Editor
 {
     public static class GSceneConverter
     {
-        public static EditorScene FromGScene(string filePath)
+        public static EditorScene FromGScene(GScene scene, NxgTextures nxg_textures)
         {
-            GScene scene = GScene.Parse(filePath);
-
             EditorScene editorScene = new EditorScene();
             editorScene.OriginalScene = scene;
-            editorScene.Name = Path.GetFileName(filePath);
+            editorScene.Name = Path.GetFileName(scene.Path);
             editorScene.SceneTransform = Matrix4.CreateScale(1f, 1f, -1f); // All meshes are flipped, so this unflips them
 
-            editorScene.Metadata = GetMetadata(scene);            
+            editorScene.Metadata = GetMetadata(scene);
 
             Dictionary<ushort[], RenderIndicesBuffer> convertedIBuffer = new();
             Dictionary<VertexList, RenderVertexBuffer> convertedVBuffer = new();
@@ -79,7 +77,7 @@ namespace Diorama.Editor
 
             try
             {
-                var nxg_textures = NxgTextures.Read(Path.ChangeExtension(filePath, "nxg_textures"));
+                //var nxg_textures = NxgTextures.Read(Path.ChangeExtension(filePath, "nxg_textures"));
                 if (nxg_textures != null)
                 {
                     for (int i = 0; i < nxg_textures.TextureSet.Textures.Length; i++)
@@ -361,6 +359,25 @@ namespace Diorama.Editor
             editorScene.Textures = new ObservableCollection<RenderTexture>(textures);
 
             return editorScene;
+        }
+
+        public static EditorScene FromGScene(string filePath)
+        {
+            GScene scene = GScene.Parse(filePath);
+
+            NxgTextures textures = null;
+            try
+            {
+                textures = NxgTextures.Read(Path.ChangeExtension(filePath, "nxg_textures"));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Could not open / parse nxg_textures file!");
+            }
+
+            EditorScene editorScene = FromGScene(scene, textures);
+
+            return editorScene;   
         }
 
         private static bool ConvertToBool(byte val)

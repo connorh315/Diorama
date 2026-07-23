@@ -185,6 +185,11 @@ namespace Diorama.Rendering
             }
         }
 
+        public void AddScene(GScene gscene, NxgTextures nxg_textures)
+        {
+            Scenes.Add(GSceneConverter.FromGScene(gscene, nxg_textures));
+        }
+
         public void Render()
         {
             //ExecuteGLQueue();

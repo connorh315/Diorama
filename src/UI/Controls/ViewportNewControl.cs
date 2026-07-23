@@ -5,6 +5,8 @@ using Avalonia.Media;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using Diorama.Core.Filetypes.GSC;
+using Diorama.Core.Filetypes.TEXTURES;
 using Diorama.Rendering;
 using Diorama.UI.Platform;
 using OpenTK.Graphics.OpenGL4;
@@ -41,6 +43,20 @@ namespace Diorama.UI.Controls
             renderService.Enqueue(() =>
             {
                 sceneController.AddScene(path);
+            });
+        }
+
+        public void LoadScene(RawFile scene, RawFile textures, string scenePath)
+        {
+            GScene gscene = GScene.Parse(scene);
+
+            gscene.Path = scenePath;
+
+            NxgTextures nxg_textures = NxgTextures.Read(textures);
+
+            renderService.Enqueue(() =>
+            {
+                sceneController.AddScene(gscene, nxg_textures);
             });
         }
 

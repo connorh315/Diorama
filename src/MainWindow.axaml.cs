@@ -4,6 +4,8 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
+using BrickVault;
+using BrickVault.Types;
 using Diorama.Rendering;
 using Diorama.UI.Controls;
 using Diorama.UI.ViewModels;
@@ -140,5 +142,76 @@ namespace Diorama
         private void MenuItem_Click_1(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
         }
+
+#if DEBUG
+        protected override async void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+
+            if (e.Key != Key.O || e.KeyModifiers != KeyModifiers.Alt) return;
+
+            Dictionary<DATFile, List<ArchiveFile>> archives = new();
+
+            string datLocations = Settings.DatLocation;
+            foreach (var dat in Directory.EnumerateFiles(datLocations, "*.DAT", SearchOption.AllDirectories))
+            {
+                var archive = DATFile.Open(dat);
+                if (archive == null) continue;
+                archives.Add(archive, new());
+                foreach (var file in archive.GetFilesWithExtension("gsc"))
+                {
+                    archives[archive].Add(file);
+                }
+            }
+
+            OpenFromArchiveViewModel vm = new OpenFromArchiveViewModel(archives);
+            OpenFromArchive modal = new OpenFromArchive()
+            {
+                DataContext = vm
+            };
+
+            await modal.ShowDialog(this);
+
+            using (RawFile scene = new RawFile(new MemoryStream()))
+            using (RawFile textures = new RawFile(new MemoryStream()))
+            {
+                if (vm.Commited && vm.Selected != null)
+                {
+                    bool hasScene = false;
+                    bool hasTextures = false;
+
+                    foreach ((DATFile archive, List<ArchiveFile> files) in archives)
+                    {
+                        ArchiveFile texturesFile = archive.FileTree.GetFile(Path.ChangeExtension(vm.Selected.Path, "nxg_textures"));
+
+                        using (var ctx = archive.GetExtractionContext())
+                        {
+                            if (!hasTextures && texturesFile != null)
+                            {
+                                archive.ExtractFile(texturesFile, ctx, textures.fileStream);
+
+                                textures.Seek(0, SeekOrigin.Begin);
+
+                                hasTextures = true;
+                            }
+
+                            if (!hasScene && files.Contains(vm.Selected))
+                            {
+                                archive.ExtractFile(vm.Selected, ctx, scene.fileStream);
+
+                                scene.Seek(0, SeekOrigin.Begin);
+
+                                hasScene = true;
+                            }
+
+                            if (hasTextures && hasScene) break;
+                        }
+                    }
+
+                    MainViewport.LoadScene(scene, textures, $"dat://{vm.Selected.Path}");
+                }
+            }
+        }
     }
+#endif
 }

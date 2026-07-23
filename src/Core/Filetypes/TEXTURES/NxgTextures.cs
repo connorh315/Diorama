@@ -17,8 +17,6 @@ namespace Diorama.Core.Filetypes.TEXTURES
         
         private static RawFile GetFromArchive(string path)
         {
-            return null;
-
             if (string.IsNullOrEmpty(Settings.DatLocation)) return null;
 
             string normalised = path.Replace('/', '\\').TrimStart('\\').ToLower();
