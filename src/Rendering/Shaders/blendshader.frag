@@ -159,8 +159,8 @@ void main()
     switch (layer2blendmode)
     {
         case 1:
-            //albedo = (base.rgb * outColor.abg) + (detail.rgb * outColor2.abg);
-            albedo = mix(base.rgb, detail.rgb, outColor2.b);
+            float outAlpha = outColor2.b + outColor2.g * (1.0 - outColor2.b);
+            albedo = (detail.rgb * outColor2.b + base.rgb * outColor2.g * (1.0 - outColor2.b)) / outAlpha;
             break;
         case 2: // ADD
             albedo = base.rgb + detail.rgb;
