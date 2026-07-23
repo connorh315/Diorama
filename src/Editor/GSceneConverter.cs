@@ -19,8 +19,10 @@ namespace Diorama.Editor
 {
     public static class GSceneConverter
     {
-        public static EditorScene FromGScene(GScene scene, NxgTextures nxg_textures)
+        public static EditorScene FromGScene(GScene scene, NxgTextures nxg_textures, out List<string> problems)
         {
+            problems = new List<string>();
+
             EditorScene editorScene = new EditorScene();
             editorScene.OriginalScene = scene;
             editorScene.Name = Path.GetFileName(scene.Path);
@@ -358,10 +360,38 @@ namespace Diorama.Editor
 
             editorScene.Textures = new ObservableCollection<RenderTexture>(textures);
 
+            if (scene.Metadata != null) // A bit of a sanity check
+            {
+                if (scene.Metadata.MetaStrings.Count != textures.Count)
+                {
+                    problems.Add("Caution: Number of textures referenced in scene does not match number of textures in nxg_textures file - This will likely crash in-game!");
+                    problems.Add("    Ensure you save both the scene and the textures file so they stay synchronised!");
+                }
+                else
+                {
+                    var metaStrings = scene.Metadata.MetaStrings;
+                    for (int i = 0; i < metaStrings.Count; i++)
+                    {
+                        if (string.IsNullOrEmpty(textures[i].Name))
+                        {
+                            textures[i].GscName = metaStrings[i].Value;
+                            continue;
+                        }
+
+                        if (metaStrings[i].Value != textures[i].Name)
+                        {
+                            problems.Add("Caution: Texture names referenced in scene do not align with texture names in nxg_textures file - This will likely crash in-game!");
+                            problems.Add("    Ensure you save both the scene and the textures file so they stay synchronised!");
+                            break;
+                        }
+                    }
+                }
+            }
+
             return editorScene;
         }
 
-        public static EditorScene FromGScene(string filePath)
+        public static EditorScene FromGScene(string filePath, out List<string> problems)
         {
             GScene scene = GScene.Parse(filePath);
 
@@ -375,7 +405,7 @@ namespace Diorama.Editor
                 Console.WriteLine("Could not open / parse nxg_textures file!");
             }
 
-            EditorScene editorScene = FromGScene(scene, textures);
+            EditorScene editorScene = FromGScene(scene, textures, out problems);
 
             return editorScene;   
         }
@@ -528,7 +558,7 @@ namespace Diorama.Editor
             List<NuDynamicString> textureStrings = new List<NuDynamicString>();
             foreach (var tex in scene.Textures)
             {
-                textureStrings.Add(new NuDynamicString(tex.Name));
+                textureStrings.Add(new NuDynamicString(tex.GscName));
             }
 
             originalScene.Metadata.MetaStrings = textureStrings;

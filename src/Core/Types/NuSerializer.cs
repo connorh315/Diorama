@@ -41,7 +41,7 @@ namespace Diorama.Core.Types
 
         public static void WriteVectorArray<T>(RawFile file, List<T> items, uint parentVersion = 0)
         {
-            if (Settings.ShouldWriteROTV)
+            if (AppSettings.ShouldWriteROTV)
             {
                 file.WriteString("ROTV");
             }

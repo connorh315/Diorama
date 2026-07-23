@@ -16,6 +16,8 @@ namespace Diorama.Rendering
 
         public string Name { get => Original?.Header?.Name ?? ""; }
 
+        public string GscName;
+
         public bool Deleted { get; private set; } = false;
 
         public void Delete()
@@ -208,6 +210,8 @@ namespace Diorama.Rendering
             }
 
             renderTexture.Reload(texture);
+
+            renderTexture.GscName = texture.Header.Name;
 
             return renderTexture;
         }

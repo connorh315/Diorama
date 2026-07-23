@@ -49,8 +49,6 @@ namespace Diorama.Core.Filetypes.GSC
 
         public uint OldWiiMeshSceneBlockLinkArrayCount;
 
-        public NuMetadataBlock Metadata;
-
         public uint TexHdrSceneBlock;
 
         public byte UseSingleLodAnim;

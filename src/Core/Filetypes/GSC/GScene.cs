@@ -35,6 +35,8 @@ namespace Diorama.Core.Filetypes.GSC
 
         public NuMeshSceneBlock MeshSceneBlock;
 
+        public NuMetadataBlock Metadata;
+
         public byte[] Trailer;
 
         protected abstract void Parse(GSerializationContext ctx);

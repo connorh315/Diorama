@@ -17,11 +17,11 @@ namespace Diorama.Core.Filetypes.TEXTURES
         
         private static RawFile GetFromArchive(string path)
         {
-            if (string.IsNullOrEmpty(Settings.DatLocation)) return null;
+            if (string.IsNullOrEmpty(AppSettings.Settings.DatLocation)) return null;
 
             string normalised = path.Replace('/', '\\').TrimStart('\\').ToLower();
 
-            foreach (var file in Directory.EnumerateFiles(Settings.DatLocation, "*.DAT", SearchOption.AllDirectories))
+            foreach (var file in Directory.EnumerateFiles(AppSettings.Settings.DatLocation, "*.DAT", SearchOption.AllDirectories))
             {
                 var dat = DATFile.Open(file);
                 foreach (var archiveFile in dat.Files)

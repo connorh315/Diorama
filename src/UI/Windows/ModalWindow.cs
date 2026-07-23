@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls;
+using Avalonia.Input;
 using Diorama.UI.Controls;
 using System;
 using System.Collections.Generic;
@@ -27,6 +28,14 @@ namespace Diorama.UI.Windows
             {
                 Win32.RemoveMinMaxButtons(hwnd.Handle);
             }
+        }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+
+            if (e.Key == Key.Escape)
+                Close();
         }
     }
 }

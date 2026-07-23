@@ -213,7 +213,7 @@ namespace Diorama.Core
         {
             if (Writing)
             {
-                if (Settings.ShouldWriteROTV)
+                if (AppSettings.ShouldWriteROTV)
                 {
                     File.WriteString("ROTV");
                 }
@@ -293,7 +293,7 @@ namespace Diorama.Core
         {
             if (Writing)
             {
-                if (Settings.ShouldWriteROTV)
+                if (AppSettings.ShouldWriteROTV)
                 {
                     File.WriteString("ROTV");
                 }

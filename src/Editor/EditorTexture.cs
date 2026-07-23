@@ -25,5 +25,9 @@ namespace Diorama.Editor
 
         [Display("Texture Fixup")]
         public byte FixupType { get => Texture?.Original.Header.FixupType ?? 0; set => Set(ref Texture.Original.Header.FixupType, value); }
+
+        
+        [Display("GSC Name")]
+        public string GscName { get => Texture?.GscName; set => Set(ref Texture.GscName, value); }
     }
 }

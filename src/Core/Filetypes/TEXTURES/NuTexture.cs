@@ -150,9 +150,9 @@ namespace Diorama.Core.Filetypes.TEXTURES
         {
             if (schema.Writing)
             {
-                schema.HandleArray(ref ImageHeader, ImageHeader.Length);
-                if (Header.Name != string.Empty)
+                if (!string.IsNullOrEmpty(Header.Name))
                 {
+                    schema.HandleArray(ref ImageHeader, ImageHeader.Length);
                     schema.HandleArray(ref Data, Data.Length);
                 }
             }

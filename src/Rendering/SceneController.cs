@@ -73,8 +73,22 @@ namespace Diorama.Rendering
             Camera = new Camera(Vector3.Zero);
             CameraController = new CameraController(Camera);
 
-            SaveSceneCommand = new RelayCommand<EditorScene>((EditorScene? sender) =>
+            SaveSceneCommand = new RelayCommand<EditorScene>(async (EditorScene? sender) =>
             {
+                string path = sender.OriginalScene.Path;
+
+                bool hasPath = !string.IsNullOrEmpty(path);
+                string extension = hasPath ? Path.GetExtension(path) : "gsc";
+
+                if (!hasPath || path.StartsWith("dat:"))
+                {
+                    string outputPath = await MainWindow?.OpenSaveMenu("Save GScene", extension);
+
+                    if (outputPath == null) return;
+
+                    sender.OriginalScene.Path = outputPath;
+                }
+
                 GSceneConverter.Write(sender);
             });
 
@@ -112,6 +126,20 @@ namespace Diorama.Rendering
 
             SaveTexturesCommand = new RelayCommand<EditorScene>(async (EditorScene? sender) =>
             {
+                string path = sender.OriginalTextures.Path;
+
+                bool hasPath = !string.IsNullOrEmpty(path);
+                string extension = hasPath ? Path.GetExtension(path) : "nxg_textures";
+
+                if (!hasPath || path.StartsWith("dat:"))
+                {
+                    string outputPath = await MainWindow?.OpenSaveMenu("Save Nxg_Textures", extension);
+
+                    if (outputPath == null) return;
+
+                    sender.OriginalTextures.Path = outputPath;
+                }
+
                 var nxg_textures = sender.OriginalTextures;
 
                 int newTextureCount = sender.Textures.Count;
@@ -176,18 +204,32 @@ namespace Diorama.Rendering
             }
         }
 
+        private void ShowSceneLoadProblems(List<string> problems)
+        {
+            if (problems == null || problems.Count == 0) return;
+
+            Dispatcher.UIThread.Post(async () =>
+            {
+                MessageWindow problemModal = new MessageWindow("Problems when opening file!", (IEnumerable<string>)problems);
+
+                await problemModal.ShowDialog(MainWindow);
+            });
+        }
+
         public void AddScene(string path)
         {
             string ext = Path.GetExtension(path).ToLower();
             if (ext == ".gsc" || ext == ".ghg")
             {
-                Scenes.Add(GSceneConverter.FromGScene(path));
+                Scenes.Add(GSceneConverter.FromGScene(path, out List<string> problems));
+                ShowSceneLoadProblems(problems);
             }
         }
 
         public void AddScene(GScene gscene, NxgTextures nxg_textures)
         {
-            Scenes.Add(GSceneConverter.FromGScene(gscene, nxg_textures));
+            Scenes.Add(GSceneConverter.FromGScene(gscene, nxg_textures, out List<string> problems));
+            ShowSceneLoadProblems(problems);
         }
 
         public void Render()

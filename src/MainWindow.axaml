@@ -24,11 +24,13 @@
       <Menu Grid.Column="0" BorderBrush="#ff404040" BorderThickness="0,0,0,1">
         <MenuItem Header="_File">
           <MenuItem Header="Open" Click="OpenFile_Click"/>
+          <MenuItem Header="Open From Archives" Click="OpenArchiveFile_Click"/>
         </MenuItem>
         <MenuItem Header="Toggle Lightmaps" Click="LightmapItem_Click" />
         <MenuItem Header="Toggle Camera Lighting" Click="CameraLightItem_Click" />
         <MenuItem Header="Toggle Shadow Impostors" Click="ShadowItem_Click" />
         <MenuItem Header="Toggle Frustum Culling" Click="CullingItem_Click" />
+        <MenuItem Header="Settings" Click="Settings_Click" />
       </Menu>
 
       <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">

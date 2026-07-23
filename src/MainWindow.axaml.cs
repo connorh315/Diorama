@@ -47,7 +47,7 @@ namespace Diorama
             //Geometry = new InspectorPanel(sceneController);
             //GeometryHost.Content = Geometry;
 
-            Title = $"Diorama - {Settings.BuildVersion} [{Settings.BuildType}] ({Settings.BuildDate})";
+            Title = $"Diorama - {AppSettings.BuildVersion} [{AppSettings.BuildType}] ({AppSettings.BuildDate})";
 
             string[] args = Environment.GetCommandLineArgs();
             if (args.Length > 1)
@@ -107,6 +107,13 @@ namespace Diorama
             ViewportNewControl.UseFrustumCulling = !ViewportNewControl.UseFrustumCulling;
         }
 
+        private async void Settings_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            SettingsWindow settings = new SettingsWindow();
+
+            await settings.ShowDialog(this);
+        }
+
         private void OpenFile_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             OpenFileMenu();
@@ -135,30 +142,29 @@ namespace Diorama
             }
         }
 
-        private void SaveFile_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private void OpenArchiveFile_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
+            OpenArchiveFile();
         }
 
-        private void MenuItem_Click_1(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void OpenArchiveFile()
         {
-        }
-
-#if DEBUG
-        protected override async void OnKeyDown(KeyEventArgs e)
-        {
-            base.OnKeyDown(e);
-
-            if (e.Key != Key.O || e.KeyModifiers != KeyModifiers.Alt) return;
-
             Dictionary<DATFile, List<ArchiveFile>> archives = new();
+            string datLocations = AppSettings.Settings.DatLocation;
 
-            string datLocations = Settings.DatLocation;
+            if (string.IsNullOrEmpty(datLocations) || !Directory.Exists(datLocations)) return;
+
             foreach (var dat in Directory.EnumerateFiles(datLocations, "*.DAT", SearchOption.AllDirectories))
             {
                 var archive = DATFile.Open(dat);
                 if (archive == null) continue;
                 archives.Add(archive, new());
                 foreach (var file in archive.GetFilesWithExtension("gsc"))
+                {
+                    archives[archive].Add(file);
+                }
+
+                foreach (var file in archive.GetFilesWithExtension("ghg"))
                 {
                     archives[archive].Add(file);
                 }
@@ -186,8 +192,12 @@ namespace Diorama
 
                         using (var ctx = archive.GetExtractionContext())
                         {
+                            ctx.Parallelise = true;
+
                             if (!hasTextures && texturesFile != null)
                             {
+                                ((MemoryStream)textures.fileStream).Capacity = (int)texturesFile.DecompressedSize;
+
                                 archive.ExtractFile(texturesFile, ctx, textures.fileStream);
 
                                 textures.Seek(0, SeekOrigin.Begin);
@@ -212,6 +222,43 @@ namespace Diorama
                 }
             }
         }
+
+        public async Task<string?> OpenSaveMenu(string title, string extension)
+        {
+            if (StorageProvider == null)
+                throw new Exception("Unable to access filesystem");
+
+            var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+            {
+                Title = title,
+                DefaultExtension = extension,
+                FileTypeChoices = [new FilePickerFileType(extension) { Patterns = [$"*.{extension.TrimStart('.')}"] }]
+            });
+
+            return file?.TryGetLocalPath();
+        }
+
+        private void SaveFile_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+        }
+
+        private void MenuItem_Click_1(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+        }
+
+        protected override async void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+
+            if (e.Key == Key.O && e.KeyModifiers == KeyModifiers.Alt)
+            {
+                OpenArchiveFile();
+            }
+            else if (e.Key == Key.O && e.KeyModifiers == KeyModifiers.Control)
+            {
+                OpenFileMenu();
+            }
+
+        }
     }
-#endif
 }
