@@ -71,6 +71,17 @@ namespace Diorama.Editor.ShaderSystem
         {
             string datLocation = AppSettings.Settings.DatLocation;
 
+            if (string.IsNullOrEmpty(datLocation))
+            {
+                progress?.Report(new FingerprintCacheProgress
+                {
+                    Current = 0,
+                    Status = "Failed - DAT archive location not set!"
+                });
+
+                return;
+            }
+
             ShaderFingerprintCache fCache = new ShaderFingerprintCache();
 
             fCache.ArchivesLocation = datLocation;
@@ -86,6 +97,12 @@ namespace Diorama.Editor.ShaderSystem
                 foreach (var datPath in Directory.EnumerateFiles(datLocation, "*.DAT", SearchOption.AllDirectories))
                 {
                     DATFile dat = DATFile.Open(datPath);
+
+                    if (dat == null)
+                    {
+                        Console.WriteLine($"Skipping {datPath} - Invalid DAT archive!");
+                        continue;
+                    }
 
                     using (var ctx = dat.GetExtractionContext())
                     {

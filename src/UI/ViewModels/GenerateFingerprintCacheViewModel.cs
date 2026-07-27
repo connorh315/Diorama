@@ -60,17 +60,26 @@ namespace Diorama.UI.ViewModels
                 Status = p.Status;
             });
 
-            //try
-            //{
+#if DEBUG
+            try
+            {
                 await EditorShaderSystem.CreateAsync(progress, cts.Token);
+            }
+            catch (OperationCanceledException _)
+            {
 
-                Status = "Completed!";
-            //}
-            //catch (Exception e)
-            //{
-            //    Status = $"Failed: {e.Message}";
-                
-            //}
+            }
+#else
+            try
+            {
+                await EditorShaderSystem.CreateAsync(progress, cts.Token);
+            }
+            catch (Exception e)
+            {
+                Status = $"Failed: {e.Message}";
+
+            }
+#endif
         }
     }
 }
