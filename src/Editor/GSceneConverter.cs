@@ -639,6 +639,10 @@ namespace Diorama.Editor
                                     validSet = false;
                                     break;
                                 }
+                                else
+                                {
+                                    Console.WriteLine($"Valid shader on {i}");
+                                }
                             }
 
                             if (emptySet)
@@ -671,8 +675,12 @@ namespace Diorama.Editor
 
                     Dictionary<string, HashSet<uint>> shadersToLocate = new();
 
+                    HashSet<NuMaterialData> handledMaterials = new();
+
                     foreach (var eMat in scene.Materials)
                     {
+                        if (!handledMaterials.Add(eMat.Original)) continue;
+
                         if (eMat.FingerprintChanged)
                         {
                             var fingerprint = eMat.Fingerprint;

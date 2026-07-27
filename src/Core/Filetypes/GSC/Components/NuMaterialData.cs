@@ -554,6 +554,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
             }
 
             int hashCount = 0xf;
+
             if (Version <= 0xce)
             {
                 hashCount = 0x14;
@@ -562,88 +563,55 @@ namespace Diorama.Core.Filetypes.GSC.Components
             {
                 hashCount = 0x15;
             }
-            if (Version > 0x111)
-            {
-                hashCount = 0xc;
-            }
 
-            schema.HandleArray(ref dummyHashArray_0, hashCount);
-            schema.HandleArray(ref dummyHashArray_1, hashCount);
-            schema.HandleArray(ref dummyHashArray_2, hashCount);
-            schema.HandleArray(ref dummyHashArray_3, hashCount);
-            schema.HandleArray(ref dummyHashArray_4, hashCount);
-            schema.HandleArray(ref dummyHashArray_5, hashCount);
-            schema.HandleArray(ref dummyHashArray_6, hashCount);
-            schema.HandleArray(ref dummyHashArray_7, hashCount);
-            schema.HandleArray(ref dummyHashArray_8, hashCount);
-            schema.HandleArray(ref dummyHashArray_9, hashCount);
-            schema.HandleArray(ref dummyHashArray_10, hashCount);
-            schema.HandleArray(ref orbisHashArray, hashCount);
-            if (Version > 0x97)
+            if (Version < 0x112)
             {
-                schema.HandleArray(ref dummyHashArray_12, hashCount);
-                if (Version > 0xb4)
+                schema.HandleArray(ref dummyHashArray_0, hashCount);
+                schema.HandleArray(ref dummyHashArray_1, hashCount);
+                schema.HandleArray(ref dummyHashArray_2, hashCount);
+                schema.HandleArray(ref dummyHashArray_3, hashCount);
+                schema.HandleArray(ref dummyHashArray_4, hashCount);
+                schema.HandleArray(ref dummyHashArray_5, hashCount);
+                schema.HandleArray(ref dummyHashArray_6, hashCount);
+                schema.HandleArray(ref dummyHashArray_7, hashCount);
+                schema.HandleArray(ref dummyHashArray_8, hashCount);
+                schema.HandleArray(ref dummyHashArray_9, hashCount);
+                schema.HandleArray(ref dummyHashArray_10, hashCount);
+                schema.HandleArray(ref orbisHashArray, hashCount);
+                if (Version > 0x97)
                 {
-                    schema.HandleArray(ref dummyHashArray_13, hashCount);
+                    schema.HandleArray(ref dummyHashArray_12, hashCount);
+                    if (Version > 0xb4)
+                    {
+                        schema.HandleArray(ref dummyHashArray_13, hashCount);
+                    }
+                }
+
+                if (Version > 0xfd && Version < 0x102)
+                {
+                    schema.HandleArray(ref dummyHashArray_14, hashCount);
                 }
             }
-
-            if (Version == 0xfe)
+            else
             {
-                schema.HandleArray(ref dummyHashArray_14, hashCount);
+                hashCount = 0xc;
+                int variants = 8;
+
+                for (int i = 0; i < variants; i++)
+                {
+                    HandleShaderVariantArray(schema, ref dummyHashArray_0, i, hashCount, variants);
+                    HandleShaderVariantArray(schema, ref dummyHashArray_1, i, hashCount, variants);
+                    HandleShaderVariantArray(schema, ref dummyHashArray_2, i, hashCount, variants);
+                    HandleShaderVariantArray(schema, ref dummyHashArray_3, i, hashCount, variants);
+                    HandleShaderVariantArray(schema, ref dummyHashArray_4, i, hashCount, variants);
+                    HandleShaderVariantArray(schema, ref dummyHashArray_5, i, hashCount, variants);
+
+                    if (Version > 0x119)
+                    {
+                        HandleShaderVariantArray(schema, ref dummyHashArray_6, i, hashCount, variants);
+                    }
+                }
             }
-            
-            if (Version > 0x119)
-            {
-                schema.HandleArray(ref DummyHashArray2, 0x7e0);
-            }
-            else if (Version > 0x112)
-            {
-                schema.HandleArray(ref DummyHashArray2, 0x630);
-
-            }
-
-            //if (Version > 0xce)
-            //{
-            //    schema.HandleArray(ref DummyHashArray, 0x494);
-            //}
-            //else // 0xc6 and 0xca and 0xce definitely
-            //{
-            //    schema.HandleArray(ref DummyHashArray, 0x45c);
-            //}
-
-            //if (Version > 0x119)
-            //{
-            //    schema.HandleArray(ref DummyHashArray2, 0x5ee);
-            //}
-            //else if (Version > 0x112) // 0x113 and 0x118 and 0x119
-            //{
-            //    schema.HandleArray(ref DummyHashArray2, 0x46e);
-            //}
-            //else if (Version == 0xfe)
-            //{
-            //    schema.HandleArray(ref DummyHashArray2, 0x54);
-            //}
-
-            //if (MaterialName.Contains("EmCitGlow1"))
-            //{
-            //    using (RawFile shaderFile = new RawFile(@"A:\LEVELS\STORY\1WIZARDOFOZ\1WIZARDOFOZA\1WIZARDOFOZA_DX11.PS4_SHADERS"))
-            //    {
-            //        NxgShaders shaderCache = NxgShaders.Read(shaderFile);
-
-            //        foreach (var shader in shaderCache.ShaderCache)
-            //        {
-            //            foreach (var hash in orbisHashArray)
-            //            {
-            //                if (hash == (uint)shader.ConfigHash)
-            //                {
-            //                    Console.WriteLine("Shader found!");
-            //                }
-            //            }
-            //        }
-            //    }
-            //}
-
 
             if (schema.Writing)
             {
@@ -671,6 +639,26 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             HandleMtlAttrib(schema);
             HandleMtlExtra(schema);
+        }
+
+        public void HandleShaderVariantArray(SchemaSerializer schema, ref uint[] array, int variantId, int hashesInVariant, int variantCount)
+        {
+            var file = schema.File;
+            int offset = variantId * hashesInVariant;
+
+            if (schema.Writing)
+            {
+                for (int i = 0; i < hashesInVariant; i++)
+                    file.WriteUInt(array[offset + i], true);
+            }
+            else
+            {
+                if (variantId == 0)
+                    array = new uint[hashesInVariant * variantCount];
+
+                for (int i = 0; i < hashesInVariant; i++)
+                    array[offset + i] = file.ReadUInt(true);
+            }
         }
 
         public void Parse(RawFile file)

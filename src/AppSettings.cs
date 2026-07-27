@@ -23,7 +23,7 @@ namespace Diorama
         [DisplayLabel("DAT Archives Location")]
         public string DatLocation { get => datLocation; set => Set(ref datLocation, value); }
 
-        public static bool ShouldWriteROTV = true;
+        public static bool ShouldWriteROTV = false;
 
         public static string BuildDate => Assembly
             .GetExecutingAssembly()

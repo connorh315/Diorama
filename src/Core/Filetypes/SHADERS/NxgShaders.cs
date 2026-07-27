@@ -43,7 +43,7 @@ namespace Diorama.Core.Filetypes.SHADERS
                 schema.Expect("HSCB");
                 schema.HandleInt(ref ShaderCacheVersion);
 
-                schema.HandleSchemaVarArray(ref ShaderCache);
+                schema.HandleSchemaVarArray(ref ShaderCache, (uint)ShaderCacheVersion);
 
                 schema.HandleInt(ref TimeToWrite);
             }

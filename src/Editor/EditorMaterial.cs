@@ -397,6 +397,9 @@ namespace Diorama.Editor
         {
             uint[] shaderSet = GetShaderSet(set);
 
+            if (shaderSet == null)
+                yield break;
+
             for (int i = 0; i < shaderSet.Length; i++)
             {
                 if (shaderSet[i] != 0)
