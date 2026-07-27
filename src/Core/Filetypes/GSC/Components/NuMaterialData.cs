@@ -1,4 +1,5 @@
-﻿using HarfBuzzSharp;
+﻿using Diorama.Core.Filetypes.SHADERS;
+using HarfBuzzSharp;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -415,97 +416,30 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
         public VertexList VertexLayout;
 
-        //public static NuMaterialData[] Read(RawFile file)
-        //{
-        //    Debug.Assert(file.ReadString(4) == "LTMU");
-        //    uint version = file.ReadUInt(true);
-        //    uint count = file.ReadUInt(true);
-        //    NuMaterialData[] materials = new NuMaterialData[count];
-
-
-        //    if (version > 0x100) // Just a guess
-        //    {
-        //        int correction = file.ReadInt(true);
-        //        Debug.Assert(correction == 1);
-        //    }
-
-        //    for (int i = 0; i < count; i++)
-        //    {
-        //        NuMaterialData materialData;
-        //        switch (version)
-        //        {
-        //            case 0xd5:
-        //            case 0xd6:
-        //            case 0xd7:
-        //            case 0xd8:
-        //            case 0xd9:
-        //            case 0xda:
-        //            case 0xdb:
-        //            case 0xdc:
-        //            case 0xdd:
-        //            case 0xde:
-        //            case 0xdf:
-        //            case 0xe0:
-        //            case 0xe1:
-        //            case 0xe2:
-        //            case 0xe4:
-        //            case 0xe5:
-        //            case 0xe8:
-        //            case 0xea:
-        //            case 0xeb:
-        //            case 0xec:
-        //            case 0xef:
-        //            case 0xf0:
-        //            case 0xf1:
-        //            case 0xf2:
-        //            case 268:
-        //                materialData = new NuMaterialData_E0();
-        //                break;
-        //            default:
-        //                throw new Exception($"Unsupported UMTL Version: {version}");
-        //        }
-
-        //        materialData.Version = version;
-        //        materialData.Parse(file);
-
-        //        materials[i] = materialData;
-        //    }
-
-        //    return materials;
-        //}
-
-        public abstract void Handle(SchemaSerializer schema, uint parentVersion);
-    }
-
-    public class NuMaterialData_E0 : NuMaterialData
-    {
-        public NuMaterialDataBlock Parent;
-
-        
         public uint Flags;
 
         public byte[] DummyHashArray;
         public byte[] DummyHashArray2;
 
-        
-        
+
+
         public uint RimLightBlendMode;
-        private uint shaderFxCodeHash;
-        private byte materialFlags_shaderGraphMtl;
-        private byte materialFlags_IsScratchedLego;
-        private byte dummy_isMayaShader;
-        private byte output_tangentRT;
-        private byte vertexFlags_gameFiveBitPacking;
-        private byte vertexFlags_usesInstancing;
-        private byte output_emissionRT;
-        private byte materialFlags_depthOnly;
+        public uint shaderFxCodeHash;
+        public byte materialFlags_shaderGraphMtl;
+        public byte materialFlags_IsScratchedLego;
+        public byte dummy_isMayaShader;
+        public byte output_tangentRT;
+        public byte vertexFlags_gameFiveBitPacking;
+        public byte vertexFlags_usesInstancing;
+        public byte output_emissionRT;
+        public byte materialFlags_depthOnly;
 
         public byte[] ShaderFxCode;
-        private byte isReferencedMaterial;
-        private string referencedMaterialName;
-        private string referencedGscName;
-        private byte AlphaRespondToLights;
-        private byte AlphaRespondToProbes;
+        public byte isReferencedMaterial;
+        public string referencedMaterialName;
+        public string referencedGscName;
+        public byte AlphaRespondToLights;
+        public byte AlphaRespondToProbes;
 
         public List<NuTexGenHdr> TempVertexFixupData;
         public List<NuTexGenHdr> VertexFixupData;
@@ -513,39 +447,75 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
         public List<NuShaderUserParamInfo> VertexShaderConsts;
         public List<NuShaderUserParamInfo> PixelShaderConsts;
-        private int packedFloatCountVertex;
-        private int packedFloatCountPixel;
+        public int packedFloatCountVertex;
+        public int packedFloatCountPixel;
         public List<NuShaderUserParamInfo> VertexShaderInstancedConsts;
         public List<NuShaderUserParamInfo> PixelShaderInstancedConsts;
-        private int packedInstancedFloatCountVertex;
-        private int packedInstancedFloatCountPixel;
+        public int packedInstancedFloatCountVertex;
+        public int packedInstancedFloatCountPixel;
 
         public List<NuShaderUserTextureInfo> VertexShaderUserTexturesInfo;
         public List<NuShaderUserTextureInfo> PixelShaderUserTexturesInfo;
-        private int EditorAlphaMode;
+        public int EditorAlphaMode;
 
         public string ShaderFXSize;
 
         public byte[] Padding = new byte[6];
-        private byte shaderGraphMeshAttribsUsed_texcoord0;
-        private byte shaderGraphMeshAttribsUsed_texcoord1;
-        private byte shaderGraphMeshAttribsUsed_texcoord2;
-        private byte shaderGraphMeshAttribsUsed_texcoord3;
-        private byte shaderGraphMeshAttribsUsed_color0;
-        private byte shaderGraphMeshAttribsUsed_color1;
-        private byte shaderGraphMeshAttribsUsed_normal;
-        private uint featureSet;
-        private uint undeclaredInt;
-        private byte SortAfterPostEffects;
-        private byte tFont;
-        private byte DistanceFieldAlpha;
-        private byte IsTPaged;
-        private byte IsDeferredDecal;
-        private byte IsDecal;
+        public byte shaderGraphMeshAttribsUsed_texcoord0;
+        public byte shaderGraphMeshAttribsUsed_texcoord1;
+        public byte shaderGraphMeshAttribsUsed_texcoord2;
+        public byte shaderGraphMeshAttribsUsed_texcoord3;
+        public byte shaderGraphMeshAttribsUsed_color0;
+        public byte shaderGraphMeshAttribsUsed_color1;
+        public byte shaderGraphMeshAttribsUsed_normal;
+        public uint featureSet;
+        public uint undeclaredInt;
+        public byte SortAfterPostEffects;
+        public byte tFont;
+        public byte DistanceFieldAlpha;
+        public byte IsTPaged;
+        public byte IsDeferredDecal;
+        public byte IsDecal;
+
+        public byte ShaderVariantsRequiredSkinning0;
+        public byte ShaderVariantsRequiredSkinning1;
+
+        public byte ShaderVariantsRequiredLightmapping0;
+        public byte ShaderVariantsRequiredLightmapping1;
+
+        public byte ShaderVariantsRequiredInstancing0;
+        public byte ShaderVariantsRequiredInstancing1;
 
         public string ShaderBytecodesPath;
 
+        public uint[] dummyHashArray_0;
+        public uint[] dummyHashArray_1;
+        public uint[] dummyHashArray_2;
+        public uint[] dummyHashArray_3;
+        public uint[] dummyHashArray_4;
+        public uint[] dummyHashArray_5;
+        public uint[] dummyHashArray_6;
+        public uint[] dummyHashArray_7;
+        public uint[] dummyHashArray_8;
+        public uint[] dummyHashArray_9;
+        public uint[] dummyHashArray_10;
+        public uint[] orbisHashArray;
+        public uint[] dummyHashArray_12;
+        public uint[] dummyHashArray_13;
+        public uint[] dummyHashArray_14;
+        public uint[] dummyHashArray_15;
+        public uint[] dummyHashArray_16;
+        public uint[] dummyHashArray_17;
+        public uint[] dummyHashArray_18;
+
         public NuMaterialData ChildMaterial;
+
+        public abstract void Handle(SchemaSerializer schema, uint parentVersion);
+    }
+
+    public class NuMaterialData_E0 : NuMaterialData
+    {
+        public NuMaterialDataBlock Parent;
 
         public override void Handle(SchemaSerializer schema, uint parentVersion)
         {
@@ -570,35 +540,118 @@ namespace Diorama.Core.Filetypes.GSC.Components
             schema.HandleUInt(ref Flags);
             Debug.Assert(Flags == 4, "flags != 4");
 
-            if (Version > 0xce)
+            if (Version > 0x112)
             {
-                schema.HandleArray(ref DummyHashArray, 0x494);
-            }
-            else // 0xc6 and 0xca and 0xce definitely
-            {
-                schema.HandleArray(ref DummyHashArray, 0x45c);
+                schema.HandleByte(ref ShaderVariantsRequiredSkinning0);
+                schema.HandleByte(ref ShaderVariantsRequiredSkinning1);
+
+                schema.HandleByte(ref ShaderVariantsRequiredLightmapping0);
+                schema.HandleByte(ref ShaderVariantsRequiredLightmapping1);
+
+                schema.HandleByte(ref ShaderVariantsRequiredInstancing0);
+                schema.HandleByte(ref ShaderVariantsRequiredInstancing1);
+
             }
 
+            int hashCount = 0xf;
+            if (Version <= 0xce)
+            {
+                hashCount = 0x14;
+            }
+            if (Version > 0xce)
+            {
+                hashCount = 0x15;
+            }
+            if (Version > 0x111)
+            {
+                hashCount = 0xc;
+            }
+
+            schema.HandleArray(ref dummyHashArray_0, hashCount);
+            schema.HandleArray(ref dummyHashArray_1, hashCount);
+            schema.HandleArray(ref dummyHashArray_2, hashCount);
+            schema.HandleArray(ref dummyHashArray_3, hashCount);
+            schema.HandleArray(ref dummyHashArray_4, hashCount);
+            schema.HandleArray(ref dummyHashArray_5, hashCount);
+            schema.HandleArray(ref dummyHashArray_6, hashCount);
+            schema.HandleArray(ref dummyHashArray_7, hashCount);
+            schema.HandleArray(ref dummyHashArray_8, hashCount);
+            schema.HandleArray(ref dummyHashArray_9, hashCount);
+            schema.HandleArray(ref dummyHashArray_10, hashCount);
+            schema.HandleArray(ref orbisHashArray, hashCount);
+            if (Version > 0x97)
+            {
+                schema.HandleArray(ref dummyHashArray_12, hashCount);
+                if (Version > 0xb4)
+                {
+                    schema.HandleArray(ref dummyHashArray_13, hashCount);
+                }
+            }
+
+            if (Version == 0xfe)
+            {
+                schema.HandleArray(ref dummyHashArray_14, hashCount);
+            }
+            
             if (Version > 0x119)
             {
-                schema.HandleArray(ref DummyHashArray2, 0x5ee);
+                schema.HandleArray(ref DummyHashArray2, 0x7e0);
             }
-            else if (Version > 0x112) // 0x113 and 0x118 and 0x119
+            else if (Version > 0x112)
             {
-                schema.HandleArray(ref DummyHashArray2, 0x46e);
+                schema.HandleArray(ref DummyHashArray2, 0x630);
+
             }
-            else if (Version == 0xfe)
-            {
-                schema.HandleArray(ref DummyHashArray2, 0x54);
-            }
+
+            //if (Version > 0xce)
+            //{
+            //    schema.HandleArray(ref DummyHashArray, 0x494);
+            //}
+            //else // 0xc6 and 0xca and 0xce definitely
+            //{
+            //    schema.HandleArray(ref DummyHashArray, 0x45c);
+            //}
+
+            //if (Version > 0x119)
+            //{
+            //    schema.HandleArray(ref DummyHashArray2, 0x5ee);
+            //}
+            //else if (Version > 0x112) // 0x113 and 0x118 and 0x119
+            //{
+            //    schema.HandleArray(ref DummyHashArray2, 0x46e);
+            //}
+            //else if (Version == 0xfe)
+            //{
+            //    schema.HandleArray(ref DummyHashArray2, 0x54);
+            //}
+
+            //if (MaterialName.Contains("EmCitGlow1"))
+            //{
+            //    using (RawFile shaderFile = new RawFile(@"A:\LEVELS\STORY\1WIZARDOFOZ\1WIZARDOFOZA\1WIZARDOFOZA_DX11.PS4_SHADERS"))
+            //    {
+            //        NxgShaders shaderCache = NxgShaders.Read(shaderFile);
+
+            //        foreach (var shader in shaderCache.ShaderCache)
+            //        {
+            //            foreach (var hash in orbisHashArray)
+            //            {
+            //                if (hash == (uint)shader.ConfigHash)
+            //                {
+            //                    Console.WriteLine("Shader found!");
+            //                }
+            //            }
+            //        }
+            //    }
+            //}
+
 
             if (schema.Writing)
             {
-                VertexLayout.Write(schema.File);
+                VertexLayout.WriteHeader(schema.File);
             }
             else
             {
-                VertexLayout = VertexList.Parse(schema.File);
+                VertexLayout = VertexList.ParseHeader(schema.File);
             }
 
             if (Version < 0xd5)
@@ -1174,10 +1227,6 @@ namespace Diorama.Core.Filetypes.GSC.Components
             schema.HandleByte(ref materialFlags_semi_lit);
             schema.HandleByte(ref materialFlags_refractionNearFix);
             schema.HandleByte(ref materialFlags_metallic_specular);
-            if (materialFlags_metallic_specular != 0)
-            {
-                Console.WriteLine();
-            }
             schema.HandleByte(ref materialFlags_dontreceiveshadow);
             schema.HandleByte(ref materialFlags_lateshader);
             schema.HandleByte(ref materialFlags_diffreflmaps);

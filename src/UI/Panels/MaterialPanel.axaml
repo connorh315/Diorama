@@ -9,7 +9,38 @@
   <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
     <StackPanel Margin="5" Spacing="2">
       <controls:PropertyEditor Property="Name" />
+      <controls:PropertyEditor Property="Shader" />
+      <StackPanel Orientation="Horizontal">
+        <Button ToolTip.Tip="Some properties require a different shader. Click to select a compatible shader set." Click="SubstituteShaderSet_Click">Substitute Shader Set</Button>
+        <TextBlock IsVisible="{Binding FingerprintChanged}" VerticalAlignment="Center" Margin="2">
+          <Run>Changed to: </Run>
+          <Run Text="{Binding Fingerprint.MaterialName}" />
+        </TextBlock>
+      </StackPanel>
       <controls:ColorInput InputLabel="Material Primary Colour" Color="{Binding Colour1, Mode=TwoWay}" />
+      <Expander Header="Colours">
+        <StackPanel Spacing="5">
+          <controls:PropertyEditor Property="Colour1" />
+          <controls:PropertyEditor Property="Colour2" />
+          <controls:PropertyEditor Property="Colour3" />
+          <controls:PropertyEditor Property="Colour4" />
+          <controls:PropertyEditor Property="Colour5" />
+          <controls:PropertyEditor Property="Colour6" />
+          <controls:PropertyEditor Property="Colour7" />
+          <controls:PropertyEditor Property="Colour8" />
+          <controls:PropertyEditor Property="Colour9" />
+          <controls:PropertyEditor Property="Colour10" />
+          <controls:PropertyEditor Property="Colour11" />
+          <controls:PropertyEditor Property="Colour12" />
+          <controls:PropertyEditor Property="Colour13" />
+          <controls:PropertyEditor Property="Colour14" />
+          <controls:PropertyEditor Property="Colour15" />
+          <controls:PropertyEditor Property="Colour16" />
+          <controls:PropertyEditor Property="Colour17" />
+          <controls:PropertyEditor Property="Colour18" />
+          <controls:PropertyEditor Property="Colour19" />
+        </StackPanel>
+      </Expander>
       <Expander Header="Textures" HorizontalAlignment="Stretch">
         <StackPanel Spacing="5">
           <controls:PropertyEditor Property="NumAlphaLayers" />
@@ -81,9 +112,15 @@
 
       <controls:PropertyEditor Property="Colour" />
 
+      <controls:PropertyEditor Property="Lighting" />
+      <controls:PropertyEditor Property="MetallicSpecular" />
+
+      <controls:PropertyEditor Property="RimLight" />
+
 
       <controls:PropertyEditor Property="Glow" />
       <controls:PropertyEditor Property="KGlow" />
+      <controls:PropertyEditor Property="ShadedGlow" />
 
       <controls:PropertyEditor Property="Substance" />
       <controls:PropertyEditor Property="SubstanceFactor" />

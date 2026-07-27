@@ -62,6 +62,11 @@ namespace Diorama.UI.ViewModels
                 {
                     buff.Write(file);
                 }
+
+                foreach (var ind in selectedGeo.Mesh.OriginalMesh.Indices)
+                {
+                    file.WriteUShort(ind, true);
+                }
             }
         }
 

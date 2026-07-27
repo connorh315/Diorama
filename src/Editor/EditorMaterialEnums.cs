@@ -144,4 +144,41 @@ namespace Diorama.Editor
         Varying,
         Metal
     }
+
+    public enum EditorShaderType
+    {
+        Custom = 0,
+        Water,
+        LegoHard,
+        LegoMetallic,
+        LegoChrome,
+        LegoCanvas,
+        LegoFluorescent,
+        LegoGlitter,
+        LegoHands,
+        LegoHardRubber,
+        LegoSoftRubber,
+        LegoPearlescent,
+        LegoPlants,
+        LegoSoft,
+        LegoStippled,
+        LegoTransparent,
+        LegoSuperChar,
+        LegoGamePlay,
+        LegoGlow,
+        LegoIce,
+        LegoUnused4,
+        LegoUnused5
+    }
+
+    public enum EditorLightingModel
+    {
+        NonReflective = 0,
+        Lambert,
+        BlinnPhong,
+        Anisotropic,
+        DefunctSkin,
+        DefunctComplexSkin,
+        DefunctHair
+    }
 }

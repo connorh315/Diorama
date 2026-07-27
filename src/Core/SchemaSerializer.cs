@@ -107,6 +107,18 @@ namespace Diorama.Core
             }
         }
 
+        public void HandleBool(ref bool v)
+        {
+            if (Writing)
+            {
+                File.WriteByte((byte)(v ? 1 : 0));
+            }
+            else
+            {
+                v = File.ReadByte() == 1 ? true : false;
+            }
+        }
+
         public void HandleByteEnum<T>(ref T value) where T : unmanaged, Enum
         {
             byte temp = Convert.ToByte(value);
@@ -185,6 +197,26 @@ namespace Diorama.Core
             else
             {
                 arr = File.ReadArray(size);
+            }
+        }
+
+        public void HandleArray(ref uint[] arr, int size)
+        {
+            if (Writing)
+            {
+                for (int i = 0; i < size; i++)
+                {
+                    File.WriteUInt(arr[i], true);
+                }
+            }
+            else
+            {
+                arr = new uint[size];
+
+                for (int i = 0; i < size; i++)
+                {
+                    arr[i] = File.ReadUInt(true);
+                }
             }
         }
 

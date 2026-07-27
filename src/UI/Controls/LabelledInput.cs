@@ -29,6 +29,24 @@ namespace Diorama
             set => SetValue(InputLabelProperty, value);
         }
 
+        //public static readonly StyledProperty<string> WarningProperty =
+        //    AvaloniaProperty.Register<LabelledInput, string>(nameof(InputLabel));
+
+        //public string Warning
+        //{
+        //    get => this.GetValue(WarningProperty);
+        //    set => SetValue(WarningProperty, value);
+        //}
+
+        public string Warning { get; set; }
+        public bool ShowWarning { get; set; } = false;
+
+        public void SetWarning(string warning)
+        {
+            Warning = warning;
+            ShowWarning = true;
+        }
+
         public event PropertyChangedEventHandler? PropertyChanged;
 
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)

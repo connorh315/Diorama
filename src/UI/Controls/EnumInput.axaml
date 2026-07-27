@@ -26,7 +26,10 @@
             <ColumnDefinition Width="2*" />
             <ColumnDefinition Width="3*" />
           </Grid.ColumnDefinitions>
-          <TextBlock Grid.Column="0" Text="{TemplateBinding InputLabel}" VerticalAlignment="Center" />
+          <Grid Grid.Column="0" ColumnDefinitions="*, Auto">
+            <TextBlock Grid.Column="0" Text="{TemplateBinding InputLabel}" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1" Text="⚠︎" VerticalAlignment="Center" IsVisible="{Binding ShowWarning, RelativeSource={RelativeSource TemplatedParent}}" ToolTip.Tip="{Binding Warning, RelativeSource={RelativeSource TemplatedParent}}" Margin="0,0,5,0" />
+          </Grid>
           <ComboBox Grid.Column="1" ItemsSource="{TemplateBinding Values}" SelectedItem="{Binding SelectedValue, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
           </ComboBox>
         </Grid>

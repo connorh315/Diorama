@@ -1,25 +1,32 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Markup.Xaml;
+using Diorama.Editor;
 using Diorama.Rendering;
 using Diorama.UI.Panels;
+using Diorama.UI.ViewModels;
 
 namespace Diorama;
 
-public partial class MaterialPanel : UserControl, ITexturesPanel
+public partial class MaterialPanel : TexturesBasePanel
 {
     public MaterialPanel()
     {
         InitializeComponent();
     }
 
-    public static readonly StyledProperty<IEnumerable<RenderTexture>> TexturesProperty =
-        AvaloniaProperty.Register<MaterialPanel, IEnumerable<RenderTexture>>(
-            nameof(Textures));
-
-    public IEnumerable<RenderTexture> Textures
+    private async void SubstituteShaderSet_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        get => GetValue(TexturesProperty);
-        set => SetValue(TexturesProperty, value);
+        ChangeShaderSetViewModel vm = new ChangeShaderSetViewModel((EditorMaterial)DataContext);
+
+        ChangeShaderSetWindow modal = new ChangeShaderSetWindow()
+        {
+            DataContext = vm
+        };
+
+        var window = TopLevel.GetTopLevel(this) as Window;
+
+        await modal.ShowDialog(window);
     }
 }

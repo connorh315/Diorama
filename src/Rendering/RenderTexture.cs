@@ -203,6 +203,8 @@ namespace Diorama.Rendering
 
             renderTexture.Original = texture;
 
+            renderTexture.GscName = texture.Header.Name;
+
             if (texture.Data == null)
             {
                 renderTexture.CreateWhiteTexture();
@@ -211,7 +213,7 @@ namespace Diorama.Rendering
 
             renderTexture.Reload(texture);
 
-            renderTexture.GscName = texture.Header.Name;
+            
 
             return renderTexture;
         }

@@ -1,4 +1,5 @@
 ﻿using Diorama.Editor;
+using Diorama.Editor.Attributes;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -19,7 +20,7 @@ namespace Diorama
 
         private string datLocation;
 
-        [Display("DAT Archives Location")]
+        [DisplayLabel("DAT Archives Location")]
         public string DatLocation { get => datLocation; set => Set(ref datLocation, value); }
 
         public static bool ShouldWriteROTV = true;

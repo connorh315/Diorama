@@ -1,10 +1,13 @@
 ﻿
+using BrickVault.Types;
 using Diorama.Core;
 using Diorama.Core.Filetypes.GSC;
 using Diorama.Core.Filetypes.GSC.Components;
 using Diorama.Core.Filetypes.GSC.Components.RESH;
+using Diorama.Core.Filetypes.SHADERS;
 using Diorama.Core.Filetypes.TEXTURES;
 using Diorama.Editor.Metadata;
+using Diorama.Editor.ShaderSystem;
 using Diorama.Rendering;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
@@ -12,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -368,22 +372,11 @@ namespace Diorama.Editor
                     problems.Add("    Ensure you save both the scene and the textures file so they stay synchronised!");
                 }
                 else
-                {
+                { 
                     var metaStrings = scene.Metadata.MetaStrings;
                     for (int i = 0; i < metaStrings.Count; i++)
                     {
-                        if (string.IsNullOrEmpty(textures[i].Name))
-                        {
-                            textures[i].GscName = metaStrings[i].Value;
-                            continue;
-                        }
-
-                        if (metaStrings[i].Value != textures[i].Name)
-                        {
-                            problems.Add("Caution: Texture names referenced in scene do not align with texture names in nxg_textures file - This will likely crash in-game!");
-                            problems.Add("    Ensure you save both the scene and the textures file so they stay synchronised!");
-                            break;
-                        }
+                        textures[i].GscName = metaStrings[i].Value;
                     }
                 }
             }
@@ -463,6 +456,7 @@ namespace Diorama.Editor
             ConvertMaterials(scene);
             ConvertMetadata(scene);
 
+            HandleShaders(scene);
 
             string path = nuScene.Path;
 
@@ -489,6 +483,9 @@ namespace Diorama.Editor
                 mat.Original.Specular0Index = scene.Textures.IndexOf(mat.Specular0);
 
                 mat.Original.OldTid = mat.Original.Diffuse0Index;
+
+                //mat.Original.materialFlags_glow = 1;
+                //mat.Original.KGlow = 0.8f;
             }
         }
 
@@ -562,6 +559,218 @@ namespace Diorama.Editor
             }
 
             originalScene.Metadata.MetaStrings = textureStrings;
+        }
+
+        public static void HandleShaders(EditorScene scene)
+        {
+            bool needed = false;
+            foreach (var eMat in scene.Materials)
+            {
+                if (eMat.FingerprintChanged)
+                {
+                    needed = true;
+                    break;
+                }
+            }
+
+            if (!needed) return;
+
+            string savePath = Path.GetDirectoryName(scene.OriginalScene.Path);
+
+            List<string> shaderPaths = new();
+
+            foreach (var file in scene.Metadata.Resources)
+            {
+                string clean = file.FilePath.ToLower();
+                string diskFilepath = Path.Combine(savePath, Path.GetFileName(clean));
+                if (clean.Contains("shaders") && Path.Exists(diskFilepath))
+                {
+                    shaderPaths.Add(diskFilepath);
+                    Console.WriteLine($"Found shaders file: {Path.GetFileName(clean)}");
+                }
+            }
+
+            Dictionary<string, string> datPaths =
+                        Directory.EnumerateFiles(
+                                AppSettings.Settings.DatLocation,
+                                "*.dat*",
+                                SearchOption.AllDirectories)
+                            .ToDictionary(
+                                f => Path.GetFileNameWithoutExtension(f),
+                                f => f,
+                                StringComparer.OrdinalIgnoreCase);
+
+            Dictionary<string, DATFile> cache = new();
+
+            foreach (var shaderPath in shaderPaths)
+            {
+                string shaderExtension = Path.GetExtension(shaderPath);
+
+                NxgShaders shaders = null;
+
+                using (RawFile file = new RawFile(shaderPath))
+                {
+                    shaders = NxgShaders.Read(file);
+
+                    HashSet<uint> fileShaderHashes = shaders.ShaderCache.Select(s => s.ConfigHash).ToHashSet();
+
+                    int set = -1;
+
+                    for (int i = 0; i < EditorMaterial.MaxShaderSet; i++)
+                    {
+                        bool validSet = true;
+                        foreach (var eMat in scene.Materials)
+                        {
+                            bool emptySet = true;
+                            var nuMat = eMat.Original;
+                            foreach(uint shaderHash in eMat.EnumerateShadersInSet(i))
+                            {
+                                emptySet = false;
+                                if (!fileShaderHashes.Contains(shaderHash))
+                                {
+                                    validSet = false;
+                                    break;
+                                }
+                            }
+
+                            if (emptySet)
+                                validSet = false;
+
+                            if (!validSet)
+                                break;
+                        }
+
+                        if (validSet)
+                        {
+                            set = i;
+                            break;
+                        }
+
+                    }
+
+                    if (set == -1)
+                    {
+                        Console.WriteLine($"Could not determine correct shader set in file: {shaderPath}");
+                        Console.WriteLine("This file will be skipped and will de-synchronise");
+                        continue;
+                    }
+
+                    List<NxgShader> neededShaders = new();
+
+                    HashSet<uint> neededShaderHashes = new();
+
+                    var setArray = EditorShaderSystem.GetShaderSet();
+
+                    Dictionary<string, HashSet<uint>> shadersToLocate = new();
+
+                    foreach (var eMat in scene.Materials)
+                    {
+                        if (eMat.FingerprintChanged)
+                        {
+                            var fingerprint = eMat.Fingerprint;
+
+                            var fileIndex = fingerprint.Fingerprint.FileIndex;
+
+                            var substitute = EditorShaderSystem.GetSet(setArray, fileIndex, fingerprint.Fingerprint.MaterialName);
+
+                            for (int i = 0; i < EditorMaterial.MaxShaderSet; i++)
+                            {
+                                uint[] hashArray = eMat.GetShaderSet(i);
+                                if (hashArray == null)
+                                    break;
+
+                                Array.Copy(substitute.GetSet(i), 0, hashArray, 0, hashArray.Length);
+                            }
+
+                            string path = EditorShaderSystem.IndexedFiles[fileIndex];
+
+                            path = Path.ChangeExtension(path, shaderExtension);
+
+                            if (!shadersToLocate.ContainsKey(path))
+                                shadersToLocate.Add(path, new HashSet<uint>());
+
+                            foreach (uint hash in eMat.EnumerateShadersInSet(set))
+                            {
+                                shadersToLocate[path].Add(hash);
+                            }
+                        }
+                        else
+                        {
+                            foreach (uint shaderHash in eMat.EnumerateShadersInSet(set))
+                            {
+                                if (neededShaderHashes.Contains(shaderHash)) continue;
+
+                                neededShaders.Add(shaders.GetShader(shaderHash));
+                                neededShaderHashes.Add(shaderHash);
+                            }
+                        }
+                    }
+
+                    foreach ((string otherFilePath, HashSet<uint> otherShaders) in shadersToLocate)
+                    {
+                        string datName = GetDatFile(otherFilePath);
+
+                        DATFile datFile = null;
+                        if (cache.ContainsKey(datName))
+                        {
+                            datFile = cache[datName];
+
+                            if (datFile == null) continue;
+                        }
+                        else if (!datPaths.TryGetValue(datName, out var datFilePath))
+                        {
+                            Console.WriteLine($"Could not locate DAT file: {datName} when attempting to rebuild shaders file");
+                            cache.Add(datName, null);
+                            continue;
+                        }
+                        else
+                        {
+                            datFile = DATFile.Open(datFilePath);
+
+                            cache.Add(datName, datFile);
+                        }
+
+                        var archiveFile = datFile.FileTree.GetFile(otherFilePath.Substring(datName.Length + 1));
+                        
+                        using (var ctx = datFile.GetExtractionContext())
+                        using (RawFile newShadersFile = new RawFile(new MemoryStream()))
+                        {
+                            datFile.ExtractFile(archiveFile, ctx, newShadersFile.fileStream);
+
+                            NxgShaders newShaders = NxgShaders.Read(newShadersFile);
+
+                            foreach (var shader in newShaders.ShaderCache)
+                            {
+                                if (otherShaders.Contains(shader.ConfigHash) && neededShaderHashes.Add(shader.ConfigHash))
+                                {
+                                    neededShaders.Add(shader);
+                                }
+                            }
+                        }
+                    }
+
+                    shaders.ShaderCache = neededShaders;
+                }
+
+                using (RawFile file = RawFile.Create(shaderPath))
+                {
+                    shaders.Handle(new SchemaSerializer(file, true), 0);
+                }
+            }
+        }
+
+        public static string GetDatFile(string path)
+        {
+            string dat = "";
+
+            for (int i = 0; i < path.Length; i++)
+            {
+                if (path[i] == '\\') break;
+
+                dat = dat + path[i];
+            }
+
+            return dat;
         }
     }
 }

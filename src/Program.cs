@@ -1,11 +1,15 @@
 ﻿global using Common;
 using Avalonia;
+using Avalonia.OpenGL;
 using BrickVault.Types;
 using Diorama.Core;
 using Diorama.Core.Filetypes.GSC;
 using Diorama.Core.Filetypes.GSC.Components;
+using Diorama.Core.Filetypes.SHADERS;
 using Diorama.Core.Filetypes.TEXTURES;
 using Diorama.Editor;
+using Diorama.Editor.ShaderSystem;
+using OpenTK.Graphics.ES11;
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.Diagnostics.Metrics;
@@ -36,6 +40,72 @@ namespace Diorama
                 //    RenderingMode = new Collection<Win32RenderingMode> { Win32RenderingMode.Wgl }
                 //})
                 .LogToTrace();
+
+
+        public static void MainXX(string[] args)
+        {
+            EditorShaderSystem.Load();
+        }
+
+        static void Main5(string[] args)
+        {
+            var datFiles = Directory.GetFiles(
+                AppSettings.Settings.DatLocation,
+                "*.DAT",
+                SearchOption.AllDirectories
+            );
+
+            Histogram<NuMaterialData> histogram = new Histogram<NuMaterialData>();
+
+            Dictionary<string, int> states = new();
+
+            foreach (string datPath in datFiles)
+            {
+                var dat = DATFile.Open(datPath);
+                using (var extractionCtx = dat.GetExtractionContext())
+                {
+                    foreach (var file in dat.GetFilesWithExtension("gsc"))
+                    {
+                        using (RawFile gsc = new RawFile(new MemoryStream()))
+                        {
+                            dat.ExtractFile(file, extractionCtx, gsc.fileStream);
+    
+                            try
+                            {
+                                GScene scene = GScene.Parse(gsc);
+
+                                foreach (var mat in scene.MaterialBlock.Materials)
+                                {
+                                    if (mat.materialFlags_glow == 1)
+                                    {
+                                        histogram.Add(mat);
+                                        for (int i = 0; i < mat.uvBlocks.Length; i++)
+                                        {
+                                            string key = $"Block: {i} - State: {mat.uvBlocks[i].State}";
+                                            if (!states.ContainsKey(key))
+                                                states.Add(key, 0);
+                                                
+                                            states[key] = states[key] + 1;
+                                        }
+                                    }
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine($"Failed on {file.Path} due to: {e.Message}");
+                            }
+                        }
+                    }
+                }
+            }
+
+            foreach (var state in states)
+            {
+                Console.WriteLine($"{state.Key} ||| {state.Value}");
+            }
+
+            histogram.Save(@"A:\testnoglow.txt");
+        }
 
         static void Main2(string[] args)
         {

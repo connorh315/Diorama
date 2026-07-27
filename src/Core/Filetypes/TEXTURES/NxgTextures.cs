@@ -24,11 +24,15 @@ namespace Diorama.Core.Filetypes.TEXTURES
             foreach (var file in Directory.EnumerateFiles(AppSettings.Settings.DatLocation, "*.DAT", SearchOption.AllDirectories))
             {
                 var dat = DATFile.Open(file);
-                foreach (var archiveFile in dat.Files)
+
+                if (dat != null && dat.Files != null)
                 {
-                    if (archiveFile.Path == normalised)
+                    foreach (var archiveFile in dat.Files)
                     {
-                        return new RawFile(dat.Extract(archiveFile));
+                        if (archiveFile.Path == normalised)
+                        {
+                            return new RawFile(dat.Extract(archiveFile));
+                        }
                     }
                 }
             }

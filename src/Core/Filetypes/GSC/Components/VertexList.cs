@@ -29,15 +29,13 @@ namespace Diorama.Core.Filetypes.GSC.Components
             Definitions = new VertexDefinition[vertexDefinitionCount];
         }
 
-        public static VertexList Parse(RawFile file)
+        public static VertexList ParseHeader(RawFile file, uint vertexCount = 0)
         {
-            uint vertexCount = file.ReadUInt(true);
-
             Debug.Assert(file.ReadString(4) == "DXTV");
             Debug.Assert(file.ReadUInt(true) == 0xa9); // vtxd version
 
             uint vertexDefinitionCount = file.ReadUInt(true);
-            
+
             VertexList list = new VertexList(vertexCount, vertexDefinitionCount);
 
             int stride = 0;
@@ -54,15 +52,22 @@ namespace Diorama.Core.Filetypes.GSC.Components
             for (int i = 0; i < 6; i++)
                 list.InstancingDividers[i] = file.ReadByte();
 
-            list.VerticesDump = file.ReadArray((int)(stride * vertexCount));
+            return list;
+        }
+
+        public static VertexList Parse(RawFile file)
+        {
+            uint vertexCount = file.ReadUInt(true);
+
+            VertexList list = ParseHeader(file, vertexCount);
+
+            list.VerticesDump = file.ReadArray((int)(list.Stride * vertexCount));
 
             return list;
         }
 
-        public void Write(RawFile file)
+        public void WriteHeader(RawFile file)
         {
-            file.WriteInt(Vertices.Length, true);
-
             file.WriteString("DXTV");
             file.WriteInt(0xa9, true);
 
@@ -75,13 +80,20 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             for (int i = 0; i < 6; i++)
                 file.WriteByte(InstancingDividers[i]); // instancing dividers, rarely used
+        }
+
+        public void Write(RawFile file)
+        {
+            file.WriteInt(Vertices.Length, true);
+
+            WriteHeader(file);
 
             file.WriteArray(VerticesDump);
         }
 
         private static int SizeOf(VertexDefinitionStorageEnum storage)
         {
-            return storage switch
+            return ((VertexDefinitionStorageEnum)((int)storage & 0xf)) switch
             {
                 VertexDefinitionStorageEnum.vec2float => 8,
                 VertexDefinitionStorageEnum.vec3float => 12,
@@ -91,7 +103,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 VertexDefinitionStorageEnum.vec4char => 4,
                 VertexDefinitionStorageEnum.vec4mini => 4,
                 VertexDefinitionStorageEnum.color4char => 4,
-                _ => 0 // TODO: Handle materials triggering this
+                _ => throw new Exception("Unknown storage type") // TODO: Handle materials triggering this
             };
         }
 
@@ -153,6 +165,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
                     file.WriteHalf((Half)vec.W, false);
                     break;
                 case VertexDefinitionStorageEnum.vec4mini:
+                case VertexDefinitionStorageEnum.vec4char:
                     file.WriteByte((byte)((vec.X + 1f) * 127.5f));
                     file.WriteByte((byte)((vec.Y + 1f) * 127.5f));
                     file.WriteByte((byte)((vec.Z + 1f) * 127.5f));

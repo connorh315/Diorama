@@ -6,20 +6,10 @@ using Diorama.UI.Panels;
 
 namespace Diorama;
 
-public partial class LightmapPanel : UserControl, ITexturesPanel
+public partial class LightmapPanel : TexturesBasePanel
 {
     public LightmapPanel()
     {
         InitializeComponent();
-    }
-
-    public static readonly StyledProperty<IEnumerable<RenderTexture>> TexturesProperty =
-        AvaloniaProperty.Register<LightmapPanel, IEnumerable<RenderTexture>>(
-            nameof(Textures));
-
-    public IEnumerable<RenderTexture> Textures
-    {
-        get => GetValue(TexturesProperty);
-        set => SetValue(TexturesProperty, value);
     }
 }

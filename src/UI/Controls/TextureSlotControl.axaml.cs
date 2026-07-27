@@ -103,9 +103,10 @@ public bool IsPickerOpen
         if (mainPreview != null)
             mainPreview.OnClick += OnTextureButtonClick;
 
-        var panel = this.FindAncestorOfType<ITexturesPanel>();
-        if (panel != null)
-            Textures = panel.Textures;
+        if (this.FindAncestorOfType<TexturesBasePanel>() is TexturesBasePanel panel)
+        {
+            this.Bind(TexturesProperty, panel.GetBindingObservable(TexturesBasePanel.TexturesProperty));
+        }
     }
 
     private void OnTextureButtonClick()

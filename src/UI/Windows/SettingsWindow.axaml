@@ -4,10 +4,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Diorama.SettingsWindow"
-        Title="SettingsWindow"
         xmlns:controls="using:Diorama">
   <StackPanel Width="400" Margin="5">
     <controls:PropertyEditor Property="DatLocation" />
+    <Button Click="GenerateFingerprints_Click" HorizontalAlignment="Center">Generate Material Fingerprints</Button>
     <Button Click="SaveSettings_Click" HorizontalAlignment="Center">Save Settings</Button>
   </StackPanel>
 </Window>

@@ -2,7 +2,8 @@
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Input;
-using Diorama.Editor;
+using Diorama.Editor.Attributes;
+using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -74,6 +75,16 @@ namespace Diorama
                         Mode = BindingMode.TwoWay
                     });
             }
+            else if (property.PropertyType == typeof(Vector4))
+            {
+                editor = new ColorInput();
+                editor.Bind(
+                    ColorInput.ColorProperty,
+                    new Binding(property.Name)
+                    {
+                        Mode = BindingMode.TwoWay
+                    });
+            }
             else
             {
                 throw new NotSupportedException();
@@ -86,31 +97,60 @@ namespace Diorama
             LabelledInput editor,
             PropertyInfo property)
         {
-            var display =
-                property.GetCustomAttribute<DisplayAttribute>();
-
-            if (display != null)
-                editor.InputLabel = display.Name;
-
-            var enabled =
-                property.GetCustomAttribute<EnabledIfAttribute>();
-
-            if (enabled != null)
+            foreach (var attribute in property.GetCustomAttributes())
             {
-                editor.Bind(
-                    InputElement.IsEnabledProperty,
-                    new Binding(enabled.Property));
+                switch (attribute)
+                {
+                    case DisplayLabelAttribute display:
+                        editor.InputLabel = display.Name;
+                        break;
+
+                    case EnabledIfAttribute enabled:
+                        editor.Bind(
+                            InputElement.IsEnabledProperty,
+                            new Binding(enabled.Property));
+                        break;
+
+                    case VisibleIfAttribute visible:
+                        editor.Bind(
+                            Visual.IsVisibleProperty,
+                            new Binding(visible.PropertyName));
+                        break;
+
+                    case IWarningAttribute warning:
+                        editor.SetWarning(warning.WarningMessage);
+                        break;
+                }
             }
 
-            var visible =
-                property.GetCustomAttribute<VisibleIfAttribute>();
 
-            if (visible != null)
-            {
-                editor.Bind(
-                    Visual.IsVisibleProperty,
-                    new Binding(visible.PropertyName));
-            }
+            //var display =
+            //    property.GetCustomAttribute<DisplayLabelAttribute>();
+
+            //if (display != null)
+            //    editor.InputLabel = display.Name;
+
+            //var enabled =
+            //    property.GetCustomAttribute<EnabledIfAttribute>();
+
+            //if (enabled != null)
+            //{
+            //    editor.Bind(
+            //        InputElement.IsEnabledProperty,
+            //        new Binding(enabled.Property));
+            //}
+
+            //var visible =
+            //    property.GetCustomAttribute<VisibleIfAttribute>();
+
+            //if (visible != null)
+            //{
+            //    editor.Bind(
+            //        Visual.IsVisibleProperty,
+            //        new Binding(visible.PropertyName));
+            //}
+
+            //var warnings = property.GetCustomAttributes<IWarningAttribute>();
 
             return editor;
         }

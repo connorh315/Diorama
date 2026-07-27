@@ -39,6 +39,8 @@ namespace Diorama.Rendering
         public EditorGeometryObject? SelectedGeometry =>
             SelectedHierarchyObject as EditorGeometryObject;
 
+        public ObservableCollection<RenderTexture> SelectedTextures => SelectedGeometry?.Parent.SceneOwner.Textures;
+
         private IHierarchySelectable? selectedHierarchyObject;
         public IHierarchySelectable? SelectedHierarchyObject
         {
@@ -53,6 +55,7 @@ namespace Diorama.Rendering
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(SelectedSceneObject));
                 OnPropertyChanged(nameof(SelectedGeometry));
+                OnPropertyChanged(nameof(SelectedTextures));
             }
         }
 

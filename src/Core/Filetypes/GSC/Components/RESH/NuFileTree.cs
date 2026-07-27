@@ -129,11 +129,14 @@ namespace Diorama.Core.Filetypes.GSC.Components.RESH
             }
         }
 
+        public Dictionary<string, short> PathIndexes;
+
         public static NuFileTree FromPaths(IEnumerable<string> paths, uint versionToUse)
         {
             NuFileTree filetree = new NuFileTree();
             filetree.Version = versionToUse;
             filetree.FileCount = paths.Count();
+            filetree.PathIndexes = new();
 
             List<NuResourceSegment> segments = new List<NuResourceSegment>();
 
@@ -199,6 +202,11 @@ namespace Diorama.Core.Filetypes.GSC.Components.RESH
                         var parentSeg = segments[parent];
                         parentSeg.FinalChild = childIndex;
                         segments[parent] = parentSeg;
+
+                        if (isChild)
+                        {
+                            filetree.PathIndexes.Add(rawPath, childIndex);
+                        }
 
                         segments.Add(childSegment);
                         parent = childIndex;

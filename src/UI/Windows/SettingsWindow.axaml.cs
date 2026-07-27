@@ -1,6 +1,8 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using Diorama.UI.Progress;
+using Diorama.UI.ViewModels;
 using Diorama.UI.Windows;
 
 namespace Diorama;
@@ -29,5 +31,11 @@ public partial class SettingsWindow : ModalWindow
         AppSettings.Settings.Save();
         CleanExit = true;
         Close();
+    }
+
+    private void GenerateFingerprints_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        var cacheProgressWindow = new GenerateFingerprintsWindow();
+        cacheProgressWindow.ShowDialog(this);
     }
 }

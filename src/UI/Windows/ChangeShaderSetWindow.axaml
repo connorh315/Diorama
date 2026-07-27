@@ -1,0 +1,28 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="Diorama.ChangeShaderSetWindow">
+  <StackPanel Spacing="5" Width="600">
+    <TextBox Watermark="Search for material / shader / scene" HorizontalContentAlignment="Stretch"></TextBox>
+    <ListBox ItemsSource="{Binding Fingerprints}" SelectedItem="{Binding Selected}" Height="700" DoubleTapped="FingerprintList_DoubleTapped">
+      <ListBox.ItemTemplate>
+        <DataTemplate>
+          <StackPanel>
+            <Grid ColumnDefinitions="*, Auto">
+              <TextBlock Grid.Column="0" Text="{Binding MaterialName}" />
+              <TextBlock Grid.Column="1">
+                <Run>Suitability: </Run>
+                <Run Text="{Binding Suitability}" />
+                <Run>%</Run>
+              </TextBlock>
+            </Grid>
+            
+            <TextBlock Text="{Binding SceneName}" />
+          </StackPanel>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+  </StackPanel>
+</Window>
