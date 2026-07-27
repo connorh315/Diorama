@@ -579,15 +579,23 @@ namespace Diorama.Editor
 
             List<string> shaderPaths = new();
 
+            bool foundAnyShaders = false;
             foreach (var file in scene.Metadata.Resources)
             {
                 string clean = file.FilePath.ToLower();
                 string diskFilepath = Path.Combine(savePath, Path.GetFileName(clean));
                 if (clean.Contains("shaders") && Path.Exists(diskFilepath))
                 {
+                    foundAnyShaders = true;
+
                     shaderPaths.Add(diskFilepath);
                     Console.WriteLine($"Found shaders file: {Path.GetFileName(clean)}");
                 }
+            }
+
+            if (foundAnyShaders == false)
+            {
+                Console.WriteLine("Could not find any shaders files that are referenced in the resource header - Cannot update shaders!");
             }
 
             Dictionary<string, string> datPaths =

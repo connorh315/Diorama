@@ -5,8 +5,8 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Diorama.ChangeShaderSetWindow">
   <StackPanel Spacing="5" Width="600">
-    <TextBox Watermark="Search for material / shader / scene" HorizontalContentAlignment="Stretch"></TextBox>
-    <ListBox ItemsSource="{Binding Fingerprints}" SelectedItem="{Binding Selected}" Height="700" DoubleTapped="FingerprintList_DoubleTapped">
+    <TextBox Watermark="Search for material / shader / scene" HorizontalContentAlignment="Stretch" Text="{Binding SearchBox, Mode=TwoWay}"></TextBox>
+    <ListBox ItemsSource="{Binding Filtered}" SelectedItem="{Binding Selected}" Height="700" DoubleTapped="FingerprintList_DoubleTapped">
       <ListBox.ItemTemplate>
         <DataTemplate>
           <StackPanel>

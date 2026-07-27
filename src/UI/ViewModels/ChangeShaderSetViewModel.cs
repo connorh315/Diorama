@@ -15,10 +15,55 @@ namespace Diorama.UI.ViewModels
 
         public ObservableCollection<EditorShaderFingerprint> Fingerprints { get; }
 
+        private ObservableCollection<EditorShaderFingerprint> filteredInternal = new();
+        public ObservableCollection<EditorShaderFingerprint> Filtered { get; set; }
+
         public void ChangeFingerprint()
         {
             Original.Fingerprint = Selected;
             Original.FingerprintChanged = true;
+        }
+
+        private string search = "";
+        public string SearchBox
+        {
+            get => search;
+            set
+            {
+                if (search == value) return;
+                Set(ref search, value);
+
+                ApplyFilter();
+            }
+        }
+
+        public void ApplyFilter()
+        {
+            if (string.IsNullOrWhiteSpace(search))
+            {
+                Filtered = Fingerprints;
+                OnPropertyChanged(nameof(Filtered));
+
+                return;
+            }
+
+            if (Fingerprints == Filtered)
+            {
+                Filtered = filteredInternal;
+                OnPropertyChanged(nameof(Filtered));
+            }
+
+            string normalised = search.ToLower();
+
+            Filtered.Clear();
+
+            foreach (var f in Fingerprints)
+            {
+                if (f.MaterialName.ToLower().Contains(normalised) || f.SceneName.ToLower().Contains(normalised))
+                {
+                    Filtered.Add(f);
+                }
+            }
         }
 
         public ChangeShaderSetViewModel(EditorMaterial original)
@@ -57,6 +102,8 @@ namespace Diorama.UI.ViewModels
             }
 
             Fingerprints = new ObservableCollection<EditorShaderFingerprint>(suitable.OrderByDescending(e => e.Score));
+
+            Filtered = Fingerprints;
 
             Original = original;
         }
