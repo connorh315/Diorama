@@ -24,6 +24,7 @@ uniform sampler2D texture3;
 uniform sampler2D normal0;
 uniform bool hasNormalMap;
 uniform int normal0_uvset;
+uniform float normalStrength;
 
 uniform int diffuse0_uvset;
 uniform int diffuse1_uvset;
@@ -108,14 +109,26 @@ void main()
         vec3 tangentNormal = texture(normal0, GetUVSet(normal0_uvset) * PerLayerUVScale1).agb;
 
         // Decode from [0,1] -> [-1,1]
-        tangentNormal = tangentNormal * 2.0 - 1.0;
+        //tangentNormal = tangentNormal * 2.0 - 1.0;
 
-        mat3 TBN = mat3(
-            normalize(outTangent),
-            normalize(outBitangent),
-            normalize(Normal));
+        tangentNormal = tangentNormal * 2.0 - vec3(1.0, 1.0, 0.0);
+        tangentNormal = normalize(tangentNormal);
 
-        normal = normalize(TBN * tangentNormal);
+        vec3 T = normalize(outTangent);
+        vec3 B = normalize(outBitangent);
+        vec3 N = normalize(Normal);
+
+        //mat3 TBN = mat3(
+        //    normalize(outTangent),
+        //    normalize(outBitangent),
+        //    normalize(Normal));
+
+        //normal = normalize(TBN * tangentNormal);
+
+        normal = normalize(
+            T * tangentNormal.x +
+            B * tangentNormal.y +
+            N * tangentNormal.z);
     }
 
     float diff = max(dot(normal, lightDir), 0.0);
