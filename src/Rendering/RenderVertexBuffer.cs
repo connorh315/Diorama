@@ -78,7 +78,7 @@ namespace Diorama.Rendering
 
             vertexBuffer.Attributes = buffer.Definitions;
 
-            vertexBuffer.Hash = vertexBuffer.GetHashCode();
+            vertexBuffer.Hash = vertexBuffer.GetChecksum();
 
             return vertexBuffer;
         }

@@ -134,7 +134,7 @@ namespace Diorama.Core
             }
             else
             {
-                v = File.ReadPascalString();
+                v = File.ReadPascalString(security:0xfff);
             }
         }
 

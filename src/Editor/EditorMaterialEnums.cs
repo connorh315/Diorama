@@ -70,6 +70,14 @@ namespace Diorama.Editor
         BackFace
     }
 
+    public enum EditorSpecularBlendMode
+    {
+        Disabled = 0,
+        Over,
+        MulAOAddRoughness,
+        BackFace
+    }
+
     public enum EditorAlphaTestMode
     {
         NeverDraw = 0,

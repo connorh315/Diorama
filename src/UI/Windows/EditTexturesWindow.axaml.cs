@@ -8,19 +8,19 @@ using Diorama.Core.Filetypes.GSC.Components;
 using Diorama.Core.Filetypes.TEXTURES;
 using Diorama.Rendering;
 using Diorama.UI.ViewModels;
+using Diorama.UI.Windows;
 
 namespace Diorama;
 
-public partial class EditTexturesWindow : Window
+public partial class EditTexturesWindow : ModalWindow
 {
-    public EditTexturesWindow()
+    public EditTexturesWindow() : base("Edit Textures")
     {
         InitializeComponent();
     }
 
-    public EditTexturesWindow(EditTexturesViewModel viewModel)
+    public EditTexturesWindow(EditTexturesViewModel viewModel) : this()
     {
-        InitializeComponent();
         DataContext = viewModel;
         PART_MainTexture.OnClick += OnTextureButtonClick;
         AddNewTexture.Click += AddNewTexture_Click;

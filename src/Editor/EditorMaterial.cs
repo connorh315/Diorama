@@ -46,10 +46,28 @@ namespace Diorama.Editor
 
         public RenderTexture Specular0 { get; set; }
 
+        [RequiresShaderChange]
+        public bool UsesSpecular => Original.Specular0Index != -1;
+
         public RenderTexture EnvMap { get; set; }
 
         [DisplayLabel("Metallic Specular")]
         public byte MetallicSpecular { get => Original.materialFlags_metallic_specular; set => Set(ref Original.materialFlags_metallic_specular, value); }
+
+        [DisplayLabel("Baked Specular")]
+        public byte BakedSpecular { get => Original.materialFlags_baked_specular; set => Set(ref Original.materialFlags_baked_specular, value); }
+
+        [DisplayLabel("Disable Varying Specular")]
+        public byte DisableVaryingSpecular { get => Original.materialFlags_disable_varying_specular; set => Set(ref Original.materialFlags_disable_varying_specular, value); }
+
+        [DisplayLabel("Specular Cos Power")]
+        public float SpecularPower { get => Original.KBaseSpecularCosPower; set => Set(ref Original.KBaseSpecularCosPower, value); }
+
+        [DisplayLabel("Specular Bump")]
+        public float SpecularBump { get => Original.KSpecularBump; set => Set(ref Original.KSpecularBump, value); }
+
+        [DisplayLabel("Smooth Spec")]
+        public byte Spec { get => Original.materialFlags_smoothSpec; set => Set(ref Original.materialFlags_smoothSpec, value); }
 
         [DisplayLabel("Occlusion")]
         public uint Occlusion { get => Original.occlusion; set => Set(ref Original.occlusion, value); }
@@ -84,7 +102,7 @@ namespace Diorama.Editor
             int i = 0;
             foreach (var uvSet in Original.uvBlocks)
             {
-                Console.WriteLine($"Set {i++} - {uvSet.UVSet}");
+                Console.WriteLine($"Set {i++} ({uvSet.State}) - {uvSet.UVSet}");
             }
 
             if (debug)
@@ -95,6 +113,13 @@ namespace Diorama.Editor
             {
                 Comparer.Remove(Original);
             }
+
+            
+
+            //if (Comparer.Count == 2)
+            //{
+            //    Comparer[0].VertexLayout = Comparer[1].VertexLayout;
+            //}
 
             Console.WriteLine();
         }
@@ -220,7 +245,7 @@ namespace Diorama.Editor
 
         [DisplayLabel("Diffuse 0 Blend")]
         [RequiresShaderChange]
-        public EditorDiffuseBlendMode DiffuseLayerBlend { get => (EditorDiffuseBlendMode)Original.baseDiffuseUsage; set => Set(ref Original.baseDiffuseUsage, (uint)value); }
+        public EditorDiffuseBlendMode Diffuse0LayerBlend { get => (EditorDiffuseBlendMode)Original.baseDiffuseUsage; set => Set(ref Original.baseDiffuseUsage, (uint)value); }
 
         [DisplayLabel("Diffuse 1 Blend")]
         [RequiresShaderChange]
@@ -239,6 +264,9 @@ namespace Diorama.Editor
 
         [DisplayLabel("Normal 1 Blend")]
         public EditorNormalBlendMode Normal1LayerBlend { get => (EditorNormalBlendMode)Original.layerBlendNormal1; set => Set(ref Original.layerBlendNormal1, (uint)value); }
+
+        [DisplayLabel("Specular 0 Blend")]
+        public EditorSpecularBlendMode Specular0Blend { get => (EditorSpecularBlendMode)Original.layerBlendSpecular0; set => Set(ref Original.layerBlendSpecular0, (uint)value); }
 
         [DisplayLabel("Normal Map 0 Format")]
         public EditorSurfaceMapFormat Normal0Format { get => (EditorSurfaceMapFormat)Original.surfaceMapFormat0; set => Set(ref Original.surfaceMapFormat0, (uint)value); }

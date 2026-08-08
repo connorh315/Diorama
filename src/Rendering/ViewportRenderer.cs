@@ -124,17 +124,17 @@ namespace Diorama.Rendering
             GL.DepthMask(true);
             GL.Disable(EnableCap.Blend);
 
-            debugRenderer.Render();
+            //debugRenderer.Render();
 
-            frameCount++;
+            //frameCount++;
 
-            if (stopwatch.ElapsedMilliseconds >= 1000)
-            {
-                Console.WriteLine($"FPS: {frameCount}");
+            //if (stopwatch.ElapsedMilliseconds >= 1000)
+            //{
+            //    Console.WriteLine($"FPS: {frameCount}");
 
-                frameCount = 0;
-                stopwatch.Restart();
-            }
+            //    frameCount = 0;
+            //    stopwatch.Restart();
+            //}
 
             picker.Execute(camera, scenes);
         }

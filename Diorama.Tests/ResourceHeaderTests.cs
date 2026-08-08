@@ -4,8 +4,6 @@ using BrickVault.Types;
 using Diorama.Core.Filetypes.GSC;
 using Diorama.Core.Filetypes.GSC.Components.RESH;
 
-using RawFile = Diorama.Core.RawFile;
-
 namespace Diorama.Tests;
 
 [TestClass]

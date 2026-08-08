@@ -202,7 +202,7 @@ void main()
 
     //FragColor = vec4(textureLod(normal0, (GetUVSet(normal0_uvset) * PerLayerUVScale1), 0).agb, 1);
 
-    //FragColor = vec4(outColor.a);
+    //FragColor = vec4(texture(texture2, lmUv));
 
     if (debug_color0)
         FragColor = outColor.bgra;

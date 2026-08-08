@@ -1,9 +1,9 @@
-﻿using BrickVault;
+﻿global using Common;
+using BrickVault;
 using BrickVault.Types;
 using Diorama.Core;
 using Diorama.Core.Filetypes.GSC;
 using Diorama.Editor;
-using RawFile = Diorama.Core.RawFile;
 
 namespace Diorama.Tests.GameTests
 {

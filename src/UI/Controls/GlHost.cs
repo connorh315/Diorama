@@ -2,6 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.VisualTree;
 using Diorama.Rendering;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
@@ -76,6 +77,57 @@ namespace Diorama.UI.Controls
             renderService.Register(surface);
 
             return new PlatformHandle(_hwnd, "HWND");
+        }
+
+        public bool HostRequestsRedraw { get; set; } = false;
+
+        public bool HostNeedsClipping { get; set; } = false;
+        private ScrollViewer scrollViewer;
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+
+            scrollViewer = this.FindAncestorOfType<ScrollViewer>();
+
+            if (scrollViewer != null)
+            {
+                //scrollViewer.PropertyChanged += ScrollViewer_PropertyChanged;
+                //HostNeedsClipping = true;
+            }
+        }
+
+        public Rect VisibleRect;
+
+        private void ScrollViewer_PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Property == ScrollViewer.OffsetProperty)
+            {
+                var root = (Visual)VisualRoot;
+
+                var controlRect = new Rect(Bounds.Size)
+                    .TransformToAABB(this.TransformToVisual(root)!.Value);
+
+                var viewportRect = new Rect(scrollViewer.Bounds.Size)
+                    .TransformToAABB(scrollViewer.TransformToVisual(root)!.Value);
+
+                var visible = controlRect.Intersect(viewportRect);
+
+                var localVisible = new Rect(
+                    visible.X - controlRect.X,
+                    visible.Y - controlRect.Y,
+                    visible.Width,
+                    visible.Height);
+
+                float scale = (float)1;
+
+                VisibleRect = new Rect(
+                    localVisible.X * scale,
+                    localVisible.Y * scale,
+                    localVisible.Width * scale,
+                    localVisible.Height * scale);
+
+                HostRequestsRedraw = true;
+            }
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)

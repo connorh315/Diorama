@@ -26,6 +26,13 @@ namespace Diorama.UI.ViewModels
             set => Set(ref status, value);
         }
 
+        private string message = "Cancel";
+        public string ButtonMessage
+        {
+            get => message;
+            set => Set(ref message, value);
+        }
+
         private bool cancelled = false;
         public bool Cancelled
         {
@@ -80,6 +87,8 @@ namespace Diorama.UI.ViewModels
 
             }
 #endif
+
+            ButtonMessage = "Close";
         }
     }
 }

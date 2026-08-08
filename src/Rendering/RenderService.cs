@@ -107,12 +107,13 @@ namespace Diorama.Rendering
 
                 foreach (var surface in surfaces)
                 {
-                    if (!surface.Renderer.ContinuousRendering && !surface.IsDirty)
+                    if (!surface.Renderer.ContinuousRendering && !surface.IsDirty && !surface.Host.HostRequestsRedraw)
                         continue;
 
                     Render(surface);
 
                     surface.IsDirty = false;
+                    surface.Host.HostRequestsRedraw = false;
                 }
             }
         }
@@ -127,8 +128,31 @@ namespace Diorama.Rendering
                 surface.Initialized = true;
             }
 
+            if (surface.Host.HostNeedsClipping)
+            {
+                GL.Enable(EnableCap.ScissorTest);
+
+                var visible = surface.Host.VisibleRect;
+                var bounds = surface.Host.Bounds;
+
+                if (visible.Height > 0)
+                {
+                    GL.Scissor(
+                        (int)(visible.X),
+                        (int)((bounds.Height - visible.Bottom)),
+                        (int)(visible.Width),
+                        (int)(visible.Height));
+                }
+                else
+                {
+                    GL.Scissor(0, 0, 1, 1);
+                }
+            }
+
             surface.Host.Update();
             surface.Renderer.Render(surface);
+
+            GL.Disable(EnableCap.ScissorTest);
 
             Win32.SwapBuffers(surface.Host.Hdc);
         }

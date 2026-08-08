@@ -30,6 +30,8 @@ namespace Diorama.Core.Filetypes.SHADERS
 
         public int TimeToWrite;
 
+        public int Zero;
+
         public void Handle(SchemaSerializer schema, uint parentVersion)
         {
             schema.Handle(ref ResourceHeader, 0);
@@ -46,6 +48,11 @@ namespace Diorama.Core.Filetypes.SHADERS
                 schema.HandleSchemaVarArray(ref ShaderCache, (uint)ShaderCacheVersion);
 
                 schema.HandleInt(ref TimeToWrite);
+
+                if (Version > 2)
+                {
+                    schema.HandleInt(ref Zero);
+                }
             }
         }
 

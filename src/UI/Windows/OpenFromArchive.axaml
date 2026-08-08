@@ -4,7 +4,6 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Diorama.OpenFromArchive"
-        Title="OpenFromArchive"
         MaxHeight="800">
   <StackPanel>
     <TextBox x:Name="SearchBox" Text="{Binding Search, Mode=TwoWay}"></TextBox>

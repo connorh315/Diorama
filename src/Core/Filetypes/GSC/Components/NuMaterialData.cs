@@ -1,4 +1,5 @@
 ﻿using Diorama.Core.Filetypes.SHADERS;
+using Diorama.Core.Filetypes.TEXTURES;
 using HarfBuzzSharp;
 using System;
 using System.Collections.Generic;
@@ -1444,14 +1445,14 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 schema.HandleUInt(ref featureSet);
             }
             schema.HandleUInt(ref colourSpace);
-            if (Version < 0x110)
-            {
+            //if (Version < 0x110)
+            //{
                 schema.HandleUInt(ref bakedLighting);
-            }
-            else
-            {
-                schema.HandleUInt(ref undeclaredInt);
-            }
+            //}
+            //else
+            //{
+            //    schema.HandleUInt(ref undeclaredInt);
+            //}
 
             schema.HandleInt(ref discreteLightType);
             schema.HandleInt(ref discreteLightShadingModel);

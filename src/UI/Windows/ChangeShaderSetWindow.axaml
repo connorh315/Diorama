@@ -4,25 +4,49 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Diorama.ChangeShaderSetWindow">
-  <StackPanel Spacing="5" Width="600">
-    <TextBox Watermark="Search for material / shader / scene" HorizontalContentAlignment="Stretch" Text="{Binding SearchBox, Mode=TwoWay}"></TextBox>
-    <ListBox ItemsSource="{Binding Filtered}" SelectedItem="{Binding Selected}" Height="700" DoubleTapped="FingerprintList_DoubleTapped">
-      <ListBox.ItemTemplate>
-        <DataTemplate>
-          <StackPanel>
-            <Grid ColumnDefinitions="*, Auto">
-              <TextBlock Grid.Column="0" Text="{Binding MaterialName}" />
-              <TextBlock Grid.Column="1">
-                <Run>Suitability: </Run>
-                <Run Text="{Binding Suitability}" />
-                <Run>%</Run>
-              </TextBlock>
-            </Grid>
+  <Grid ColumnDefinitions="Auto,Auto">
+    <StackPanel Grid.Column="0" Spacing="5" Width="600">
+      <TextBox Watermark="Search for material / shader / scene" HorizontalContentAlignment="Stretch" Text="{Binding SearchBox, Mode=TwoWay}"></TextBox>
+      <ListBox ItemsSource="{Binding Filtered}" SelectedItem="{Binding Selected}" Height="700" DoubleTapped="FingerprintList_DoubleTapped">
+        <ListBox.ItemTemplate>
+          <DataTemplate>
+            <StackPanel>
+              <Grid ColumnDefinitions="*, Auto">
+                <TextBlock Grid.Column="0" Text="{Binding MaterialName}" />
+                <TextBlock Grid.Column="1">
+                  <Run>Suitability: </Run>
+                  <Run Text="{Binding Suitability}" />
+                  <Run>%</Run>
+                </TextBlock>
+              </Grid>
             
-            <TextBlock Text="{Binding SceneName}" />
-          </StackPanel>
-        </DataTemplate>
-      </ListBox.ItemTemplate>
-    </ListBox>
-  </StackPanel>
+              <TextBlock Text="{Binding SceneName}" />
+            </StackPanel>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </StackPanel>
+    <StackPanel Grid.Column="1" Spacing="5" Width="400">
+      <TextBlock HorizontalAlignment="Center">Material vs Shader</TextBlock>
+      <Grid ColumnDefinitions="2*,*,*">
+        <TextBlock Text="" />
+      </Grid>
+      <ItemsControl ItemsSource="{Binding Comparisons}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Grid ColumnDefinitions="2*,*,*">
+              <TextBlock Grid.Column="0"
+                         Text="{Binding PropertyName}" />
+
+              <TextBlock Grid.Column="1"
+                         Text="{Binding MaterialValue}" />
+              
+              <TextBlock Grid.Column="2"
+                         Text="{Binding SelectedValue}" />
+            </Grid>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </StackPanel>
+  </Grid>
 </Window>

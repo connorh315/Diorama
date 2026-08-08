@@ -51,7 +51,8 @@ namespace Diorama
             }
             else if (property.PropertyType == typeof(float)
                      || property.PropertyType == typeof(string)
-                     || property.PropertyType == typeof(byte))
+                     || property.PropertyType == typeof(byte)
+                     || property.PropertyType == typeof(uint))
             {
                 editor = new TextInput();
                 editor.Bind(

@@ -6,8 +6,7 @@
         x:Class="Diorama.EditTexturesWindow"
         xmlns:controls="using:Diorama"
         Width="1300"
-        Height="700"
-        Title="EditTexturesWindow">
+        Height="700">
   <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="*"/>

@@ -24,6 +24,8 @@ namespace Diorama.Editor.ShaderSystem
 
         private int shaderArrayOffset = 0;
 
+        public bool ExtendedBitMask = false;
+
         public List<ShaderSetArray> SetArray = new();
 
         public void Handle(SchemaSerializer schema, uint parentVersion)
@@ -53,7 +55,7 @@ namespace Diorama.Editor.ShaderSystem
                     }
                 }
 
-                schema.SetContext(fingerprintLayout);
+                schema.SetContext(this);
 
                 schema.HandleSchemaVarArray(ref Cache);
             }
@@ -62,6 +64,7 @@ namespace Diorama.Editor.ShaderSystem
 
             if (schema.Writing)
             {
+                schema.HandleBool(ref ExtendedBitMask);
                 schema.HandleSchemaVarArray(ref SetArray);
             }
         }
@@ -69,6 +72,8 @@ namespace Diorama.Editor.ShaderSystem
         public void OpenShaderSet(SchemaSerializer schema)
         {
             schema.File.Seek(shaderArrayOffset, SeekOrigin.Begin);
+            schema.HandleBool(ref ExtendedBitMask);
+            schema.SetContext(this);
             schema.HandleSchemaVarArray(ref SetArray);
         }
 
@@ -111,6 +116,11 @@ namespace Diorama.Editor.ShaderSystem
             var setArray = ShaderSetArray.FromMaterial(viewModel);
 
             SetArray.Add(setArray);
+
+            if (setArray.BitArray.IsExtended)
+            {
+                ExtendedBitMask = true;
+            }
 
             return (fingerprint, setArray);
         }

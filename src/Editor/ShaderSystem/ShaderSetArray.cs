@@ -13,7 +13,7 @@ namespace Diorama.Editor.ShaderSystem
         public short FileIndex = -1;
         public string MaterialName;
 
-        public uint BitArray;
+        public EditorShaderSetBitmask BitArray;
         public List<uint> Hashes;
 
         public void Handle(SchemaSerializer schema, uint parentVersion)
@@ -21,28 +21,37 @@ namespace Diorama.Editor.ShaderSystem
             schema.HandleShort(ref FileIndex);
             schema.HandlePascalString(ref MaterialName);
 
-            schema.HandleUInt(ref BitArray);
+            //schema.Handle(ref BitArray, parentVersion);
+            schema.Handle(ref BitArray);
+
             schema.HandleSchemaVarArray(ref Hashes);
         }
 
         public uint[] GetSet(int set)
         {
-            int populatedSlots = BitOperations.PopCount(BitArray);
+            int populatedSlots = BitArray.PopCount();
 
             if (populatedSlots == 0)
                 return new uint[32];
 
             int setCount = Hashes.Count / populatedSlots;
 
-            if (set < 0 || set >= setCount)
-                throw new ArgumentOutOfRangeException(nameof(set));
+            int totalSlots = 32;
+            if (BitArray.IsExtended)
+                totalSlots = 96;
 
-            uint[] result = new uint[32];
+            uint[] result = new uint[totalSlots];
+
+            if (set < 0 || set >= setCount)
+            {
+                Console.WriteLine($"Requested non-existent shader set from {MaterialName} - Substituting in 0s");
+                return result;
+            }
 
             int hashIndex = 0;
-            for (int slot = 0; slot < 32; slot++)
+            for (int slot = 0; slot < totalSlots; slot++)
             {
-                if ((BitArray & (1u << slot)) == 0)
+                if (BitArray.GetSlot(slot) == 0)
                     continue;
 
                 result[slot] = Hashes[hashIndex + set];
@@ -72,6 +81,7 @@ namespace Diorama.Editor.ShaderSystem
             int hashCount = hashArrays[0].Length;
 
             uint bitArray = 0;
+            EditorShaderSetBitmask bitmask = new EditorShaderSetBitmask(hashCount > 32);
             List<uint> hashes = new List<uint>();
 
             for (int slot = 0; slot < hashCount; slot++)
@@ -90,7 +100,7 @@ namespace Diorama.Editor.ShaderSystem
                 if (!required)
                     continue;
 
-                bitArray |= 1u << slot;
+                bitmask.SetSlotActive(slot);
 
                 // Store one uint for EVERY set
                 foreach (var set in hashArrays)
@@ -102,7 +112,7 @@ namespace Diorama.Editor.ShaderSystem
                 }
             }
 
-            shaderSet.BitArray = bitArray;
+            shaderSet.BitArray = bitmask;
             shaderSet.Hashes = hashes;
 
             return shaderSet;

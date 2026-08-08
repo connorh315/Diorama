@@ -56,7 +56,7 @@
             
             <StackPanel Spacing="5">
               <controls:PropertyEditor Property="PerLayerUVScale1" />
-              <controls:PropertyEditor Property="DiffuseLayerBlend" />
+              <controls:PropertyEditor Property="Diffuse0LayerBlend" />
             </StackPanel>
           </controls:TextureSlotControl>
           <controls:TextureSlotControl
@@ -97,12 +97,13 @@
             SelectedSet="{Binding Specular0UVSet}">
 
             <StackPanel Spacing="5">
+              <controls:PropertyEditor Property="Specular0Blend" />
             </StackPanel>
           </controls:TextureSlotControl>
           <controls:TextureSlotControl
             InputLabel="Environment Map"
             Texture="{Binding EnvMap}"
-            SelectedSet="{Binding Specular0UVSet}">
+            SelectedSet="{Binding EnvMapUVSet}">
 
             <StackPanel Spacing="5">
             </StackPanel>
@@ -114,6 +115,11 @@
 
       <controls:PropertyEditor Property="Lighting" />
       <controls:PropertyEditor Property="MetallicSpecular" />
+      <controls:PropertyEditor Property="BakedSpecular" />
+      <controls:PropertyEditor Property="DisableVaryingSpecular" />
+      <controls:PropertyEditor Property="SpecularPower" />
+      <controls:PropertyEditor Property="SpecularBump" />
+      <controls:PropertyEditor Property="Spec" />
 
       <controls:PropertyEditor Property="RimLight" />
 

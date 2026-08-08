@@ -461,7 +461,7 @@ namespace Diorama.Editor
             string path = nuScene.Path;
 
 #if DEBUG
-            path = path.Replace(".GSC", "_1.GSC").Replace(".GHG", "_1.GHG");
+            //path = path.Replace(".GSC", "_1.GSC").Replace(".GHG", "_1.GHG");
 #endif
 
             using (RawFile file = RawFile.Create(path))
@@ -579,24 +579,37 @@ namespace Diorama.Editor
 
             List<string> shaderPaths = new();
 
+            string[] shadersExtensions = ["pc_shaders", "ps4_shaders"];
             bool foundAnyShaders = false;
-            foreach (var file in scene.Metadata.Resources)
+
+            foreach (var ext in shadersExtensions)
             {
-                string clean = file.FilePath.ToLower();
-                string diskFilepath = Path.Combine(savePath, Path.GetFileName(clean));
-                if (clean.Contains("shaders") && Path.Exists(diskFilepath))
+                string shadersFilePath = Path.ChangeExtension(scene.OriginalScene.Path, ext);
+                if (Path.Exists(shadersFilePath))
                 {
                     foundAnyShaders = true;
-
-                    shaderPaths.Add(diskFilepath);
-                    Console.WriteLine($"Found shaders file: {Path.GetFileName(clean)}");
+                    shaderPaths.Add(shadersFilePath);
+                    Console.WriteLine($"Found shaders file: {Path.GetFileName(shadersFilePath)}");
                 }
             }
+            //bool foundAnyShaders = false;
+            //foreach (var file in scene.Metadata.Resources)
+            //{
+            //    string clean = file.FilePath.ToLower();
+            //    string diskFilepath = Path.Combine(savePath, Path.GetFileName(clean));
+            //    if (clean.Contains("shaders") && Path.Exists(diskFilepath))
+            //    {
+            //        foundAnyShaders = true;
 
-            if (foundAnyShaders == false)
-            {
-                Console.WriteLine("Could not find any shaders files that are referenced in the resource header - Cannot update shaders!");
-            }
+            //        shaderPaths.Add(diskFilepath);
+            //        Console.WriteLine($"Found shaders file: {Path.GetFileName(clean)}");
+            //    }
+            //}
+
+            //if (foundAnyShaders == false)
+            //{
+            //    Console.WriteLine("Could not find any shaders files that are referenced in the resource header - Cannot update shaders!");
+            //}
 
             Dictionary<string, string> datPaths =
                         Directory.EnumerateFiles(

@@ -1,6 +1,5 @@
 ﻿using BrickVault;
 using BrickVault.Types;
-using RawFile = Diorama.Core.RawFile;
 
 namespace Diorama.Tests
 {
@@ -30,7 +29,7 @@ namespace Diorama.Tests
                     var dat = DATFile.Open(archive);
                     if (dat == null) return state;
 
-                    using var datFile = new BrickVault.RawFile(archive);
+                    using var datFile = new RawFile(archive);
 
                     foreach (var entry in dat.Files)
                     {

@@ -12,6 +12,6 @@
       <Run>files</Run>
     </TextBlock>
     <TextBlock Text="{Binding Status}" />
-    <Button Command="{Binding CancelCommand}" HorizontalAlignment="Center">Cancel</Button>
+    <Button Command="{Binding CancelCommand}" HorizontalAlignment="Center" Content="{Binding ButtonMessage}" />
   </StackPanel>
 </Window>

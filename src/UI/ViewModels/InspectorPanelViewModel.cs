@@ -56,6 +56,13 @@ namespace Diorama.UI.ViewModels
 
             var selectedGeo = Controller.SelectedGeometry;
 
+            var dump = selectedGeo.Mesh.OriginalMesh.VertexBuffers[1].VerticesDump;
+
+            //for (int i = 3; i < dump.Length; i += 4)
+            //{
+            //    dump[i] = 0xff;
+            //}
+
             using (RawFile file = new RawFile(@"A:\debug.hex"))
             {
                 foreach (var buff in selectedGeo.Mesh.OriginalMesh.VertexBuffers)

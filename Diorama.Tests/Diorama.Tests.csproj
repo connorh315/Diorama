@@ -18,7 +18,10 @@
 
   <ItemGroup>
     <Reference Include="BrickVault">
-      <HintPath>G:\BV\BrickVault\bin\x64\Lib\net8.0\BrickVault.dll</HintPath>
+      <HintPath>G:\BV\BrickVault\bin\x64\Lib\net10.0\BrickVault.dll</HintPath>
+    </Reference>
+    <Reference Include="Common">
+      <HintPath>..\..\Common\bin\Release\net10.0\Common.dll</HintPath>
     </Reference>
   </ItemGroup>
 

@@ -18,7 +18,7 @@ namespace Diorama.Editor.ShaderSystem
 
         const string FingerprintFilename = "materialfingerprint.cache";
 
-        public static Dictionary<int, string> IndexedFiles = Cache.FileTree.GetIndexedFiles();
+        public static Dictionary<int, string> IndexedFiles = Cache?.FileTree?.GetIndexedFiles();
 
         public static List<ShaderSetArray> GetShaderSet()
         {
@@ -45,6 +45,8 @@ namespace Diorama.Editor.ShaderSystem
 
         public static IEnumerable<(string, ShaderFingerprint)> Enumerate()
         {
+            if (Cache == null) yield break;
+
             int fileIndex = -1;
             string path = "";
             foreach (var fingerprint in Cache.Cache)
@@ -176,6 +178,8 @@ namespace Diorama.Editor.ShaderSystem
                 Current = processed,
                 Status = $"Complete!"
             });
+
+            Cache = fCache;
         }
 
         public static PropertyInfo[] GetProperties(EditorMaterial viewModel) => viewModel.GetType()

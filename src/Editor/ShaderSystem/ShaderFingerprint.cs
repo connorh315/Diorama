@@ -37,7 +37,7 @@ namespace Diorama.Editor.ShaderSystem
 
             schema.HandlePascalString(ref MaterialName);
 
-            List<ShaderFingerprintType> types = (List<ShaderFingerprintType>)schema.Context;
+            List<ShaderFingerprintType> types = ((ShaderFingerprintCache)(schema.Context)).fingerprintLayout;
 
             if (!schema.Writing)
             {

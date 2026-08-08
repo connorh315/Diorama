@@ -3,6 +3,7 @@ using Diorama.Editor.ShaderSystem;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Reflection;
 using System.Text;
 
 namespace Diorama.UI.ViewModels
@@ -11,12 +12,33 @@ namespace Diorama.UI.ViewModels
     {
         public EditorMaterial Original { get; set; }
 
-        public EditorShaderFingerprint Selected { get; set; }
+        private EditorShaderFingerprint selected;
+        public EditorShaderFingerprint Selected 
+        { 
+            get => selected; 
+            set
+            {
+                Set(ref selected, value);
+
+                if (selected == null)
+                    return;
+
+                var layout = EditorShaderSystem.Cache.fingerprintLayout;
+
+                for (int i = 0; i < layout.Count; i++)
+                {
+                    Comparisons[i].UpdateSelected(selected.Fingerprint.Properties[i].ToString());
+                    Console.WriteLine($"{layout[i].PropertyName}: {selected.Fingerprint.Properties[i]}");
+                }
+            }
+        }
 
         public ObservableCollection<EditorShaderFingerprint> Fingerprints { get; }
 
         private ObservableCollection<EditorShaderFingerprint> filteredInternal = new();
         public ObservableCollection<EditorShaderFingerprint> Filtered { get; set; }
+
+        public ObservableCollection<EditorShaderComparison> Comparisons { get; } = new();
 
         public void ChangeFingerprint()
         {
@@ -101,11 +123,20 @@ namespace Diorama.UI.ViewModels
                 }
             }
 
+            if (suitable.Count == 0)
+                return;
+
             Fingerprints = new ObservableCollection<EditorShaderFingerprint>(suitable.OrderByDescending(e => e.Score));
 
             Filtered = Fingerprints;
 
             Original = original;
+
+            var layout = EditorShaderSystem.Cache.fingerprintLayout;
+            for (int i = 0; i < layout.Count; i++)
+            {
+                Comparisons.Add(new EditorShaderComparison(layout[i].PropertyName, current.Properties[i].ToString()));
+            }
         }
     }
 }
