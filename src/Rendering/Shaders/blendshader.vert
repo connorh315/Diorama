@@ -8,6 +8,7 @@ layout (location = 4) in vec4 aColor2;
 layout (location = 5) in vec4 aUv1;
 layout (location = 6) in vec4 aDiffuse;
 layout (location = 7) in vec4 aUv2;
+layout (location = 12) in vec3 lightDirSet;
 
 out vec3 FragPos;
 out vec3 Normal;
@@ -18,6 +19,7 @@ out vec4 UV2;
 out vec4 outColor;
 out vec4 outColor2;
 out vec4 outDiffuse;
+out vec3 outLightDir;
 
 uniform mat4 model;
 uniform mat4 view;
@@ -50,4 +52,5 @@ void main()
     outColor = aColor;
     outColor2 = aColor2;
     outDiffuse = aDiffuse;
+    outLightDir = ResolveNormalised(lightDirSet);
 }

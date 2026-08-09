@@ -35,6 +35,8 @@ namespace Diorama.Core.Filetypes.GSC
 
         public NuMeshSceneBlock MeshSceneBlock;
 
+        public List<NuCharacterData> CharacterData;
+
         public NuMetadataBlock Metadata;
 
         public byte[] Trailer;

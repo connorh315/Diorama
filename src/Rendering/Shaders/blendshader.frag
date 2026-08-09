@@ -10,6 +10,7 @@ in vec4 UV2;
 in vec4 outColor;
 in vec4 outColor2;
 in vec4 outDiffuse;
+in vec3 outLightDir;
 
 out vec4 FragColor;
 
@@ -25,6 +26,10 @@ uniform sampler2D normal0;
 uniform bool hasNormalMap;
 uniform int normal0_uvset;
 uniform float normalStrength;
+
+uniform sampler2D specular0;
+uniform bool hasSpecularMap;
+uniform int specular0_uvset;
 
 uniform int diffuse0_uvset;
 uniform int diffuse1_uvset;
@@ -47,6 +52,8 @@ uniform float PerLayerUVScale1;
 uniform float PerLayerUVScale2;
 uniform float PerLayerUVScale3;
 uniform float PerLayerUVScale4;
+
+uniform int numAlphaLayers;
 
 uniform int layer1blendmode;
 uniform int layer2blendmode;
@@ -86,32 +93,27 @@ uniform bool debug_color1g;
 uniform bool debug_color1b;
 uniform bool debug_color1a;
 
+uniform bool debug_showSpecular;
 
 void main()
 {
-    //if (RenderSpheres)
-    //{
-    //    float d = distance(FragPos, BoundsCenter);
-    //
-    //    if (d > BoundsRadius)
-    //        FragColor = vec4(1,0,0,1);   // Outside sphere
-    //    else
-    //        FragColor = vec4(0,1,0,1);   // Inside sphere
-    //
-    //    return;
-    //}
-
+    vec4 surfaceSample = vec4(0.5, 0.5, 0.0, 1.0);
+    vec4 specularSample = vec4(1.0);
+    
     vec3 normal = normalize(Normal);
     vec3 lightDir = normalize(camera - FragPos);
 
     if (hasNormalMap)
     {
-        vec3 tangentNormal = texture(normal0, GetUVSet(normal0_uvset) * PerLayerUVScale1).agb;
+        surfaceSample = texture(normal0, GetUVSet(normal0_uvset) * PerLayerUVScale1);
+
+        vec3 tangentNormal = surfaceSample.agb;
 
         // Decode from [0,1] -> [-1,1]
         //tangentNormal = tangentNormal * 2.0 - 1.0;
 
         tangentNormal = tangentNormal * 2.0 - vec3(1.0, 1.0, 0.0);
+        tangentNormal.xy *= normalStrength;
         tangentNormal = normalize(tangentNormal);
 
         vec3 T = normalize(outTangent);
@@ -131,10 +133,29 @@ void main()
             N * tangentNormal.z);
     }
 
-    float diff = max(dot(normal, lightDir), 0.0);
+    if (hasSpecularMap)
+    {
+        specularSample = texture(
+            specular0,
+            GetUVSet(specular0_uvset) * PerLayerUVScale1
+        );
+    }
+
+    float NdotL = max(dot(normal, lightDir), 0.0);
+
+    //const float ambientStrength = 0.35;
+    const float directStrength = 0.65;
+
+    float hemi = normal.y * 0.5 + 0.5;
+
+    float ambientStrength = mix(0.20, 0.40, hemi);
+
+    float lit = ambientStrength + directStrength * NdotL;
+
+    //float diff = max(dot(normal, lightDir), 0.0);
 
     // Your lighting model
-    float lit = 0.2 + diff;
+    //float lit = 0.2 + diff;
 
     // Branchless toggle
     float lighting = mix(1.0, lit, lightingEnabled);
@@ -164,16 +185,38 @@ void main()
     vec2 diffuse1uv = GetUVSet(diffuse1_uvset) * PerLayerUVScale2   ;
     vec4 detail = texture(texture1, diffuse1uv);
 
+    float directionalFactor = clamp(
+        dot(normalize(outLightDir), normal),
+        0.0,
+        1.0
+    );
+
     vec2 lmUv = GetUVSet(lightmap_uvset) * lm_scale + lm_offset;
-    float ao = mix(texture(texture2, lmUv).r, outColor.a, 0.3);
-    vec4 smoothLm = texture(texture3, lmUv);
+
+    vec3 lm0 = texture(texture2, lmUv).rgb;
+    vec3 lm1 = texture(texture3, lmUv).rgb;
+
+    lm0 *= lm0;
+    lm1 *= lm1;
+
+    vec3 bakedLighting = mix(lm1, lm0, directionalFactor);
 
     vec3 albedo = base.rgb;
+    vec4 layerWeights = outColor2;
+    if (numAlphaLayers == 0)
+        layerWeights = vec4(1.0, detail.a, base.a, 1.0);
     switch (layer2blendmode)
     {
         case 1:
-            float outAlpha = outColor2.b + outColor2.g * (1.0 - outColor2.b);
-            albedo = (detail.rgb * outColor2.b + base.rgb * outColor2.g * (1.0 - outColor2.b)) / outAlpha;
+            if (numAlphaLayers > 0)
+            {
+                float outAlpha = layerWeights.b + layerWeights.g * (1.0 - layerWeights.b);
+                albedo = (detail.rgb * layerWeights.b + base.rgb * layerWeights.g * (1.0 - layerWeights.b)) / outAlpha;
+            }
+            else
+            {
+                albedo = mix(base.rgb, detail.rgb, detail.a);
+            }
             break;
         case 2: // ADD
             albedo = base.rgb + detail.rgb;
@@ -185,11 +228,11 @@ void main()
             albedo = albedo * detail.rgb;
             break;
         case 5: // MAXALPHA
-            if ((detail.a * outColor2.b) > (base.a * outColor2.g))
+            if ((detail.a * layerWeights.b) > (base.a * layerWeights.g))
                 albedo = detail.rgb;
             break;
         case 10: // MAXALPHABLEND (Not correct)
-            albedo = mix(base.rgb, detail.rgb, outColor2.b);
+            albedo = mix(base.rgb, detail.rgb, layerWeights.b);
             break;
         case 7: // SCALE
             albedo = albedo * detail.rgb;
@@ -197,21 +240,149 @@ void main()
     }
 
     //vec3 albedo = mix(detail.rgb, base.rgb, 1 - outColor2.b);
-        
-    vec4 color = vec4(albedo, 1) * (has_vertex_colors ? vec4(outColor.b, outColor.g, outColor.r, 1) : vec4(1)) * smoothLm * ao * mesh_color * lighting;
+    
+    vec3 F0 = mix(
+        albedo * albedo,
+        vec3(0.04),
+        specularSample.g
+    );
+
+    vec3 materialDiffuseSquared = albedo * albedo;
+    vec3 bakedMaterialResponse;
+
+    float specularStrength = 1.0;
+
+    if (hasSpecularMap)
+    {
+        bakedMaterialResponse = specularSample.g * materialDiffuseSquared;
+
+        if (specularSample.g < 0.2)
+        {
+            bakedMaterialResponse += F0 * 0.2;
+        }
+
+        bakedMaterialResponse *= specularSample.a;
+    }
+    else
+    {
+        bakedMaterialResponse = materialDiffuseSquared * specularStrength;
+    }
+
+    
+
+    vec3 vertexColor = has_vertex_colors ? outColor.bgr : vec3(1.0);
+
+    bakedMaterialResponse *= vertexColor;
+    bakedMaterialResponse *= mesh_color.rgb;
+
+    //vec4 color = vec4(albedo, 1) * (has_vertex_colors ? vec4(outColor.b, outColor.g, outColor.r, 1) : vec4(1)) * mesh_color * lighting * vec4(bakedLighting, 1);
+
+    vec3 finalDiffuse = bakedMaterialResponse * bakedLighting;
+
+    vec4 color = vec4(finalDiffuse, base.a * mesh_color.a);
+
+    vec3 viewDir = normalize(camera - FragPos);
+
+    vec3 L = lightDir;
+    vec3 V = viewDir;
+
+    vec3 H = normalize(L + V);
+
+    float NdotV = max(dot(normal, V), 0.0);
+    float NdotH = max(dot(normal, H), 0.0);
+    float VdotH = max(dot(V, H), 0.0);
+
+    float baseRoughness = 0.5; // possibly pulled from the ColourX
+    float surfaceStrength = 1.0;
+    float roughnessBias = -0.00392;
+    float roughness;
+    if (hasSpecularMap)
+    {
+        roughness = clamp(specularSample.r + roughnessBias, 0.0, 1.0);
+    }
+    else
+    {
+        roughness = clamp(surfaceSample.r * surfaceStrength + roughnessBias, 0.0, 1.0);
+    }
+
+    roughness = max(roughness, 0.01);
+
+    float roughness2 = roughness * roughness;
+    float roughness4 = roughness2 * roughness2;
+
+    float distributionDenom =
+        NdotH * NdotH * (roughness4 - 1.0) + 1.0;
+
+    distributionDenom *= distributionDenom;
+
+    float rPlusOne = roughness + 1.0;
+    float k = (rPlusOne * rPlusOne) * 0.125;
+
+    float geometryV =
+        NdotV * (1.0 - k) + k;
+
+    float geometryL =
+        NdotL * (1.0 - k) + k;
+
+    float geometryDenom =
+        geometryV * geometryL;
+
+    float brdfDenom =
+        distributionDenom *
+        geometryDenom *
+        12.566371;
+
+    float Fc = pow(1.0 - VdotH, 5.0);
+
+    vec3 F;
+
+    if (hasSpecularMap)
+    {
+        float fresnelFactor = pow(1.0 - VdotH, 5.0);
+
+        F = F0 + (vec3(1.0) - F0) * fresnelFactor;
+    }
+    else
+    {
+        float fresnelFactor = pow(1.0 - VdotH, 5.0);
+
+        F = vec3(0.05 + 0.95 * fresnelFactor);
+    }
+
+    vec3 specularBRDF =
+        (roughness4 * F) /
+        max(brdfDenom, 0.0001);
+
+    specularBRDF *= specularSample.a;
+
+    vec3 specular = specularBRDF * NdotL;
+
+    specular = clamp(
+        specular,
+        vec3(0.0),
+        vec3(1.0)
+    );
+
+    if (debug_showSpecular)
+        color.rgb += specular;
 
     float glowAmount = glow ? glowIntensity : 0.0;
 
-    vec3 viewDir = normalize(camera - FragPos);
     float rim = pow(1.0 - max(dot(normal, viewDir), 0.0), 3.0);
 
     color.rgb += mesh_color.rgb * rim * 1.5 * glowAmount;
 
     color.a = base.a * mesh_color.a;
 
-    //color = vec4(outColor2.b, outColor2.b, outColor2.b, 1);
-
     FragColor = color;
+
+    //FragColor = vec4(vec3(bakedLighting), 1);
+
+    //FragColor = vec4(texture(texture3, lmUv).rgb, 1.0);
+
+    //FragColor = vec4(vec3(roughness), 1);
+
+    //FragColor = vec4(vec3(specularSample.b), 1.0);
 
     //FragColor = vec4(textureLod(normal0, (GetUVSet(normal0_uvset) * PerLayerUVScale1), 0).agb, 1);
 

@@ -34,11 +34,11 @@ public class TextureSlotControl : LabelledInput
     AvaloniaProperty.Register<TextureSlotControl, bool>(
         nameof(IsPickerOpen));
 
-public bool IsPickerOpen
-{
-    get => GetValue(IsPickerOpenProperty);
-    set => SetValue(IsPickerOpenProperty, value);
-}
+    public bool IsPickerOpen
+    {
+        get => GetValue(IsPickerOpenProperty);
+        set => SetValue(IsPickerOpenProperty, value);
+    }
 
     public static readonly StyledProperty<float?> ScaleProperty =
         AvaloniaProperty.Register<TextureSlotControl, float?>(

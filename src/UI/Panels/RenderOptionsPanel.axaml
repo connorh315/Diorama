@@ -35,6 +35,8 @@
           <controls:PropertyEditor Property="Color1G" />
           <controls:PropertyEditor Property="Color1B" />
           <controls:PropertyEditor Property="Color1A" />
+
+          <controls:PropertyEditor Property="ShowSpecular" />
         </StackPanel>
       </ControlTemplate>
     </Setter>

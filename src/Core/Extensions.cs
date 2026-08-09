@@ -14,6 +14,15 @@ namespace Diorama.Core
 
         public static Vector3 ToVector3(this Vector4 v)
             => new Vector3(v.X, v.Y, v.Z);
+        
+        public static List<float> ToList(this OpenTK.Mathematics.Matrix4 m) =>
+        [
+            m.M11, m.M12, m.M13, m.M14,
+                    m.M21, m.M22, m.M23, m.M24,
+                    m.M31, m.M32, m.M33, m.M34,
+                    m.M41, m.M42, m.M43, m.M44
+        ];
+
     }
 
     public static class NuExtensions

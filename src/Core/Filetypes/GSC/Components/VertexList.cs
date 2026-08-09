@@ -245,7 +245,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
                         vertex.Position = ReadVector(file, def.Type).ToVector3();
                         break;
                     case VertexDefinitionVariableEnum.normal:
-                        vertex.Normal = ReadVector(file, def.Type).ToVector3();
+                        vertex.Normal = ReadVector(file, def.Type, true).ToVector3();
                         break;
                     case VertexDefinitionVariableEnum.tangent:
                         vertex.Tangent = ReadVector(file, def.Type).ToVector3();
@@ -259,6 +259,12 @@ namespace Diorama.Core.Filetypes.GSC.Components
                     case VertexDefinitionVariableEnum.uvSet01:
                         vertex.UVSet01 = ReadVector(file, def.Type);
                         break;
+                    case VertexDefinitionVariableEnum.blendWeight0:
+                        vertex.BlendWeights = ReadVector(file, def.Type, false);
+                        break;
+                    case VertexDefinitionVariableEnum.blendIndices0:
+                        vertex.BlendIndices = new VectorI4(file.ReadByte(), file.ReadByte(), file.ReadByte(), file.ReadByte()); // assumption here that it's always vec4char
+                        break;
                     default:
                         ReadVector(file, def.Type); // discard, no implementation
                         break;
@@ -266,7 +272,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
             }
         }
 
-        private static Vector4 ReadVector(RawFile file, VertexDefinitionStorageEnum storageType)
+        private static Vector4 ReadVector(RawFile file, VertexDefinitionStorageEnum storageType, bool signedValue = false)
         {
             switch (storageType)
             {
@@ -306,11 +312,18 @@ namespace Diorama.Core.Filetypes.GSC.Components
                         (float)file.ReadHalf(false));
 
                 case VertexDefinitionStorageEnum.vec4mini:
-                    return new Vector4(
-                        NormalizeByte(file.ReadByte()),
-                        NormalizeByte(file.ReadByte()),
-                        NormalizeByte(file.ReadByte()),
-                        NormalizeByte(file.ReadByte()));
+                    if (signedValue)
+                        return new Vector4(
+                            NormalizeSignedByte(file.ReadByte()),
+                            NormalizeSignedByte(file.ReadByte()),
+                            NormalizeSignedByte(file.ReadByte()),
+                            NormalizeSignedByte(file.ReadByte()));
+                    else
+                        return new Vector4(
+                            NormalizeByte(file.ReadByte()),
+                            NormalizeByte(file.ReadByte()),
+                            NormalizeByte(file.ReadByte()),
+                            NormalizeByte(file.ReadByte()));
 
                 case VertexDefinitionStorageEnum.vec4char:
                     return new Vector4(file.ReadByte(), file.ReadByte(), file.ReadByte(), file.ReadByte());
@@ -324,10 +337,14 @@ namespace Diorama.Core.Filetypes.GSC.Components
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static float NormalizeByte(byte value)
+        private static float NormalizeSignedByte(byte value)
         {
             return value / 127.5f - 1.0f;
         }
 
+        private static float NormalizeByte(byte value)
+        {
+            return value / 255f;
+        }
     }
 }

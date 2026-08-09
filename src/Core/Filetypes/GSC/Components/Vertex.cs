@@ -23,5 +23,25 @@ namespace Diorama.Core.Filetypes.GSC.Components
         public Vector4 UVSet01;
 
         public Vector2 UVSet02;
+
+        public VectorI4 BlendIndices;
+
+        public Vector4 BlendWeights;
+    }
+
+    public struct VectorI4
+    {
+        public ushort X;
+        public ushort Y;
+        public ushort Z;
+        public ushort W;
+
+        public VectorI4(ushort x, ushort y, ushort z, ushort w)
+        {
+            X = x;
+            Y = y;
+            Z = z;
+            W = w;
+        }
     }
 }

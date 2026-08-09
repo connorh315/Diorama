@@ -512,6 +512,11 @@ namespace Diorama.Core.Filetypes.GSC.Components
         public NuMaterialData ChildMaterial;
 
         public abstract void Handle(SchemaSerializer schema, uint parentVersion);
+
+        public void DebugLook()
+        {
+            Console.WriteLine();
+        }
     }
 
     public class NuMaterialData_E0 : NuMaterialData

@@ -5,6 +5,7 @@ using Diorama.Core.Filetypes.GSC;
 using Diorama.Core.Filetypes.GSC.Components;
 using Diorama.Core.Filetypes.TEXTURES;
 using Diorama.Editor;
+using Diorama.Editor.glTF;
 using Diorama.UI;
 using Diorama.UI.ViewModels;
 using OpenTK.Graphics.OpenGL4;
@@ -61,6 +62,7 @@ namespace Diorama.Rendering
 
         public ICommand SaveSceneCommand { get; }
         public ICommand RemoveSceneCommand { get; }
+        public ICommand ExportSceneCommand { get; }
         public ICommand EditResourceHeaderCommand { get; }
         public ICommand EditTexturesCommand { get; }
         public ICommand SaveTexturesCommand { get; }
@@ -101,6 +103,32 @@ namespace Diorama.Rendering
                 {
                     Scenes.Remove(sender);
                 }
+            });
+
+            ExportSceneCommand = new RelayCommand<EditorScene>(async (EditorScene? sender) =>
+            {
+                string outputPath = await MainWindow?.OpenSaveMenu("Export glTF Scene", "glTF");
+
+                if (outputPath == null) return;
+
+                List<EditorGeometryObject> geometries = new();
+
+                foreach (EditorSceneObject sceneObject in sender.Objects)
+                {
+                    if (sceneObject.ClipObject != null)
+                    {
+                        geometries.AddRange(sceneObject.ClipObject.Elements);
+                    }
+                    else if (sceneObject.UseLodGroups)
+                    {
+                        if (sceneObject.Lods[0]?.ClipObject != null)
+                        {
+                            geometries.AddRange(sceneObject.Lods[0].ClipObject.Elements);
+                        }
+                    }
+                }
+
+                glTFConverter.WriteObjectsToGltf(geometries, outputPath);
             });
 
             EditResourceHeaderCommand = new RelayCommand<EditorScene>(async (EditorScene? sender) =>

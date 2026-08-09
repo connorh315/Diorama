@@ -114,14 +114,12 @@ namespace Diorama.Editor
                 Comparer.Remove(Original);
             }
 
-            
-
             //if (Comparer.Count == 2)
             //{
             //    Comparer[0].VertexLayout = Comparer[1].VertexLayout;
             //}
 
-            Console.WriteLine();
+            Original.DebugLook();
         }
 
         private bool debug;
@@ -235,12 +233,19 @@ namespace Diorama.Editor
             return true;
         }
 
+        [RequiresShaderChange]
         public int Diffuse0UVSet { get => Original.uvBlocks[0].UVSet; set => SetUVBlock(ref Original.uvBlocks[0], value); }
+        [RequiresShaderChange]
         public int Diffuse1UVSet { get => Original.uvBlocks[1].UVSet; set => SetUVBlock(ref Original.uvBlocks[1], value); }
+        [RequiresShaderChange]
         public int Normal0UVSet { get => Original.uvBlocks[4].UVSet; set => SetUVBlock(ref Original.uvBlocks[4], value); }
+        [RequiresShaderChange]
         public int Normal1UVSet { get => Original.uvBlocks[5].UVSet; set => SetUVBlock(ref Original.uvBlocks[5], value); }
+        [RequiresShaderChange]
         public int Specular0UVSet { get => Original.uvBlocks[12].UVSet; set => SetUVBlock(ref Original.uvBlocks[12], value); }
+        [RequiresShaderChange]
         public int LightmapUVSet { get; set; } = -1;
+        [RequiresShaderChange]
         public int EnvMapUVSet { get => Original.uvBlocks[16].UVSet; set => SetUVBlock(ref Original.uvBlocks[16], value); }
 
         [DisplayLabel("Diffuse 0 Blend")]
@@ -320,28 +325,28 @@ namespace Diorama.Editor
         [DisplayLabel("Force default cubemap")]
         public bool ForceDefaultCubemap { get => GetBoolByte(Original.BForceDefaultCubeMap); set => SetBoolByte(ref Original.BForceDefaultCubeMap, value); }
 
-        [DisplayLabel("Colour 1")]
+        [DisplayLabel("Diffuse 0 Tint")]
         public Vector4 Colour1 { get => GetColour(Original.Colour1); set => SetColour(ref Original.Colour1, value); }
 
-        [DisplayLabel("Colour 2")]
+        [DisplayLabel("Diffuse 1 Tint")]
         public Vector4 Colour2 { get => GetColour(Original.Colour2); set => SetColour(ref Original.Colour2, value); }
 
-        [DisplayLabel("Colour 3")]
+        [DisplayLabel("Diffuse 2 Tint")]
         public Vector4 Colour3 { get => GetColour(Original.Colour3); set => SetColour(ref Original.Colour3, value); }
 
-        [DisplayLabel("Colour 4")]
+        [DisplayLabel("Diffuse 3 Tint")]
         public Vector4 Colour4 { get => GetColour(Original.Colour4); set => SetColour(ref Original.Colour4, value); }
 
-        [DisplayLabel("Colour 5")]
+        [DisplayLabel("Specular 0 Multipliers")]
         public Vector4 Colour5 { get => GetColour(Original.Colour5); set => SetColour(ref Original.Colour5, value); }
 
-        [DisplayLabel("Colour 6")]
+        [DisplayLabel("Specular 1 Multipliers")]
         public Vector4 Colour6 { get => GetColour(Original.Colour6); set => SetColour(ref Original.Colour6, value); }
 
-        [DisplayLabel("Colour 7")]
+        [DisplayLabel("Specular 2 Multipliers")]
         public Vector4 Colour7 { get => GetColour(Original.Colour7); set => SetColour(ref Original.Colour7, value); }
 
-        [DisplayLabel("Colour 8")]
+        [DisplayLabel("Specular 3 Multipliers")]
         public Vector4 Colour8 { get => GetColour(Original.Colour8); set => SetColour(ref Original.Colour8, value); }
 
         [DisplayLabel("Colour 9")]

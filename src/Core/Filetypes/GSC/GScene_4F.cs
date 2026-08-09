@@ -45,7 +45,6 @@ namespace Diorama.Core.Filetypes.GSC
 
         public NuOctreeBlock OctreeBlock;
 
-        public List<NuCharacterData> CharacterData;
 
         public uint OldWiiMeshSceneBlockLinkArrayCount;
 

@@ -28,9 +28,14 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
         public void Serialize(RawFile file, uint parentVersion)
         {
+            Serialize(file, true);
+        }
+
+        public void Serialize(RawFile file, bool bigEndian = false)
+        {
             for (int i = 0; i < 16; i++)
             {
-                file.WriteFloat(mtx[i], true);
+                file.WriteFloat(mtx[i], bigEndian);
             }
         }
     }

@@ -12,7 +12,10 @@ namespace Diorama
 {
     public class AppSettings : EditableItem
     {
+        public const string AppName = "Diorama";
         public const string BuildVersion = "v1.2.0";
+
+        public static string AppString => $"{AppName} {BuildVersion}";
 
         public static AppSettings Settings = Load();
 

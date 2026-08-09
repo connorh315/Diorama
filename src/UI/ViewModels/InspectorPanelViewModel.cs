@@ -2,6 +2,7 @@
 using Avalonia.Platform.Storage;
 using Diorama.Core;
 using Diorama.Editor;
+using Diorama.Editor.glTF;
 using Diorama.Rendering;
 using System;
 using System.Collections.Generic;
@@ -46,7 +47,14 @@ namespace Diorama.UI.ViewModels
 
             var selectedGeo = Controller.SelectedGeometry;
 
-            OBJConverter.WriteMeshToOBJ(selectedGeo.Mesh, path);
+            if (Path.GetExtension(path).ToLower() == ".gltf")
+            {
+                glTFConverter.WriteObjectsToGltf([selectedGeo], path);
+            }
+            else
+            {
+                OBJConverter.WriteMeshToOBJ(selectedGeo.Mesh, path);
+            }
 
         }
 
@@ -55,8 +63,6 @@ namespace Diorama.UI.ViewModels
             if (Controller.SelectedGeometry == null) return;
 
             var selectedGeo = Controller.SelectedGeometry;
-
-            var dump = selectedGeo.Mesh.OriginalMesh.VertexBuffers[1].VerticesDump;
 
             //for (int i = 3; i < dump.Length; i += 4)
             //{

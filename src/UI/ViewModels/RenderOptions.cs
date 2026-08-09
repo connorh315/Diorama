@@ -37,5 +37,8 @@ namespace Diorama.UI.ViewModels
 
         [DisplayLabel("Only Color 1 A")]
         public static bool Color1A { get; set; } = false;
+
+        [DisplayLabel("Show Specular")]
+        public static bool ShowSpecular { get; set; } = true;
     }
 }

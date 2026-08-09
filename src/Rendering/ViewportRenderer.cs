@@ -41,6 +41,7 @@ namespace Diorama.Rendering
             blendShader.SetInt("texture2", 2);
             blendShader.SetInt("texture3", 3);
             blendShader.SetInt("normal0", 4);
+            blendShader.SetInt("specular0", 5);
 
             picker = new ObjectPicker();
             picker.Initialize();
@@ -88,6 +89,8 @@ namespace Diorama.Rendering
             blendShader.SetBool("debug_color1g", RenderOptions.Color1G);
             blendShader.SetBool("debug_color1b", RenderOptions.Color1B);
             blendShader.SetBool("debug_color1a", RenderOptions.Color1A);
+
+            blendShader.SetBool("debug_showSpecular", RenderOptions.ShowSpecular);
 
             List<RenderContext> ctxs = new();
 

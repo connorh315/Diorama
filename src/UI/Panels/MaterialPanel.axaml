@@ -17,7 +17,6 @@
           <Run Text="{Binding Fingerprint.MaterialName}" />
         </TextBlock>
       </StackPanel>
-      <controls:ColorInput InputLabel="Material Primary Colour" Color="{Binding Colour1, Mode=TwoWay}" />
       <Expander Header="Colours">
         <StackPanel Spacing="5">
           <controls:PropertyEditor Property="Colour1" />

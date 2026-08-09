@@ -8,6 +8,7 @@ using Diorama.Core.Filetypes.GSC.Components;
 using Diorama.Core.Filetypes.SHADERS;
 using Diorama.Core.Filetypes.TEXTURES;
 using Diorama.Editor;
+using Diorama.Editor.glTF;
 using Diorama.Editor.ShaderSystem;
 using OpenTK.Graphics.ES11;
 using System.Collections.Concurrent;
@@ -42,9 +43,9 @@ namespace Diorama
                 .LogToTrace();
 
 
-        public static void MainXX(string[] args)
+        public static void MainX(string[] args)
         {
-            EditorShaderSystem.Load();
+            glTFConverter.Icosahedron();
         }
 
         static void Main5(string[] args)

@@ -95,6 +95,9 @@ namespace Diorama.Editor
         public EditorLightmap Lightmap { get; set; }
         
         public RenderMesh Mesh { get; set; }
+
+        public NuCharacterData HighestDetail { get; set; }
+
         public NuTransformMtx OriginalTransform { get; set; }
 
         public bool CanEditTransform { get; set; } = true;
@@ -208,14 +211,21 @@ namespace Diorama.Editor
             shader.SetBool("hasNormalMap", Material.Original.Normal0Index != -1);
             Material.Normal0.Use(TextureUnit.Texture4);
 
+            shader.SetInt("specular0_uvset", Material.Normal0UVSet); // needs looking into, possibly shader-tied, hopefully normal-tied
+            shader.SetBool("hasSpecularMap", Material.Original.Specular0Index != -1);
+            Material.Specular0.Use(TextureUnit.Texture5);
+
             shader.SetFloat("PerLayerUVScale1", Material.PerLayerUVScale1);
             shader.SetFloat("PerLayerUVScale2", Material.PerLayerUVScale2);
 
             shader.SetByte("has_vertex_colors", (byte)(Material.Colour ? 1 : 0));
 
             shader.SetInt("layer2blendmode", (int)Material.Diffuse1LayerBlend);
+            shader.SetInt("numAlphaLayers", Material.NumAlphaLayers);
 
             shader.SetBool("bitangent_flip", Material.BitangentFlip);
+
+            shader.SetFloat("normalStrength", Material.KNormal0);
 
             //switch (Material.Diffuse1LayerBlend)
             //{
@@ -230,8 +240,8 @@ namespace Diorama.Editor
 
             if (Lightmap != null && Lightmap.AmbientOcclusion != null && ViewportNewControl.ShowLightmaps && Material.LightmapUVSet != -1)
             {
-                Lightmap.AmbientOcclusion.Use(TextureUnit.Texture2);
-                Lightmap.Directional0.Use(TextureUnit.Texture3);
+                Lightmap.Directional0.Use(TextureUnit.Texture2);
+                Lightmap.Directional1.Use(TextureUnit.Texture3);
                 shader.SetVector2("lm_offset", new Vector2(Lightmap.Offsets[0], Lightmap.Offsets[1]));
                 shader.SetVector2("lm_scale", new Vector2(Lightmap.Scales[0], Lightmap.Scales[1]));
                 shader.SetInt("lightmap_uvset", Material.LightmapUVSet);

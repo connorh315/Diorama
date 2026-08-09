@@ -188,6 +188,11 @@ namespace Diorama.Editor
                                 obj.Lightmap = lightmaps[lightmapId];
                             }
 
+                            if (scene.CharacterData.Count > 0)
+                            {
+                                obj.HighestDetail = scene.CharacterData[0];
+                            }
+
                             //Meshes.Add(mesh);
                             geometry.Add(commandId, obj);
                             //editorScene.Objects.Add(obj);
@@ -239,6 +244,11 @@ namespace Diorama.Editor
                         if (el.LightmapIndex > -1 && lightmaps.Length > el.LightmapIndex)
                         {
                             obj.Lightmap = lightmaps[el.LightmapIndex];
+                        }
+
+                        if (scene.CharacterData.Count > 0)
+                        {
+                            obj.HighestDetail = scene.CharacterData[0];
                         }
 
                         clip.Elements.Add(obj);

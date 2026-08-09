@@ -100,12 +100,13 @@ public class InspectorPanel : TemplatedControl
         var window = TopLevel.GetTopLevel(this) as Window;
 
         var obj = new FilePickerFileType("OBJ file") { Patterns = new[] { "*.OBJ" } };
+        var gltf = new FilePickerFileType("glTF file") { Patterns = new[] { "*.glTF" } };
 
         var file = await window.StorageProvider.SaveFilePickerAsync(
             new FilePickerSaveOptions
             {
                 Title = "Export Mesh",
-                FileTypeChoices = new[] { obj },
+                FileTypeChoices = new[] { obj, gltf },
                 SuggestedFileType = obj,
             });
 
