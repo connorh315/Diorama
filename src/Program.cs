@@ -45,7 +45,19 @@ namespace Diorama
 
         public static void MainX(string[] args)
         {
-            glTFConverter.Icosahedron();
+            GScene jayFlail = GScene.Parse(@"A:\JAYFLAIL_DX11.GHG");
+
+            GScene hardScene = GScene.Parse(@"A:\CHARS\ITEMS\LOBO_GRENADE_DX11.GSC"); // mat 0
+
+            GScene stipplingScene = GScene.Parse(@"A:\COMMONOBJECTS\CUT_TVBANK_DX11.GSC"); // mat 0
+
+            NuMaterialData[] materials = new NuMaterialData[4];
+            materials[0] = jayFlail.MaterialBlock.Materials[0];
+            materials[1] = jayFlail.MaterialBlock.Materials[1];
+
+            materials[2] = hardScene.MaterialBlock.Materials[0];
+            materials[3] = stipplingScene.MaterialBlock.Materials[0];
+            Console.WriteLine();
         }
 
         static void Main5(string[] args)

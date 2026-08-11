@@ -321,6 +321,7 @@ namespace Diorama.Editor
 
                 mat.Diffuse0 = ResolveTexture(textures, mat.Original.Diffuse0Index);
                 mat.Diffuse1 = ResolveTexture(textures, mat.Original.Diffuse1Index);
+                mat.Diffuse2 = ResolveTexture(textures, mat.Original.Diffuse2Index);
 
                 mat.Normal0 = ResolveTexture(textures, mat.Original.Normal0Index);
                 mat.Normal1 = ResolveTexture(textures, mat.Original.Normal1Index);
@@ -329,38 +330,11 @@ namespace Diorama.Editor
 
                 mat.EnvMap = ResolveTexture(textures, mat.Original.EnvMap);
 
-                //mat.DiffuseLayerBlend = (EditorDiffuseBlendMode)(mat.Original.baseDiffuseUsage);
-                //mat.Diffuse1LayerBlend = (EditorDiffuseBlendMode)mat.Original.layerBlendDiffuse;
-
-                //mat.Diffuse0UVSet = mat.Original.uvBlocks[0].UVSet;
-                //mat.Diffuse1UVSet = mat.Original.uvBlocks[1].UVSet;
-                //mat.Normal0UVSet = mat.Original.uvBlocks[4].UVSet;
-                //mat.Normal1UVSet = mat.Original.uvBlocks[5].UVSet;
-                //mat.Specular0UVSet = mat.Original.uvBlocks[12].UVSet;
-                //mat.EnvMapUVSet = mat.Original.uvBlocks[16].UVSet;
-
-                //mat.PerLayerUVScale1 = mat.Original.PerLayerUVScale1;
-                //mat.PerLayerUVScale2 = mat.Original.PerLayerUVScale2;
-
                 mat.LightmapUVSet = mat.Original.LightmapUVSet;
 
-                //mat.Name = mat.Original.MaterialName;
-
-                //mat.Occlusion = mat.Original.occlusion;
-
-                //mat.RefractiveIndex = mat.Original.KRefractiveIndex;
-
-                //mat.BlendMode = mat.Original.blendMode;
-                //mat.AlphaTest = mat.Original.alphaTest;
-                //mat.AlphaRef = mat.Original.Aref / 255f;
-                //mat.CanAlphaBlend = mat.Original.miscFlags_canAlphaBlend;
                 mat.Opaque = mat.Original.miscFlags_defunctOpaque;
                 mat.SortLast = mat.Original.SortLast;
                 mat.VertexControlledTint = mat.Original.VertexFlags_VertexControlledTint;
-
-                //mat.ShadowImpostor = ConvertToBool(mat.Original.ShadowImpostor);
-
-                //mat.PerLayerScale = ConvertToBool(mat.Original.materialFlags_per_layer_uvscale);
 
                 mat.Colour = ConvertToBool(mat.Original.Colour);
 
@@ -370,6 +344,19 @@ namespace Diorama.Editor
                 float g = ((abgr >> 8) & 0xFF) / 255f;
                 float r = ((abgr >> 0) & 0xFF) / 255f;
                 mat.Colour1 = new Vector4(r, g, b, a);
+
+                for (int j = 0; j < 4; j++)
+                {
+                    int texAnimIndex = j switch
+                    {
+                        0 => mat.Original.TexAnimData1,
+                        1 => mat.Original.TexAnimData2,
+                        2 => mat.Original.TexAnimData3,
+                        3 => mat.Original.TexAnimData4,
+                    };
+                    mat.TextureAnimsActive[j] = texAnimIndex;
+                    mat.TextureAnims[j] = new EditorMaterialTextureAnim(mat.Original.TexAnimBlocks[j]);
+                }
             }
 
             editorScene.Textures = new ObservableCollection<RenderTexture>(textures);

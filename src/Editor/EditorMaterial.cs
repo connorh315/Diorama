@@ -40,6 +40,7 @@ namespace Diorama.Editor
 
         public RenderTexture Diffuse0 { get; set; }
         public RenderTexture Diffuse1 { get; set; }
+        public RenderTexture Diffuse2 { get; set; }
 
         public RenderTexture Normal0 { get; set; }
         public RenderTexture Normal1 { get; set; }
@@ -238,6 +239,8 @@ namespace Diorama.Editor
         [RequiresShaderChange]
         public int Diffuse1UVSet { get => Original.uvBlocks[1].UVSet; set => SetUVBlock(ref Original.uvBlocks[1], value); }
         [RequiresShaderChange]
+        public int Diffuse2UVSet { get => Original.uvBlocks[2].UVSet; set => SetUVBlock(ref Original.uvBlocks[2], value); }
+        [RequiresShaderChange]
         public int Normal0UVSet { get => Original.uvBlocks[4].UVSet; set => SetUVBlock(ref Original.uvBlocks[4], value); }
         [RequiresShaderChange]
         public int Normal1UVSet { get => Original.uvBlocks[5].UVSet; set => SetUVBlock(ref Original.uvBlocks[5], value); }
@@ -310,6 +313,10 @@ namespace Diorama.Editor
         [EnabledIf(nameof(PerLayerScale))]
         public float PerLayerUVScale2 { get => Original.PerLayerUVScale2; set => Set(ref Original.PerLayerUVScale2, value); }
 
+        [DisplayLabel("Layer 2 Scale")]
+        [EnabledIf(nameof(PerLayerScale))]
+        public float PerLayerUVScale3 { get => Original.PerLayerUVScale3; set => Set(ref Original.PerLayerUVScale3, value); }
+
         [DisplayLabel("Shadow Impostor")]
         public bool ShadowImpostor { get => GetBoolByte(Original.ShadowImpostor); set => SetBoolByte(ref Original.ShadowImpostor, value); }
 
@@ -381,6 +388,9 @@ namespace Diorama.Editor
 
         [DisplayLabel("Colour 19")]
         public Vector4 Colour19 { get => GetColour(Original.Colour19); set => SetColour(ref Original.Colour19, value); }
+
+        public int[] TextureAnimsActive = new int[4];
+        public EditorMaterialTextureAnim[] TextureAnims = new EditorMaterialTextureAnim[4];
 
         //private Vector4 colour13;
         //public Vector4 Colour13

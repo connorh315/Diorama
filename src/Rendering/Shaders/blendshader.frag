@@ -3,22 +3,29 @@
 
 in vec3 FragPos;
 in vec3 Normal;
-in vec4 UV1;
 in vec3 outTangent;
 in vec3 outBitangent;
-in vec4 UV2;
 in vec4 outColor;
 in vec4 outColor2;
 in vec4 outDiffuse;
 in vec3 outLightDir;
+in vec2 uvSets[4];
 
 out vec4 FragColor;
 
-uniform vec3 camera;
-uniform vec4 mesh_color;
+uniform float time;
 
-uniform sampler2D texture0;
-uniform sampler2D texture1;
+uniform vec3 camera;
+
+uniform vec4 diffuse0_color;
+uniform vec4 diffuse1_color;
+uniform vec4 diffuse2_color;
+
+uniform sampler2D diffuse0tex;
+uniform sampler2D diffuse1tex;
+uniform sampler2D diffuse2tex;
+uniform sampler2D diffuse3tex;
+
 uniform sampler2D texture2;
 uniform sampler2D texture3;
 
@@ -33,12 +40,13 @@ uniform int specular0_uvset;
 
 uniform int diffuse0_uvset;
 uniform int diffuse1_uvset;
+uniform int diffuse2_uvset;
 
 uniform vec2 lm_offset;
 uniform vec2 lm_scale;
 uniform int lightmap_uvset;
 
-uniform float lightingEnabled;
+uniform bool lightingEnabled;
 
 uniform int alphaTestMode;
 uniform float alphaRef;
@@ -57,23 +65,28 @@ uniform int numAlphaLayers;
 
 uniform int layer1blendmode;
 uniform int layer2blendmode;
+uniform int layer3blendmode;
+
+uniform bool layer1_texanim;
+uniform float layer1_du;
+uniform float layer1_dv;
+uniform float layer1_speedu;
+uniform float layer1_speedv;
+
+uniform bool layer2_texanim;
+uniform float layer2_du;
+uniform float layer2_dv;
+uniform float layer2_speedu;
+uniform float layer2_speedv;
+
+uniform int lightingmodel;
 
 vec2 GetUVSet(int uvset)
 {
-    if (uvset == 0)
-        return UV1.xy;
-
-    if (uvset == 1)
-        return UV1.zw;
-
-    if (uvset == 2)
-        return UV2.xy;
-
-    if (uvset == 3)
-        return UV2.zw;
-
     if (uvset == -1)
         return vec2(0, 0);
+
+    return uvSets[uvset];
 }
 
 uniform vec3 BoundsCenter;
@@ -94,6 +107,118 @@ uniform bool debug_color1b;
 uniform bool debug_color1a;
 
 uniform bool debug_showSpecular;
+
+vec4 CompositeOver(vec4 bottom, vec4 top)
+{
+    float outAlpha =
+        top.a + bottom.a * (1.0 - top.a);
+
+    if (outAlpha <= 0.00001)
+        return vec4(0.0);
+
+    vec3 outColor =
+        (top.rgb * top.a +
+         bottom.rgb * bottom.a * (1.0 - top.a))
+        / outAlpha;
+
+    return vec4(outColor, outAlpha);
+}
+
+vec4 CompositeLayer(
+    vec4 accumulated,
+    vec4 layer,
+    float layerWeight,
+    int blendMode)
+{
+    switch (blendMode)
+    {
+        case 1: // OVER
+        {
+            vec4 source = vec4(layer.rgb, layer.a * layerWeight);
+            return CompositeOver(accumulated, source);
+        }
+
+        case 2: // ADD
+        {
+            float alpha = layer.a * layerWeight;
+
+            accumulated.rgb += layer.rgb * alpha;
+            accumulated.a = max(accumulated.a, alpha);
+
+            return accumulated;
+        }
+
+        case 3: // SUBTRACT
+        {
+            accumulated.rgb -= layer.rgb * layerWeight;
+            accumulated.a = layer.a;
+            return accumulated;
+        }
+
+        case 4: // MULTIPLY
+        {
+            // Weight determines how strongly the multiply is applied.
+            accumulated.rgb *= mix(
+                vec3(1.0),
+                layer.rgb,
+                layerWeight
+            );
+
+            return accumulated;
+        }
+
+        case 5: // MAXALPHA
+        {
+            if (layerWeight > accumulated.a)
+                return vec4(layer.rgb, layerWeight);
+
+            return accumulated;
+        }
+
+        case 7: // SCALE
+        {
+            accumulated.rgb *= layer.rgb;
+            return accumulated;
+        }
+
+        case 10: // MAXALPHABLEND - TODO: verify
+        {
+            accumulated.rgb = mix(
+                accumulated.rgb,
+                layer.rgb,
+                layerWeight
+            );
+
+            accumulated.a = max(
+                accumulated.a,
+                layerWeight
+            );
+
+            return accumulated;
+        }
+
+        case 11:
+        {
+            accumulated.rgb *= vec3(layer.r, 1, 1);
+            return accumulated;
+        }
+
+        case 13:
+        {
+            accumulated.rgb *= vec3(1, 1, layer.b);
+            return accumulated;
+        }
+
+        case 25:
+        {
+            accumulated = vec4(layer.g, layer.g, layer.g, layer.a);
+            return accumulated;
+        }
+
+        default:
+            return accumulated;
+    }
+}
 
 void main()
 {
@@ -157,21 +282,33 @@ void main()
     // Your lighting model
     //float lit = 0.2 + diff;
 
-    // Branchless toggle
-    float lighting = mix(1.0, lit, lightingEnabled);
+    vec2 diffuse0uv = GetUVSet(diffuse0_uvset) * PerLayerUVScale1;
+    vec2 diffuse1uv = GetUVSet(diffuse1_uvset) * PerLayerUVScale2;
+    vec2 diffuse2uv = GetUVSet(diffuse2_uvset) * PerLayerUVScale3;
 
-    vec2 baseuv = GetUVSet(diffuse0_uvset) * PerLayerUVScale1;
-    vec4 base = texture(texture0, baseuv);
+    if (layer1_texanim)
+    {
+        diffuse1uv += vec2(layer1_dv, layer1_du) * vec2(layer1_speedv, layer1_speedu) * time;
+    }
+
+    if (layer2_texanim)
+    {
+        diffuse2uv += vec2(layer2_dv, layer2_du) * vec2(layer2_speedv, layer2_speedu) * time;
+    }
+
+    vec4 diffuse0 = texture(diffuse0tex, diffuse0uv) * diffuse0_color;
+    vec4 diffuse1 = texture(diffuse1tex, diffuse1uv) * diffuse1_color;
+    vec4 diffuse2 = texture(diffuse2tex, diffuse2uv) * diffuse2_color;
 
     switch (alphaTestMode)
     {
         case 2: // LESS
-            if (base.a < alphaRef)
+            if (diffuse0.a < alphaRef)
                 discard;
             break;
 
         case 5: // GREATEREQUAL
-            if (base.a <= alphaRef)
+            if (diffuse0.a <= alphaRef)
                 discard;
             break;
 
@@ -181,9 +318,6 @@ void main()
         default:
             break;
     }
-
-    vec2 diffuse1uv = GetUVSet(diffuse1_uvset) * PerLayerUVScale2   ;
-    vec4 detail = texture(texture1, diffuse1uv);
 
     float directionalFactor = clamp(
         dot(normalize(outLightDir), normal),
@@ -201,45 +335,54 @@ void main()
 
     vec3 bakedLighting = mix(lm1, lm0, directionalFactor);
 
-    vec3 albedo = base.rgb;
-    vec4 layerWeights = outColor2;
-    if (numAlphaLayers == 0)
-        layerWeights = vec4(1.0, detail.a, base.a, 1.0);
-    switch (layer2blendmode)
-    {
-        case 1:
-            if (numAlphaLayers > 0)
-            {
-                float outAlpha = layerWeights.b + layerWeights.g * (1.0 - layerWeights.b);
-                albedo = (detail.rgb * layerWeights.b + base.rgb * layerWeights.g * (1.0 - layerWeights.b)) / outAlpha;
-            }
-            else
-            {
-                albedo = mix(base.rgb, detail.rgb, detail.a);
-            }
-            break;
-        case 2: // ADD
-            albedo = base.rgb + detail.rgb;
-            break;
-        case 3: // SUBTRACT
-            albedo = albedo - detail.rgb;
-            break;
-        case 4: // MULTIPLY
-            albedo = albedo * detail.rgb;
-            break;
-        case 5: // MAXALPHA
-            if ((detail.a * layerWeights.b) > (base.a * layerWeights.g))
-                albedo = detail.rgb;
-            break;
-        case 10: // MAXALPHABLEND (Not correct)
-            albedo = mix(base.rgb, detail.rgb, layerWeights.b);
-            break;
-        case 7: // SCALE
-            albedo = albedo * detail.rgb;
-            break;
-    }
+    vec3 layerWeights = numAlphaLayers > 0
+        ? outColor2.bgr
+        : vec3(1.0);
+    
+    vec4 composite = vec4(0.0);
 
-    //vec3 albedo = mix(detail.rgb, base.rgb, 1 - outColor2.b);
+    composite = CompositeLayer(
+        composite,
+        diffuse0,
+        1.0,
+        layer1blendmode
+    );
+
+    // Layer 0 starts the accumulator.
+    //vec4 composite = vec4(
+    //    diffuse0.rgb,
+    //    diffuse0.a
+    //);
+
+    // Layer 1 over layer 0.
+    composite = CompositeLayer(
+        composite,
+        diffuse1,
+        layerWeights.x,
+        layer2blendmode
+    );
+
+    // Layer 2 over the result of 0 + 1.
+    composite = CompositeLayer(
+        composite,
+        diffuse2,
+        layerWeights.y,
+        layer3blendmode
+    );
+
+    vec3 albedo = composite.rgb;
+    float albedoAlpha = composite.a;
+
+    vec3 vertexColor = has_vertex_colors ? outColor.bgr : vec3(1.0);
+
+    if (!lightingEnabled || lightingmodel == 0)
+    {
+        vec3 unlitColor = albedo * vertexColor;
+
+        FragColor = vec4(unlitColor, albedoAlpha);
+
+        return;
+    }
     
     vec3 F0 = mix(
         albedo * albedo,
@@ -268,18 +411,13 @@ void main()
         bakedMaterialResponse = materialDiffuseSquared * specularStrength;
     }
 
-    
-
-    vec3 vertexColor = has_vertex_colors ? outColor.bgr : vec3(1.0);
-
     bakedMaterialResponse *= vertexColor;
-    bakedMaterialResponse *= mesh_color.rgb;
 
-    //vec4 color = vec4(albedo, 1) * (has_vertex_colors ? vec4(outColor.b, outColor.g, outColor.r, 1) : vec4(1)) * mesh_color * lighting * vec4(bakedLighting, 1);
+    //vec4 color = vec4(albedo, 1) * (has_vertex_colors ? vec4(outColor.b, outColor.g, outColor.r, 1) : vec4(1)) * lighting * vec4(bakedLighting, 1);
 
     vec3 finalDiffuse = bakedMaterialResponse * bakedLighting;
 
-    vec4 color = vec4(finalDiffuse, base.a * mesh_color.a);
+    vec4 color = vec4(finalDiffuse, albedoAlpha);
 
     vec3 viewDir = normalize(camera - FragPos);
 
@@ -368,11 +506,14 @@ void main()
 
     float glowAmount = glow ? glowIntensity : 0.0;
 
-    float rim = pow(1.0 - max(dot(normal, viewDir), 0.0), 3.0);
+    float rim = pow(
+        1.0 - max(dot(normal, viewDir), 0.0),
+        3.0
+    );
 
-    color.rgb += mesh_color.rgb * rim * 1.5 * glowAmount;
+    color.rgb += rim * 1.5 * glowAmount;
 
-    color.a = base.a * mesh_color.a;
+    color.a = albedoAlpha;
 
     FragColor = color;
 

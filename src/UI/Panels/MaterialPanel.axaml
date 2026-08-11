@@ -69,6 +69,16 @@
             </StackPanel>
           </controls:TextureSlotControl>
           <controls:TextureSlotControl
+            InputLabel="Diffuse 2"
+            Texture="{Binding Diffuse2}"
+            SelectedSet="{Binding Diffuse2UVSet}">
+
+            <StackPanel Spacing="5">
+              <controls:PropertyEditor Property="PerLayerUVScale3" />
+              <controls:PropertyEditor Property="Diffuse2LayerBlend" />
+            </StackPanel>
+          </controls:TextureSlotControl>
+          <controls:TextureSlotControl
             InputLabel="Normal 0"
             Texture="{Binding Normal0}"
             SelectedSet="{Binding Normal0UVSet}">

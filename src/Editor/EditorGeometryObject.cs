@@ -193,7 +193,10 @@ namespace Diorama.Editor
 
             shader.SetMatrix4("model", Transform);
 
-            shader.SetVector4("mesh_color", Material.Colour1);
+            shader.SetVector4("diffuse0_color", Material.Colour1);
+            shader.SetVector4("diffuse1_color", Material.Colour2);
+            shader.SetVector4("diffuse2_color", Material.Colour3);
+            shader.SetVector4("diffuse3_color", Material.Colour4);
 
             shader.SetBool("glow", Material.Glow);
             shader.SetFloat("glowIntensity", Material.KGlow);
@@ -203,9 +206,11 @@ namespace Diorama.Editor
 
             Material.Diffuse0?.Use();
             Material.Diffuse1?.Use(TextureUnit.Texture1);
+            Material.Diffuse2?.Use(TextureUnit.Texture2);
 
             shader.SetInt("diffuse0_uvset", Material.Diffuse0UVSet);
             shader.SetInt("diffuse1_uvset", Material.Diffuse1UVSet);
+            shader.SetInt("diffuse2_uvset", Material.Diffuse2UVSet);
 
             shader.SetInt("normal0_uvset", Material.Normal0UVSet);
             shader.SetBool("hasNormalMap", Material.Original.Normal0Index != -1);
@@ -217,39 +222,55 @@ namespace Diorama.Editor
 
             shader.SetFloat("PerLayerUVScale1", Material.PerLayerUVScale1);
             shader.SetFloat("PerLayerUVScale2", Material.PerLayerUVScale2);
+            shader.SetFloat("PerLayerUVScale3", Material.PerLayerUVScale3);
 
             shader.SetByte("has_vertex_colors", (byte)(Material.Colour ? 1 : 0));
 
+            shader.SetInt("layer1blendmode", (int)Material.Diffuse0LayerBlend);
             shader.SetInt("layer2blendmode", (int)Material.Diffuse1LayerBlend);
+            shader.SetInt("layer3blendmode", (int)Material.Diffuse2LayerBlend);
             shader.SetInt("numAlphaLayers", Material.NumAlphaLayers);
 
             shader.SetBool("bitangent_flip", Material.BitangentFlip);
 
             shader.SetFloat("normalStrength", Material.KNormal0);
 
-            //switch (Material.Diffuse1LayerBlend)
-            //{
-            //    case 0:
-            //    case 1:
-            //    case 2:
-            //        break;
-            //    default:
-            //        Console.WriteLine($"Unknown blend mode: {Material.Diffuse1LayerBlend}");
-            //        break;
-            //}
+            bool layer1TexAnim = Material.TextureAnimsActive[1] != -1;
+            shader.SetBool("layer1_texanim", layer1TexAnim);
+
+            if (layer1TexAnim)
+            {
+                shader.SetFloat("layer1_du", Material.TextureAnims[1].Block.DU);
+                shader.SetFloat("layer1_dv", Material.TextureAnims[1].Block.DV);
+                shader.SetFloat("layer1_speedu", Material.TextureAnims[1].Block.SpeedU);
+                shader.SetFloat("layer1_speedv", Material.TextureAnims[1].Block.SpeedV);
+            }
+
+            bool layer2TexAnim = Material.TextureAnimsActive[2] != -1;
+            shader.SetBool("layer2_texanim", layer2TexAnim);
+
+            if (layer2TexAnim)
+            {
+                shader.SetFloat("layer2_du", Material.TextureAnims[2].Block.DU);
+                shader.SetFloat("layer2_dv", Material.TextureAnims[2].Block.DV);
+                shader.SetFloat("layer2_speedu", Material.TextureAnims[2].Block.SpeedU);
+                shader.SetFloat("layer2_speedv", Material.TextureAnims[2].Block.SpeedV);
+            }
+
+            shader.SetInt("lightingmodel", (int)Material.Lighting);
 
             if (Lightmap != null && Lightmap.AmbientOcclusion != null && ViewportNewControl.ShowLightmaps && Material.LightmapUVSet != -1)
             {
-                Lightmap.Directional0.Use(TextureUnit.Texture2);
-                Lightmap.Directional1.Use(TextureUnit.Texture3);
+                Lightmap.Directional0.Use(TextureUnit.Texture15);
+                Lightmap.Directional1.Use(TextureUnit.Texture16);
                 shader.SetVector2("lm_offset", new Vector2(Lightmap.Offsets[0], Lightmap.Offsets[1]));
                 shader.SetVector2("lm_scale", new Vector2(Lightmap.Scales[0], Lightmap.Scales[1]));
                 shader.SetInt("lightmap_uvset", Material.LightmapUVSet);
             }
             else
             {
-                RenderTexture.GetWhiteTexture().Use(TextureUnit.Texture2);
-                RenderTexture.GetWhiteTexture().Use(TextureUnit.Texture3);
+                RenderTexture.GetWhiteTexture().Use(TextureUnit.Texture15);
+                RenderTexture.GetWhiteTexture().Use(TextureUnit.Texture16);
             }
 
             Mesh.Draw();

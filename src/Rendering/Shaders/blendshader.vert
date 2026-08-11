@@ -12,18 +12,21 @@ layout (location = 12) in vec3 lightDirSet;
 
 out vec3 FragPos;
 out vec3 Normal;
-out vec4 UV1;
 out vec3 outTangent;
 out vec3 outBitangent;
-out vec4 UV2;
 out vec4 outColor;
 out vec4 outColor2;
 out vec4 outDiffuse;
 out vec3 outLightDir;
+out vec2 uvSets[4];
 
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
+
+uniform int diffuse0_uvset;
+uniform int diffuse1_uvset;
+uniform int diffuse2_uvset;
 
 uniform bool bitangent_flip;
 
@@ -47,8 +50,11 @@ void main()
     if (bitangent_flip)
         outBitangent = -outBitangent;
 
-    UV1 = aUv1;
-    UV2 = aUv2;
+    uvSets[0] = aUv1.xy;
+    uvSets[1] = aUv1.zw;
+    uvSets[2] = aUv2.xy;
+    uvSets[3] = aUv2.zw;
+
     outColor = aColor;
     outColor2 = aColor2;
     outDiffuse = aDiffuse;

@@ -36,12 +36,14 @@ namespace Diorama.Rendering
 
             blendShader = new Shader("blendshader.vert", "blendshader.frag");
             blendShader.SetVector3("color", new Vector3(0.7f, 0.7f, 0.7f));
-            blendShader.SetInt("texture0", 0);
-            blendShader.SetInt("texture1", 1);
-            blendShader.SetInt("texture2", 2);
-            blendShader.SetInt("texture3", 3);
+            blendShader.SetInt("diffuse0tex", 0);
+            blendShader.SetInt("diffuse1tex", 1);
+            blendShader.SetInt("diffuse2tex", 2);
+            blendShader.SetInt("diffuse3tex", 3);
             blendShader.SetInt("normal0", 4);
             blendShader.SetInt("specular0", 5);
+            blendShader.SetInt("texture2", 15);
+            blendShader.SetInt("texture3", 16);
 
             picker = new ObjectPicker();
             picker.Initialize();
@@ -50,6 +52,7 @@ namespace Diorama.Rendering
         }
 
         private Stopwatch stopwatch = Stopwatch.StartNew();
+        private long lastElapsedMilliseconds;
 
         private int frameCount;
 
@@ -77,7 +80,7 @@ namespace Diorama.Rendering
         private void Render(List<EditorScene> scenes, Camera camera)
         {
             blendShader.SetMatrix4("projection", camera.Projection);
-            blendShader.SetFloat("lightingEnabled", ViewportNewControl.UseCameraLight ? 1 : 0);
+            blendShader.SetBool("lightingEnabled", ViewportNewControl.UseCameraLight);
 
             blendShader.SetBool("debug_color0", RenderOptions.Color0);
             blendShader.SetBool("debug_color0r", RenderOptions.Color0R);
@@ -91,6 +94,9 @@ namespace Diorama.Rendering
             blendShader.SetBool("debug_color1a", RenderOptions.Color1A);
 
             blendShader.SetBool("debug_showSpecular", RenderOptions.ShowSpecular);
+
+            blendShader.SetFloat("time", (stopwatch.ElapsedMilliseconds) / 1000f);
+            lastElapsedMilliseconds = stopwatch.ElapsedMilliseconds;
 
             List<RenderContext> ctxs = new();
 
