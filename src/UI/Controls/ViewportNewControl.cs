@@ -46,17 +46,22 @@ namespace Diorama.UI.Controls
             });
         }
 
-        public void LoadScene(RawFile scene, RawFile textures, string scenePath)
+        public void LoadScene(RawFile scene, RawFile textures, RawFile cubemap_textures, string scenePath)
         {
             GScene gscene = GScene.Parse(scene);
 
             gscene.Path = scenePath;
 
             NxgTextures nxg_textures = NxgTextures.Read(textures);
+            NxgTextures nxg_cubemap_textures = null;
+            if (cubemap_textures != null && cubemap_textures.fileStream.Length > 0)
+            {
+                nxg_cubemap_textures = NxgTextures.Read(cubemap_textures);
+            }
 
             renderService.Enqueue(() =>
             {
-                sceneController.AddScene(gscene, nxg_textures);
+                sceneController.AddScene(gscene, nxg_textures, nxg_cubemap_textures);
             });
         }
 

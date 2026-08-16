@@ -16,6 +16,9 @@ namespace Diorama.Core
                 {
                     throw new Exception("Yield");
                 }
+#if DEBUG
+                Console.WriteLine();
+#endif
                 throw new Exception("");
             }
         }

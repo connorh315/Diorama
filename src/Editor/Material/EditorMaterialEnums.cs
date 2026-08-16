@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Diorama.Editor
+namespace Diorama.Editor.Material
 {
     public enum EditorBlendMode
     {

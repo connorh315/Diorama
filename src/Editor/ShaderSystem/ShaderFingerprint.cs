@@ -1,5 +1,6 @@
 ﻿using Diorama.Core;
 using Diorama.Editor.Attributes;
+using Diorama.Editor.Material;
 using System;
 using System.Collections.Generic;
 using System.Reflection;

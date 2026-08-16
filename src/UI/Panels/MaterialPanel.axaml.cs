@@ -2,7 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
-using Diorama.Editor;
+using Diorama.Editor.Material;
 using Diorama.Editor.ShaderSystem;
 using Diorama.Rendering;
 using Diorama.UI.Panels;

@@ -10,7 +10,7 @@
     <ListBox ItemsSource="{Binding Filtered}" SelectedItem="{Binding Selected, Mode=TwoWay}" MaxHeight="600" DoubleTapped="FilesList_DoubleTapped">
       <ListBox.ItemTemplate>
         <DataTemplate>
-          <TextBlock Text="{Binding Path}"/>
+          <TextBlock Text="{Binding FullPath}"/>
         </DataTemplate>
       </ListBox.ItemTemplate>
     </ListBox>

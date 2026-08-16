@@ -41,8 +41,10 @@ namespace Diorama.Rendering
             return checksum;
         }
 
+        public bool HasFinalised { get; private set; } = false;
         public override void Finalise()
         {
+            HasFinalised = true;
             Handle = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, Handle);
             GL.BufferData(

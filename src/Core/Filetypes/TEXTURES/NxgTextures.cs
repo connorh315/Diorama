@@ -2,6 +2,7 @@
 using BrickVault.Types;
 using Diorama.Core.Filetypes.GSC.Components;
 using Diorama.Core.Filetypes.GSC.Components.RESH;
+using Diorama.Core.IO;
 using Diorama.Core.Types;
 using System;
 using System.Collections.Generic;
@@ -76,7 +77,7 @@ namespace Diorama.Core.Filetypes.TEXTURES
 
             NxgTextures textures = new NxgTextures();
 
-            textures.Path = file.FileLocation;
+            textures.Path = file.FileLocation.ToString();
 
             textures.Handle(schema, 0);
 
@@ -107,10 +108,12 @@ namespace Diorama.Core.Filetypes.TEXTURES
                     if (tex.Header.Name == string.Empty)
                     {
                         Console.WriteLine($"Pulling {tex.Header.Path} from game archives!");
-                        RawFile loaded = GetFromArchive(tex.Header.Path);
-                        if (loaded != null)
+                        using (RawFile loaded = FileProvider.GetFile(tex.Header.Path))
                         {
-                            TextureSet.Textures[i].Calculate(loaded);
+                            if (loaded != null)
+                            {
+                                TextureSet.Textures[i].Calculate(loaded);
+                            }
                         }
                         // otherwise white texture will default
                     }

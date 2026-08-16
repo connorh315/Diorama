@@ -244,199 +244,6 @@ namespace Diorama.Editor.glTF
             return skinIndex;
         }
 
-        //public static void WriteMeshToglTF(EditorGeometryObject geo, string path)
-        //{
-        //    var mesh = geo.Mesh;
-
-        //    glTFHeader header = new glTFHeader();
-        //    header.AddScene();
-
-        //    var nuMesh = mesh.OriginalMesh;
-
-        //    Vertex[] vertices = VertexList.CreateVerticesArray(mesh.VerticesCount);
-
-        //    for (int vListIdx = 0; vListIdx < nuMesh.VertexBuffers.Length; vListIdx++)
-        //    {
-        //        var vList = nuMesh.VertexBuffers[vListIdx];
-        //        vList.FillVertices(ref vertices, mesh.VerticesBase);
-        //    }
-
-        //    Dictionary<string, int> attributeOffsets = new();
-            
-
-        //    var character = geo.HighestDetail;
-
-        //    string binPath = Path.ChangeExtension(path, "bin");
-        //    int binLength = 0;
-
-        //    int indicesOffset = 0;
-        //    int inverseMatricesOffset = 0;
-        //    Vector3 min;
-        //    Vector3 max;
-        //    var remapBones = geo.Mesh.OriginalMesh.SkinMtxMap;
-
-        //    using (RawFile binary = RawFile.Create(binPath))
-        //    {
-        //        WriteVertices(binary, vertices, remapBones, attributeOffsets, out min, out max);
-
-        //        indicesOffset = (int)binary.Position;
-
-        //        for (int i = (int)nuMesh.IndicesBase; i < (int)(nuMesh.IndicesBase + nuMesh.IndicesCount); i++)
-        //        {
-        //            binary.WriteUShort(nuMesh.Indices[i], false);
-        //        }
-
-        //        inverseMatricesOffset = (int)binary.Position;
-        //        foreach (NuMtx mtx in character.Inv_Wt)
-        //        {
-        //            mtx.Serialize(binary, false);
-        //        }
-
-        //        binLength = (int)binary.Position;
-        //    }
-
-        //    GltfPrimitive primitive = new GltfPrimitive
-        //    {
-        //        Attributes = new Dictionary<string, int>(),
-        //        Indices = attributeOffsets.Count,
-        //        Mode = 4
-        //    };
-
-        //    int accessorIndex = 0;
-        //    foreach (var attr in attributeOffsets)
-        //    {
-        //        if (attr.Value == -1) continue;
-
-        //        int stride = GetAttributeStride(attr.Key);
-
-        //        header.BufferViews.Add(new GltfBufferView
-        //        {
-        //            Buffer = 0,
-        //            ByteOffset = attr.Value,
-        //            ByteLength = vertices.Length * stride,
-        //            Target = 34962
-        //        });
-
-        //        var accessor = new GltfAccessor
-        //        {
-        //            BufferView = accessorIndex,
-        //            ComponentType = (int)GetComponentType(attr.Key),
-        //            Count = vertices.Length,
-        //            Type = GetAccessorType(attr.Key)
-        //        };
-
-        //        if (attr.Key == "POSITION")
-        //        {
-        //            accessor.Min = [min.X, min.Y, min.Z];
-        //            accessor.Max = [max.X, max.Y, max.Z];
-        //        }
-
-        //        header.Accessors.Add(accessor);
-
-        //        primitive.Attributes[attr.Key] = accessorIndex;
-
-        //        accessorIndex++;
-        //    }
-
-        //    int indexBufferView = header.BufferViews.Count;
-        //    header.BufferViews.Add(new GltfBufferView
-        //    {
-        //        Buffer = 0,
-        //        ByteOffset = (indicesOffset),
-        //        ByteLength = (int)(2 * nuMesh.IndicesCount),
-        //        Target = 34963
-        //    });
-
-        //    int indexAccessor = header.Accessors.Count;
-        //    header.Accessors.Add(new GltfAccessor
-        //    {
-        //        BufferView = indexBufferView,
-        //        ComponentType = (int)GltfComponentType.UnsignedShort,
-        //        Count = (int)nuMesh.IndicesCount,
-        //        Type = "SCALAR",
-        //    });
-
-        //    int inverseBufferView = header.BufferViews.Count;
-        //    header.BufferViews.Add(new GltfBufferView
-        //    {
-        //        Buffer = 0,
-        //        ByteOffset = inverseMatricesOffset,
-        //        ByteLength = character.Inv_Wt.Count * 16 * sizeof(float),
-        //    });
-
-        //    int inverseBindAccessor = header.Accessors.Count;
-        //    header.Accessors.Add(new GltfAccessor
-        //    {
-        //        BufferView = inverseBufferView,
-        //        ComponentType = (int)GltfComponentType.Float,
-        //        Count = character.Inv_Wt.Count,
-        //        Type = "MAT4"
-        //    });
-
-        //    primitive.Indices = indexAccessor;
-
-        //    List<string> names = new();
-
-        //    int[] jointNodeIndices = new int[character.JointData.Count];
-
-        //    for (int i = 0; i < character.JointData.Count; i++)
-        //    {
-        //        NuJointData joint = character.JointData[i];
-
-        //        int nodeIndex = header.Nodes.Count;
-
-        //        jointNodeIndices[i] = nodeIndex;
-
-        //        names.Add(joint.Name);
-
-        //        header.Nodes.Add(new Node
-        //        {
-        //            Name = joint.Name,
-        //            Children = new List<int>(),
-        //            Matrix = character.T[i].mtx.ToList()
-        //        });
-        //    }
-
-        //    int rootJointNode = -1;
-
-        //    for (int i = 0; i < character.JointData.Count; i++)
-        //    {
-        //        NuJointData joint = character.JointData[i];
-
-        //        if (joint.ParentIndex == 0xFF)
-        //        {
-        //            rootJointNode = jointNodeIndices[i];
-        //            continue;
-        //        }
-
-        //        int parentNode = jointNodeIndices[joint.ParentIndex];
-        //        int childNode = jointNodeIndices[i];
-
-        //        header.Nodes[parentNode].Children.Add(childNode);
-        //    }
-
-        //    GltfSkin skin = new GltfSkin
-        //    {
-        //        Name = "Armature",
-        //        Skeleton = rootJointNode,
-        //        Joints = jointNodeIndices.ToList(),
-        //        InverseBindMatrices = inverseBindAccessor
-        //    };
-
-        //    int skinIndex = header.Skins.Count;
-        //    header.Skins.Add(skin);
-
-        //    var node = header.AddMeshNodeToScene(0, "diorama_output");
-        //    node.Skin = 0;
-        //    node.Mesh = 0;
-        //    header.AddMesh("diorama_output", new() { primitive });
-        //    header.AddBuffer(Path.GetFileName(binPath), binLength);
-
-        //    header.Scenes[0].Nodes.Add(rootJointNode);
-
-        //    header.WriteToFile(path);
-        //}
-
         private static GltfComponentType GetComponentType(string semantic)
         {
             return semantic switch
@@ -478,6 +285,7 @@ namespace Diorama.Editor.glTF
                 VertexDefinitionVariableEnum.albedo => "_ALBEDO",
                 VertexDefinitionVariableEnum.blendIndices0 => "JOINTS_0",
                 VertexDefinitionVariableEnum.blendWeight0 => "WEIGHTS_0",
+                VertexDefinitionVariableEnum.tangent2 => "_TANGENT_2",
                 VertexDefinitionVariableEnum.lightDirSet => "_LIGHTDIRSET",
                 VertexDefinitionVariableEnum.lightColSet => "_LIGHTCOLSET",
             };
@@ -741,8 +549,6 @@ namespace Diorama.Editor.glTF
                     writer.Write(index);
                 }
             }
-
-            
         }
     }
 }

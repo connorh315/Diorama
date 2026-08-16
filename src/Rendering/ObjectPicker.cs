@@ -110,7 +110,7 @@ namespace Diorama.Rendering
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
         }
 
-        public void Execute(Camera camera, List<EditorScene> scenes)
+        public void Execute(Camera camera, List<RenderContext> ctxs)
         {
             if (!pendingPick)
                 return;
@@ -126,56 +126,65 @@ namespace Diorama.Rendering
             pickingShader.Use();
             pickingShader.SetMatrix4("projection", camera.Projection);
 
-            var idLookup = new Dictionary<int, EditorGeometryObject>();
-            int id = 1;
+            PickRecords records = new PickRecords();
 
-            foreach (var scene in scenes)
+            foreach (var ctx in ctxs)
             {
+                var scene = ctx.Scene;
+
                 pickingShader.SetMatrix4("view", scene.SceneTransform * camera.GetViewMatrix());
 
                 Vector3 cameraScenePos = camera.Position;
 
-                foreach (var obj in scene.Objects)
+                foreach (var obj in ctx.Opaque)
                 {
-                    //idLookup[id] = obj;
+                    Vector3 col = records.Add((IHierarchySelectable)obj);
 
-                    var activeClipObject = obj.GetActiveClipObject(cameraScenePos);
+                    pickingShader.SetVector3("color", col);
 
-                    if (activeClipObject == null) continue;
-                    foreach (var geo in activeClipObject.Elements)
-                    {
-                        idLookup[id] = geo;
-
-                        var col = EncodeId(id);
-                        pickingShader.SetVector3("color", col);
-
-                        geo.Draw(pickingShader);
-
-                        id++;
-                    }
+                    obj.Draw(pickingShader, ctx);
                 }
             }
 
-            var picked = ReadPixel(idLookup);
+            foreach (var ctx in ctxs)
+            {
+                foreach (var obj in ctx.Transparent)
+                {
+                    Vector3 col = records.Add((IHierarchySelectable)obj);
+
+                    pickingShader.SetVector3("color", col);
+
+                    obj.Draw(pickingShader, ctx);
+                }
+            }
+
+            foreach (var ctx in ctxs)
+            {
+                GL.Disable(EnableCap.DepthTest);
+                GL.DepthMask(false);
+
+                foreach (var obj in ctx.Gizmos)
+                {
+                    Vector3 col = records.Add((IHierarchySelectable)obj);
+
+                    pickingShader.SetVector3("color", col);
+
+                    obj.Draw(pickingShader, ctx);
+                }
+
+                GL.DepthMask(true);
+                GL.Enable(EnableCap.DepthTest);
+            }
+
+            var picked = ReadPixel(records.Objects);
 
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
-
-            //GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, fbo);
-            //GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0);
-
-            //GL.BlitFramebuffer(
-            //    0, 0, width, height,
-            //    0, 0, width, height,
-            //    ClearBufferMask.ColorBufferBit,
-            //    BlitFramebufferFilter.Nearest);
-
-            //GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
 
             ObjectPicked?.Invoke(picked);
             ObjectPicked = null;
         }
 
-        private EditorGeometryObject? ReadPixel(Dictionary<int, EditorGeometryObject> lookup)
+        private IHierarchySelectable? ReadPixel(Dictionary<int, IHierarchySelectable> lookup)
         {
             int readY = height - pickY;
             int readX = pickX;
@@ -212,13 +221,35 @@ namespace Diorama.Rendering
             return r | (g << 8) | (b << 16);
         }
 
-        private event Action<EditorGeometryObject?>? ObjectPicked;
-        public void RequestPick(int mouseX, int mouseY, Action<EditorGeometryObject?> objectPicked)
+        private event Action<IHierarchySelectable?>? ObjectPicked;
+        public void RequestPick(int mouseX, int mouseY, Action<IHierarchySelectable?> objectPicked)
         {
             pendingPick = true;
             pickX = mouseX;
             pickY = mouseY;
             ObjectPicked = objectPicked;
+        }
+    }
+
+    internal class PickRecords
+    {
+        public Dictionary<int, IHierarchySelectable> Objects = new();
+
+        public int Id = 1;
+
+        private static Vector3 EncodeId(int id)
+        {
+            return new Vector3(
+                (id & 0xFF) / 255f,
+                ((id >> 8) & 0xFF) / 255f,
+                ((id >> 16) & 0xFF) / 255f);
+        }
+
+        public Vector3 Add(IHierarchySelectable obj)
+        {
+            Objects[Id] = obj;
+
+            return EncodeId(Id++);
         }
     }
 }

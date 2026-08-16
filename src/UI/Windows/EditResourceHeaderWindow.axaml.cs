@@ -3,24 +3,22 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Diorama.Editor.Metadata;
 using Diorama.UI.ViewModels;
+using Diorama.UI.Windows;
 
 namespace Diorama;
 
-public partial class EditResourceHeaderWindow : Window
+public partial class EditResourceHeaderWindow : ModalWindow
 {
-    public EditResourceHeaderWindow()
+    public EditResourceHeaderWindow() : base("Edit Resource Header entries")
     {
         InitializeComponent();
     }
 
-    public EditResourceHeaderWindow(ResourceHeaderViewModel viewmodel)
+    public EditResourceHeaderWindow(ResourceHeaderViewModel viewmodel) : this()
     {
-        InitializeComponent();
         DataContext = viewmodel;
         Width = 700;
         SizeToContent = SizeToContent.Height;
-
-        Title = "Edit Resource Header entries";
     }
 
     private void AddNewEntry_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

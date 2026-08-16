@@ -8,10 +8,16 @@ namespace Diorama.Editor.Attributes
     public sealed class DisplayLabelAttribute : Attribute
     {
         public string Name { get; }
+        public string Tip { get; }
 
         public DisplayLabelAttribute(string name)
         {
             Name = name;
+        }
+
+        public DisplayLabelAttribute(string name, string tip) : this(name)
+        {
+            Tip = tip;
         }
     }
 }

@@ -1,0 +1,41 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:Diorama">
+
+  <!--
+    Additional resources 
+    Using Control Themes:
+         https://docs.avaloniaui.net/docs/basics/user-interface/styling/control-themes
+    Using Theme Variants:
+         https://docs.avaloniaui.net/docs/guides/styles-and-resources/how-to-use-theme-variants
+  -->
+  
+  <Design.PreviewWith>
+    <StackPanel Width="400" Spacing="10">      
+        <StackPanel Background="{DynamicResource SystemRegionBrush}">
+          <controls:TextureAnimInput />
+        </StackPanel>
+    </StackPanel>
+  </Design.PreviewWith>
+ 
+  <ControlTheme x:Key="{x:Type controls:TextureAnimInput}" TargetType="controls:TextureAnimInput">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <StackPanel>
+          <controls:PropertyEditor Property="ModeU" />
+          <controls:PropertyEditor Property="ModeV" />
+          <controls:PropertyEditor Property="dU" />
+          <controls:PropertyEditor Property="dV" />
+          <controls:PropertyEditor Property="SpeedU" />
+          <controls:PropertyEditor Property="SpeedV" />
+          <controls:PropertyEditor Property="SpriteSheetRows" />
+          <controls:PropertyEditor Property="SpriteSheetCols" />
+          <controls:PropertyEditor Property="SpriteSheetRowIndex" />
+          <controls:PropertyEditor Property="SpriteSheetNumImages" />
+          <controls:PropertyEditor Property="SpriteSheetDuration" />
+          <controls:PropertyEditor Property="SpriteSheetOffset" />
+        </StackPanel>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+</ResourceDictionary>

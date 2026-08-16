@@ -16,7 +16,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Diorama.Editor.ShaderSystem;
 
-namespace Diorama.Editor
+namespace Diorama.Editor.Material
 {
     public class EditorMaterial : EditableItem, INotifyPropertyChanged, INamedItem
     {
@@ -32,6 +32,10 @@ namespace Diorama.Editor
             get => Original.MaterialName;
             set => Set(ref Original.MaterialName, value);
         }
+
+        public EditorMaterial OverridingReference { get; set; }
+
+        public bool ReferenceDisabled { get => OverridingReference != null; }
 
         public EditorShaderFingerprint Fingerprint { get; set; }
 
@@ -247,9 +251,9 @@ namespace Diorama.Editor
         [RequiresShaderChange]
         public int Specular0UVSet { get => Original.uvBlocks[12].UVSet; set => SetUVBlock(ref Original.uvBlocks[12], value); }
         [RequiresShaderChange]
-        public int LightmapUVSet { get; set; } = -1;
+        public int LightmapUVSet { get => Original.LightmapUVSet; set => Set(ref Original.LightmapUVSet, value); }
         [RequiresShaderChange]
-        public int EnvMapUVSet { get => Original.uvBlocks[16].UVSet; set => SetUVBlock(ref Original.uvBlocks[16], value); }
+        public int EnvMapUVSet { get => Original.uvBlocks.Length >= 17 ? Original.uvBlocks[16].UVSet : -1; set => SetUVBlock(ref Original.uvBlocks[16], value); } // TODO: Make this better
 
         [DisplayLabel("Diffuse 0 Blend")]
         [RequiresShaderChange]
@@ -389,25 +393,25 @@ namespace Diorama.Editor
         [DisplayLabel("Colour 19")]
         public Vector4 Colour19 { get => GetColour(Original.Colour19); set => SetColour(ref Original.Colour19, value); }
 
-        public int[] TextureAnimsActive = new int[4];
-        public EditorMaterialTextureAnim[] TextureAnims = new EditorMaterialTextureAnim[4];
+        [DisplayLabel("Layer 0 Anim State")]
+        public bool Layer0AnimState { get => Original.TexAnimData1 == 0; set => Set(ref Original.TexAnimData1, value ? 0 : -1); }
 
-        //private Vector4 colour13;
-        //public Vector4 Colour13
-        //{
-        //    get => colour13;
-        //    set
-        //    {
-        //        if (colour13 == value) return;
+        public EditorMaterialTextureAnim Layer0Anim { get; set; }
 
-        //        colour13 = value;
+        [DisplayLabel("Layer 1 Anim State")]
+        public bool Layer1AnimState { get => Original.TexAnimData2 == 1; set => Set(ref Original.TexAnimData2, value ? 1 : -1); }
 
-        //        if (Original != null)
-        //        {
-        //            Original.Colour13 = ConvertColour(value);
-        //        }
-        //    }
-        //}
+        public EditorMaterialTextureAnim Layer1Anim { get; set; }
+
+        [DisplayLabel("Layer 2 Anim State")]
+        public bool Layer2AnimState { get => Original.TexAnimData3 == 2; set => Set(ref Original.TexAnimData3, value ? 2 : -1); }
+
+        public EditorMaterialTextureAnim Layer2Anim { get; set; }
+
+        [DisplayLabel("Layer 3 Anim State")]
+        public bool Layer3AnimState { get => Original.TexAnimData4 == 3; set => Set(ref Original.TexAnimData4, value ? 3 : -1); }
+
+        public EditorMaterialTextureAnim Layer3Anim { get; set; }
 
         public const int MaxShaderSet = 18;
         public uint[] GetShaderSet(int set)
@@ -500,6 +504,37 @@ namespace Diorama.Editor
             {
                 Original.VertexLayout.Definitions = newList;
             }
+        }
+
+        public EditorMaterial() { }
+
+        public EditorMaterial(NuMaterialData original, List<RenderTexture> textures)
+        {
+            Original = original;
+
+            Diffuse0 = ResolveTexture(textures, Original.Diffuse0Index);
+            Diffuse1 = ResolveTexture(textures, Original.Diffuse1Index);
+            Diffuse2 = ResolveTexture(textures, Original.Diffuse2Index);
+
+            Normal0 = ResolveTexture(textures, Original.Normal0Index);
+            Normal1 = ResolveTexture(textures, Original.Normal1Index);
+
+            Specular0 = ResolveTexture(textures, Original.Specular0Index);
+
+            EnvMap = ResolveTexture(textures, Original.EnvMap);
+
+            Layer0Anim = new EditorMaterialTextureAnim(Original.TexAnimBlocks[0]);
+            Layer1Anim = new EditorMaterialTextureAnim(Original.TexAnimBlocks[1]);
+            Layer2Anim = new EditorMaterialTextureAnim(Original.TexAnimBlocks[2]);
+            Layer3Anim = new EditorMaterialTextureAnim(Original.TexAnimBlocks[3]);
+        }
+
+        static RenderTexture ResolveTexture(List<RenderTexture> textures, int index)
+        {
+            if (index < 0 || textures.Count <= (index))
+                return RenderTexture.GetWhiteTexture();
+
+            return textures[index];
         }
     }
 }

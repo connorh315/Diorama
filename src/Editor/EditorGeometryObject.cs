@@ -1,4 +1,5 @@
 ﻿using Diorama.Core.Filetypes.GSC.Components;
+using Diorama.Editor.Material;
 using Diorama.Rendering;
 using Diorama.Rendering.Shaders;
 using Diorama.UI.Controls;
@@ -11,10 +12,11 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace Diorama.Editor
 {
-    public class EditorGeometryObject : IHierarchySelectable, INotifyPropertyChanged
+    public class EditorGeometryObject : IHierarchySelectable, INotifyPropertyChanged, IRenderable
     {
         public string Name => "Geometry Object";
         public IEnumerable<IHierarchySelectable> Children => Enumerable.Empty<IHierarchySelectable>();
@@ -171,20 +173,32 @@ namespace Diorama.Editor
             OriginalTransform.Update(transform);
         }
 
-        public void Draw(Shader shader, RenderContext ctx)
+        public void AddRenderables(RenderContext ctx)
         {
-            if (ctx.IsOpaquePass && Material.BlendMode != 0)
+            if (Material.BlendMode != 0)
             {
                 ctx.Transparent.Add(this);
             }
             else
             {
-                Draw(shader);
+                ctx.Opaque.Add(this);
             }
+        }
+
+        public void Draw(Shader shader, RenderContext ctx)
+        {
+            Draw(shader);
         }
 
         public void Draw(Shader shader)
         {
+            EditorMaterial Material = this.Material;
+
+            if (Material.OverridingReference != null)
+            {
+                Material = Material.OverridingReference;
+            }
+
             if (!ViewportNewControl.ShowShadowImpostors && Material.ShadowImpostor) return;
 
             if (Material.ShowDebugSpheres)
@@ -235,27 +249,37 @@ namespace Diorama.Editor
 
             shader.SetFloat("normalStrength", Material.KNormal0);
 
-            bool layer1TexAnim = Material.TextureAnimsActive[1] != -1;
-            shader.SetBool("layer1_texanim", layer1TexAnim);
+            shader.SetBool("use_scene_envmap", Material.Reflection == EditorReflectionMode.ScaledBakedEnvironmentMap || Material.Reflection == EditorReflectionMode.BakedEnvironmentMap);
 
-            if (layer1TexAnim)
+            float time = Program.TimeSinceStart;
+
+            Vector2 layer0texanim = Vector2.Zero;
+            if (Material.Layer0AnimState)
             {
-                shader.SetFloat("layer1_du", Material.TextureAnims[1].Block.DU);
-                shader.SetFloat("layer1_dv", Material.TextureAnims[1].Block.DV);
-                shader.SetFloat("layer1_speedu", Material.TextureAnims[1].Block.SpeedU);
-                shader.SetFloat("layer1_speedv", Material.TextureAnims[1].Block.SpeedV);
+                layer0texanim = CalculateTexAnimOffset(Material.Layer0Anim, time);
             }
+            shader.SetVector2("layer0texanim", layer0texanim);
 
-            bool layer2TexAnim = Material.TextureAnimsActive[2] != -1;
-            shader.SetBool("layer2_texanim", layer2TexAnim);
-
-            if (layer2TexAnim)
+            Vector2 layer1texanim = Vector2.Zero;
+            if (Material.Layer1AnimState)
             {
-                shader.SetFloat("layer2_du", Material.TextureAnims[2].Block.DU);
-                shader.SetFloat("layer2_dv", Material.TextureAnims[2].Block.DV);
-                shader.SetFloat("layer2_speedu", Material.TextureAnims[2].Block.SpeedU);
-                shader.SetFloat("layer2_speedv", Material.TextureAnims[2].Block.SpeedV);
+                layer1texanim = CalculateTexAnimOffset(Material.Layer1Anim, time);
             }
+            shader.SetVector2("layer1texanim", layer1texanim);
+
+            Vector2 layer2texanim = Vector2.Zero;
+            if (Material.Layer2AnimState)
+            {
+                layer2texanim = CalculateTexAnimOffset(Material.Layer2Anim, time);
+            }
+            shader.SetVector2("layer2texanim", layer2texanim);
+
+            Vector2 layer3texanim = Vector2.Zero;
+            if (Material.Layer3AnimState)
+            {
+                layer3texanim = CalculateTexAnimOffset(Material.Layer3Anim, time);
+            }
+            shader.SetVector2("layer3texanim", layer3texanim);
 
             shader.SetInt("lightingmodel", (int)Material.Lighting);
 
@@ -274,6 +298,46 @@ namespace Diorama.Editor
             }
 
             Mesh.Draw();
+        }
+
+        private Vector2 CalculateTexAnimOffset(EditorMaterialTextureAnim anim, float timeSinceStart)
+        {
+            Vector2 texanim = Vector2.Zero;
+            if (anim.ModeU == 2) // standard
+            {
+                texanim.X = anim.dU * anim.SpeedU * timeSinceStart;
+            }
+            else if (anim.ModeU == 10) // ss. scroll
+            {
+                float timePerTexture = anim.SpriteSheetDuration / anim.SpriteSheetNumImages;
+                int index = (int)(timeSinceStart / timePerTexture) % anim.SpriteSheetNumImages;
+                int col = index % anim.SpriteSheetCols;
+                int row = index / anim.SpriteSheetCols;
+
+                float cellWidth = 1.0f / anim.SpriteSheetCols;
+                float cellHeight = 1.0f / anim.SpriteSheetRows;
+
+                texanim.X = col * cellWidth;
+            }
+
+            if (anim.ModeV == 2)
+            {
+                texanim.Y = anim.dV * anim.SpeedV * timeSinceStart;
+            }
+            else if (anim.ModeV == 10)
+            {
+                float timePerTexture = anim.SpriteSheetDuration / anim.SpriteSheetNumImages;
+                int index = (int)(timeSinceStart / timePerTexture) % anim.SpriteSheetNumImages;
+                int col = index % anim.SpriteSheetCols;
+                int row = index / anim.SpriteSheetCols;
+
+                float cellWidth = 1.0f / anim.SpriteSheetCols;
+                float cellHeight = 1.0f / anim.SpriteSheetRows;
+
+                texanim.Y = row * cellHeight;
+            }
+
+            return texanim;
         }
     }
 }

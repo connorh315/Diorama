@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public struct NuTexAnimBlock
+    public class NuTexAnimBlock : ISchemaSerializable
     {
         public byte ModeU;
         public byte ModeV;
@@ -24,7 +24,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
         public float SSDuration;
         public byte SSOffset;
 
-        public void Handle(SchemaSerializer schema)
+        public void Handle(SchemaSerializer schema, uint parentVersion)
         {
             schema.HandleByte(ref ModeU);
             schema.HandleByte(ref ModeV);

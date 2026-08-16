@@ -1,5 +1,8 @@
-﻿using Diorama.Editor;
+﻿using Avalonia.Controls.Documents;
+using Diorama.Core.IO;
+using Diorama.Editor;
 using Diorama.Editor.Attributes;
+using OpenTK.Graphics.ES11;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -17,14 +20,24 @@ namespace Diorama
 
         public static string AppString => $"{AppName} {BuildVersion}";
 
-        public static AppSettings Settings = Load();
+        public static AppSettings Settings;
+
+        public static void Initialize() => Settings = Load();
+
+        public string DatLocation = null;
 
         private const string settingsFile = "settings.txt";
 
-        private string datLocation;
+        private bool isArchive = true;
 
-        [DisplayLabel("DAT Archives Location")]
-        public string DatLocation { get => datLocation; set => Set(ref datLocation, value); }
+        [DisplayLabel("Archive Files")]
+        public bool UsingArchives { get => isArchive; set { Set(ref isArchive, value); OnPropertyChanged(nameof(UsingExtracted)); } }
+
+        [DisplayLabel("Extracted Files")]
+        public bool UsingExtracted { get => !isArchive; set { Set(ref isArchive, !value); OnPropertyChanged(nameof(UsingArchives)); } }
+
+        [DisplayLabel("Location")]
+        public string ProviderPath { get; set; }
 
         public static bool ShouldWriteROTV = false;
 
@@ -39,6 +52,18 @@ namespace Diorama
             .GetCustomAttributes<AssemblyMetadataAttribute>()
             .FirstOrDefault(a => a.Key == "PublishType")
             ?.Value;
+
+        private void InitializeFileProvider()
+        {
+            if (UsingArchives)
+            {
+                FileProvider.InitializeArchives(ProviderPath);
+            }
+            else
+            {
+                FileProvider.InitializeExtracted(ProviderPath);
+            }
+        }
 
         public void Save()
         {
@@ -56,6 +81,8 @@ namespace Diorama
             }
 
             File.WriteAllLines(settingsFile, lines);
+
+            InitializeFileProvider();
         }
 
         private static bool DoNotSave = false;
@@ -105,6 +132,8 @@ namespace Diorama
             }
 
             DoNotSave = false;
+
+            settings.InitializeFileProvider();
 
             return settings;
         }

@@ -1,5 +1,6 @@
 ﻿using Diorama.Core;
 using Diorama.Core.Filetypes.GSC.Components;
+using Diorama.Editor.Material;
 using System;
 using System.Collections;
 using System.Collections.Generic;

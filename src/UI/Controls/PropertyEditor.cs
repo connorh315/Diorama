@@ -86,6 +86,16 @@ namespace Diorama
                         Mode = BindingMode.TwoWay
                     });
             }
+            else if (property.PropertyType == typeof(Matrix4))
+            {
+                editor = new TransformInput();
+                editor.Bind(
+                    TransformInput.ValueProperty,
+                    new Binding(property.Name)
+                    {
+                        Mode = BindingMode.TwoWay
+                    });
+            }
             else
             {
                 throw new NotSupportedException();

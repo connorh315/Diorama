@@ -7,7 +7,8 @@
              xmlns:controls="using:Diorama"
              xmlns:editor="using:Diorama.Editor">
   <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-    <StackPanel Margin="5" Spacing="2">
+    <StackPanel Margin="5" Spacing="2" IsEnabled="{Binding !ReferenceDisabled}">
+      <TextBlock IsVisible="{Binding ReferenceDisabled}" Foreground="Red">This material references a material from a shared scene, and cannot currently be edited</TextBlock>
       <controls:PropertyEditor Property="Name" />
       <controls:PropertyEditor Property="Shader" />
       <StackPanel Orientation="Horizontal">
@@ -56,6 +57,10 @@
             <StackPanel Spacing="5">
               <controls:PropertyEditor Property="PerLayerUVScale1" />
               <controls:PropertyEditor Property="Diffuse0LayerBlend" />
+              <controls:PropertyEditor Property="Layer0AnimState" />
+              <Panel IsVisible="{Binding Layer0AnimState}">
+                <controls:TextureAnimInput DataContext="{Binding Layer0Anim}" />
+              </Panel>
             </StackPanel>
           </controls:TextureSlotControl>
           <controls:TextureSlotControl
@@ -66,6 +71,10 @@
             <StackPanel Spacing="5">
               <controls:PropertyEditor Property="PerLayerUVScale2" />
               <controls:PropertyEditor Property="Diffuse1LayerBlend" />
+              <controls:PropertyEditor Property="Layer1AnimState" />
+              <Panel IsVisible="{Binding Layer1AnimState}">
+                <controls:TextureAnimInput DataContext="{Binding Layer1Anim}" />
+              </Panel>
             </StackPanel>
           </controls:TextureSlotControl>
           <controls:TextureSlotControl
@@ -76,6 +85,10 @@
             <StackPanel Spacing="5">
               <controls:PropertyEditor Property="PerLayerUVScale3" />
               <controls:PropertyEditor Property="Diffuse2LayerBlend" />
+              <controls:PropertyEditor Property="Layer2AnimState" />
+              <Panel IsVisible="{Binding Layer2AnimState}">
+                <controls:TextureAnimInput DataContext="{Binding Layer2Anim}" />
+              </Panel>
             </StackPanel>
           </controls:TextureSlotControl>
           <controls:TextureSlotControl

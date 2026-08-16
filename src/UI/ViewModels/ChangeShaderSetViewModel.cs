@@ -1,4 +1,5 @@
 ﻿using Diorama.Editor;
+using Diorama.Editor.Material;
 using Diorama.Editor.ShaderSystem;
 using System;
 using System.Collections.Generic;

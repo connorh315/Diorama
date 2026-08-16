@@ -13,6 +13,7 @@ using Diorama.Editor.ShaderSystem;
 using OpenTK.Graphics.ES11;
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Reflection.PortableExecutable;
 
@@ -42,6 +43,9 @@ namespace Diorama
                 //})
                 .LogToTrace();
 
+        private static readonly Stopwatch AppTimer = Stopwatch.StartNew();
+
+        public static float TimeSinceStart => (float)AppTimer.Elapsed.TotalSeconds;
 
         public static void MainX(string[] args)
         {
@@ -60,10 +64,10 @@ namespace Diorama
             Console.WriteLine();
         }
 
-        static void Main5(string[] args)
+        static void MainZZ(string[] args)
         {
             var datFiles = Directory.GetFiles(
-                AppSettings.Settings.DatLocation,
+                @"G:\SteamLibrary\steamapps\common\LEGO DC Super-Villains",
                 "*.DAT",
                 SearchOption.AllDirectories
             );
@@ -75,6 +79,7 @@ namespace Diorama
             foreach (string datPath in datFiles)
             {
                 var dat = DATFile.Open(datPath);
+                if (dat == null) continue;
                 using (var extractionCtx = dat.GetExtractionContext())
                 {
                     foreach (var file in dat.GetFilesWithExtension("gsc"))
@@ -89,17 +94,12 @@ namespace Diorama
 
                                 foreach (var mat in scene.MaterialBlock.Materials)
                                 {
-                                    if (mat.materialFlags_glow == 1)
+                                    if ((mat.TexAnimData1 != -1 && mat.TexAnimData1 != 0)
+                                        || (mat.TexAnimData2 != -1 && mat.TexAnimData2 != 1)
+                                        || (mat.TexAnimData3 != -1 && mat.TexAnimData3 != 2)
+                                        || (mat.TexAnimData4 != -1 && mat.TexAnimData4 != 3))
                                     {
-                                        histogram.Add(mat);
-                                        for (int i = 0; i < mat.uvBlocks.Length; i++)
-                                        {
-                                            string key = $"Block: {i} - State: {mat.uvBlocks[i].State}";
-                                            if (!states.ContainsKey(key))
-                                                states.Add(key, 0);
-                                                
-                                            states[key] = states[key] + 1;
-                                        }
+                                        Console.WriteLine();
                                     }
                                 }
                             }

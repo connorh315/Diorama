@@ -11,9 +11,11 @@ namespace Diorama.Rendering
     {
         public Vector3 CameraScenePosition;
 
-        public List<EditorGeometryObject> Transparent = new();
+        public List<IRenderable> Opaque = new();
 
-        public bool IsOpaquePass = true;
+        public List<IRenderable> Transparent = new();
+
+        public List<IRenderable> Gizmos = new();
 
         public EditorScene Scene;
 
@@ -30,6 +32,8 @@ namespace Diorama.Rendering
         public DebugRenderer Debug;
 
         public EditorSceneObject Selected;
+
+        public bool HasSelectedObject;
 
         public void Use()
         {
@@ -167,14 +171,14 @@ namespace Diorama.Rendering
             return true;
         }
 
-        public RenderContext(EditorScene scene, Camera camera, Shader blendShader, DebugRenderer debug, EditorSceneObject selected)
+        public RenderContext(EditorScene scene, Camera camera, Vector3 cameraPos, Matrix4 cameraVM, Shader blendShader, DebugRenderer debug, EditorSceneObject selected)
         {
-            Vector3 cameraScenePos = (scene.SceneTransform * new Vector4(camera.Position, 1)).Xyz;
+            Vector3 cameraScenePos = (scene.SceneTransform * new Vector4(cameraPos, 1)).Xyz;
             CameraScenePosition = cameraScenePos;
             Shader = blendShader;
             Camera = camera;
             Scene = scene;
-            View = Scene.SceneTransform * Camera.GetViewMatrix();
+            View = Scene.SceneTransform * cameraVM;
             Debug = debug;
             Selected = selected;
 

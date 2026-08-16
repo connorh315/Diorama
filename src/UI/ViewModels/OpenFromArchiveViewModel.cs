@@ -12,9 +12,9 @@ namespace Diorama.UI.ViewModels
 {
     public class OpenFromArchiveViewModel : EditableItem
     {
-        public ObservableCollection<ArchiveFile> Filtered { get; } = new();
+        public ObservableCollection<FileLocation> Filtered { get; } = new();
 
-        public ArchiveFile Selected { get; set; }
+        public FileLocation Selected { get; set; }
 
         public bool Commited = false;
 
@@ -32,7 +32,7 @@ namespace Diorama.UI.ViewModels
             }
         }
 
-        private Dictionary<DATFile, List<ArchiveFile>> archives;
+        private List<FileLocation> paths;
 
         public void ApplyFilter()
         {
@@ -40,14 +40,11 @@ namespace Diorama.UI.ViewModels
 
             string sanitisedSearch = Search.ToLower();
 
-            foreach (var archive in archives.Values)
+            foreach (var location in paths)
             {
-                foreach (var file in archive)
+                if (location.FullPath.Contains(sanitisedSearch, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (file.Path.ToLower().Contains(sanitisedSearch))
-                    {
-                        Filtered.Add(file);
-                    }
+                    Filtered.Add(location);
                 }
             }
         }
@@ -63,9 +60,9 @@ namespace Diorama.UI.ViewModels
             return false;
         }
 
-        public OpenFromArchiveViewModel(Dictionary<DATFile, List<ArchiveFile>> archives)
+        public OpenFromArchiveViewModel(List<FileLocation> filePaths)
         {
-            this.archives = archives;
+            this.paths = filePaths;
 
             ApplyFilter();
         }

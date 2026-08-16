@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace Diorama.Editor
 {
-    public class EditorSceneObject : INotifyPropertyChanged, IHierarchySelectable
+    public class EditorSceneObject : INotifyPropertyChanged, IHierarchySelectable, INamedItem
     {
         private string name;
         public string Name
@@ -103,38 +103,21 @@ namespace Diorama.Editor
             }
         }
 
+        public void AddRenderables(RenderContext ctx)
+        {
+            if (!IsActive)
+                return;
+
+            if (ViewportNewControl.UseFrustumCulling && !ctx.Intersects(BoundsCenterAndDistSqrd.Xyz, BoundsExtentsAndRadius.Xyz))
+                return;
+
+
+            GetActiveClipObject(ctx.CameraScenePosition)?.AddRenderables(ctx);
+        }
+
         public void Debug_Draw(Shader shader, Camera camera)
         {
             if (!Name.Contains("LOD")) return;
-
-            //shader.SetMatrix4("model", Transform);
-
-            //if (Vector3.DistanceSquared(BoundsCenterAndDistSqrd.Xyz, camera.Position) > BoundsCenterAndDistSqrd.W)
-            //{
-            //    shader.SetVector4("mesh_color", new Vector4(1, 0, 0, 1));
-            //    RenderTexture.GetWhiteTexture().Use(TextureUnit.Texture0);
-            //    RenderTexture.GetWhiteTexture().Use(TextureUnit.Texture1);
-            //}
-            //else
-            //{
-            //    shader.SetVector4("mesh_color", Material.Colour1);
-            //    Material.Diffuse0?.Use();
-            //    Material.Diffuse1?.Use(TextureUnit.Texture1);
-            //}
-
-            //if (Lightmap != null && Lightmap.AmbientOcclusion != null && ViewportNewControl.ShowLightmaps && Material.LightmapUVSet != -1)
-            //{
-            //    Lightmap.AmbientOcclusion.Use(TextureUnit.Texture2);
-            //    shader.SetVector2("lm_offset", new Vector2(Lightmap.Offsets[0], Lightmap.Offsets[1]));
-            //    shader.SetVector2("lm_scale", new Vector2(Lightmap.Scales[0], Lightmap.Scales[1]));
-            //    shader.SetInt("lightmap_uvset", Material.LightmapUVSet);
-            //}
-            //else
-            //{
-            //    RenderTexture.GetWhiteTexture().Use(TextureUnit.Texture2);
-            //}
-
-            //Mesh.Draw();
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

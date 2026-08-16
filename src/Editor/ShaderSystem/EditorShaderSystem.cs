@@ -3,7 +3,9 @@ using BrickVault.Types;
 using Diorama.Core;
 using Diorama.Core.Filetypes.GSC;
 using Diorama.Core.Filetypes.GSC.Components.RESH;
+using Diorama.Core.IO;
 using Diorama.Editor.Attributes;
+using Diorama.Editor.Material;
 using Diorama.UI.Progress;
 using System;
 using System.Collections.Generic;
@@ -71,14 +73,14 @@ namespace Diorama.Editor.ShaderSystem
 
         private static void CreateInternal(IProgress<FingerprintCacheProgress> progress, CancellationToken cancellationToken)
         {
-            string datLocation = AppSettings.Settings.DatLocation;
+            string location = AppSettings.Settings.ProviderPath;
 
-            if (string.IsNullOrEmpty(datLocation))
+            if (string.IsNullOrEmpty(location))
             {
                 progress?.Report(new FingerprintCacheProgress
                 {
                     Current = 0,
-                    Status = "Failed - DAT archive location not set!"
+                    Status = "Failed - Files location not set!"
                 });
 
                 return;
@@ -86,7 +88,7 @@ namespace Diorama.Editor.ShaderSystem
 
             ShaderFingerprintCache fCache = new ShaderFingerprintCache();
 
-            fCache.ArchivesLocation = datLocation;
+            fCache.ProviderLocation = location;
 
             Dictionary<string, List<(ShaderFingerprint, ShaderSetArray)>> fingerprintsByScene = new();
 
@@ -94,61 +96,44 @@ namespace Diorama.Editor.ShaderSystem
 
             int processed = 0;
 
-            using (RawFile file = new RawFile(new MemoryStream()))
+            foreach (var file in FileProvider.EnumerateFiles("gsc", "ghg"))
             {
-                foreach (var datPath in Directory.EnumerateFiles(datLocation, "*.DAT", SearchOption.AllDirectories))
+                cancellationToken.ThrowIfCancellationRequested();
+
+                string path = file.FileLocation.ToString();
+
+                FileLocation filePath = file.FileLocation;
+                if (filePath is ArchiveFileLocation archiveFilePath)
                 {
-                    DATFile dat = DATFile.Open(datPath);
+                    path = $"{archiveFilePath.ArchiveName}\\{archiveFilePath.ArchiveFilePath}";
+                }
 
-                    if (dat == null)
+                try
+                {
+                    GScene scene = GScene.Parse(file);
+
+                    progress.Report(new FingerprintCacheProgress()
                     {
-                        Console.WriteLine($"Skipping {datPath} - Invalid DAT archive!");
+                        Current = processed,
+                        Status = $"Processing {path}"
+                    });
+
+                    if (scene.MaterialBlock.Materials.Length == 0) // likely empty file
                         continue;
-                    }
 
-                    using (var ctx = dat.GetExtractionContext())
+                    fingerprintsByScene.Add(path, new List<(ShaderFingerprint, ShaderSetArray)>());
+
+                    foreach (var mat in scene.MaterialBlock.Materials)
                     {
-                        string datName = Path.GetFileNameWithoutExtension(datPath);
-
-                        foreach (var sceneEntry in dat.GetFilesWithExtension("gsc"))
-                        {
-                            cancellationToken.ThrowIfCancellationRequested();
-
-                            file.Seek(0, SeekOrigin.Begin);
-
-                            dat.ExtractFile(sceneEntry, ctx, file.fileStream);
-
-                            string path = $"{datName}\\{sceneEntry.Path}";
-                        
-                            try
-                            {
-                                GScene scene = GScene.Parse(file);
-
-                                progress.Report(new FingerprintCacheProgress()
-                                {
-                                    Current = processed,
-                                    Status = $"Processing {path}"
-                                });
-
-                                if (scene.MaterialBlock.Materials.Length == 0) // likely empty file
-                                    continue;
-
-                                fingerprintsByScene.Add(path, new List<(ShaderFingerprint, ShaderSetArray)>());
-
-                                foreach (var mat in scene.MaterialBlock.Materials)
-                                {
-                                    var matData = fCache.AddMaterial(mat);
-                                    fingerprintsByScene[path].Add(matData);
-                                }
-
-                                processed++;
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.WriteLine($"Could not parse file {path}: {ex.Message}");
-                            }
-                        }
+                        var matData = fCache.AddMaterial(mat);
+                        fingerprintsByScene[path].Add(matData);
                     }
+
+                    processed++;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Could not parse file {path}: {ex.Message}");
                 }
             }
 
@@ -218,7 +203,5 @@ namespace Diorama.Editor.ShaderSystem
                 return null;
             }
         }
-
-        
     }
 }

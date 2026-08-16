@@ -6,6 +6,8 @@ using Diorama.Core.Filetypes.GSC.Components;
 using Diorama.Core.Filetypes.GSC.Components.RESH;
 using Diorama.Core.Filetypes.SHADERS;
 using Diorama.Core.Filetypes.TEXTURES;
+using Diorama.Core.IO;
+using Diorama.Editor.Material;
 using Diorama.Editor.Metadata;
 using Diorama.Editor.ShaderSystem;
 using Diorama.Rendering;
@@ -23,7 +25,7 @@ namespace Diorama.Editor
 {
     public static class GSceneConverter
     {
-        public static EditorScene FromGScene(GScene scene, NxgTextures nxg_textures, out List<string> problems)
+        public static EditorScene FromGScene(GScene scene, NxgTextures nxg_textures, NxgTextures? cubemap_textures, out List<string> problems)
         {
             problems = new List<string>();
 
@@ -52,7 +54,7 @@ namespace Diorama.Editor
                     {
                         var vBuffer = RenderVertexBuffer.FromBuffer(buffer);
                         convertedVBuffer.Add(buffer, vBuffer);
-                        editorScene.GetOrAdd(vBuffer);
+                        editorScene.Add(vBuffer);
                     }
 
                     vBuffers[j] = convertedVBuffer[buffer];
@@ -98,16 +100,86 @@ namespace Diorama.Editor
                 Console.WriteLine("No texture sheet found for scene, using blank textures");
             }
 
+            var cubemap_tex = new List<RenderTexture>();
+
+            try
+            {
+                //var nxg_textures = NxgTextures.Read(Path.ChangeExtension(filePath, "nxg_textures"));
+                if (cubemap_textures != null)
+                {
+                    for (int i = 0; i < cubemap_textures.TextureSet.Textures.Length; i++)
+                    {
+                        cubemap_tex.Add(RenderTexture.FromNuTexture(cubemap_textures.TextureSet.Textures[i]));
+                    }
+                    editorScene.OriginalCubemapTextures = cubemap_textures;
+                }
+            }
+            catch (FileNotFoundException)
+            { // probably don't need this message, instead if a material requests an environment map then send an output message
+                Console.WriteLine("No cubemap texture sheet found for scene, using blank textures (if appropriate)");
+            }
+
             // TODO: Just do the reference sorting here instead
             EditorMaterial[] materials = new EditorMaterial[scene.MaterialBlock.Materials.Length];
+            var embeddedTextures = scene.MaterialBlock.EmbeddedTextures;
+            Dictionary<uint, NuMtlOldReferencedMaterial> toReplace = new();
+            Dictionary<string, EditorScene> loaded = new();
+            if (embeddedTextures != null)
+            {
+                for (int i = 0; i < embeddedTextures.Count; i++)
+                {
+                    var embed = embeddedTextures[i];
+                    toReplace.Add(embed.ReplacedMaterialIndex, embed);
+
+                    if (!loaded.ContainsKey(embed.SourceGsc))
+                    {
+                        string referencedPath = embed.SourceGsc.Replace("nxg", "dx11"); // dx11 files will reference nxg replacement scenes
+                    
+                        using RawFile gsceneFile = FileProvider.GetFile(referencedPath);
+                        string texturesFilePath = Path.ChangeExtension(referencedPath, "nxg_textures");
+                        GScene childScene = GScene.Parse(gsceneFile);
+                    
+                        using RawFile texturesFile = FileProvider.GetFile(texturesFilePath);
+                        NxgTextures childTextures = NxgTextures.Read(texturesFile);
+                    
+                        string cubemapsFilePath = texturesFilePath.Replace("_dx11.nxg_textures", "_cubemaps_dx11.nxg_textures");
+                        using RawFile cubemapTexturesFile = FileProvider.GetFile(cubemapsFilePath);
+                        NxgTextures childCubemaps = null;
+                        if (cubemapTexturesFile != null)
+                            childCubemaps = NxgTextures.Read(cubemapTexturesFile);
+
+                        EditorScene loadedScene = GSceneConverter.FromGScene(childScene, childTextures, childCubemaps, out List<string> childProblems);
+                        if (childProblems.Count == 0)
+                        {
+                            loaded.Add(embed.SourceGsc, loadedScene);
+                        }
+                    }
+                }
+            }
+
             for (int i = 0; i < materials.Length; i++)
             {
                 NuMaterialData nuMaterialData = scene.MaterialBlock.Materials[i];
 
-                EditorMaterial material = new EditorMaterial();
+                EditorMaterial material = new EditorMaterial(nuMaterialData, textures)
+                {
+                    OriginalIndex = i
+                };
 
-                material.Original = nuMaterialData;
-                material.OriginalIndex = i;
+                if (toReplace.ContainsKey((uint)i))
+                {
+                    var materialReplacement = toReplace[(uint)i];
+
+                    var childScene = loaded[materialReplacement.SourceGsc];
+
+                    foreach (var mat in childScene.Materials)
+                    {
+                        if (mat.Name == materialReplacement.MaterialName)
+                        {
+                            material.OverridingReference = mat;
+                        }
+                    }
+                }
 
                 materials[i] = material;
 
@@ -309,57 +381,39 @@ namespace Diorama.Editor
                 var specialObject = display.SpecialObjects[i];
                 if (specialObject.InstanceIndex != -1)
                 {
-                    var sceneObject = editorScene.Objects[specialObject.InstanceIndex];
+                    EditorSceneObject sceneObject = (EditorSceneObject)editorScene.Objects[specialObject.InstanceIndex];
                     sceneObject.Name = specialObject.Name;
                     sceneObject.SpecialObject = specialObject;
                 }
             }
 
-            for (int i = 0; i < materials.Length; i++)
+            editorScene.Textures = new ObservableCollection<RenderTexture>(textures);
+            editorScene.CubemapTextures = new ObservableCollection<RenderTexture>(cubemap_tex);
+
+            if (scene.CharacterData.Count > 0)
             {
-                var mat = materials[i];
+                var joints = scene.CharacterData[0].JointData;
+                var jointTransforms = scene.CharacterData[0].Inv_Wt;
 
-                mat.Diffuse0 = ResolveTexture(textures, mat.Original.Diffuse0Index);
-                mat.Diffuse1 = ResolveTexture(textures, mat.Original.Diffuse1Index);
-                mat.Diffuse2 = ResolveTexture(textures, mat.Original.Diffuse2Index);
-
-                mat.Normal0 = ResolveTexture(textures, mat.Original.Normal0Index);
-                mat.Normal1 = ResolveTexture(textures, mat.Original.Normal1Index);
-
-                mat.Specular0 = ResolveTexture(textures, mat.Original.Specular0Index);
-
-                mat.EnvMap = ResolveTexture(textures, mat.Original.EnvMap);
-
-                mat.LightmapUVSet = mat.Original.LightmapUVSet;
-
-                mat.Opaque = mat.Original.miscFlags_defunctOpaque;
-                mat.SortLast = mat.Original.SortLast;
-                mat.VertexControlledTint = mat.Original.VertexFlags_VertexControlledTint;
-
-                mat.Colour = ConvertToBool(mat.Original.Colour);
-
-                uint abgr = (uint)mat.Original.Colour1;
-                float a = ((abgr >> 24) & 0xFF) / 255f;
-                float b = ((abgr >> 16) & 0xFF) / 255f;
-                float g = ((abgr >> 8) & 0xFF) / 255f;
-                float r = ((abgr >> 0) & 0xFF) / 255f;
-                mat.Colour1 = new Vector4(r, g, b, a);
-
-                for (int j = 0; j < 4; j++)
+                for (int i = 0; i < joints.Count; i++)
                 {
-                    int texAnimIndex = j switch
+                    editorScene.Joints.Add(new EditorJoint
                     {
-                        0 => mat.Original.TexAnimData1,
-                        1 => mat.Original.TexAnimData2,
-                        2 => mat.Original.TexAnimData3,
-                        3 => mat.Original.TexAnimData4,
-                    };
-                    mat.TextureAnimsActive[j] = texAnimIndex;
-                    mat.TextureAnims[j] = new EditorMaterialTextureAnim(mat.Original.TexAnimBlocks[j]);
+                        Original = joints[i],
+                        WorldTransform = jointTransforms[i].mtx.ToMatrix4().Inverted()
+                    });
+                }
+
+                var poiData = scene.CharacterData[0].PointsOfInterest;
+                for (int i = 0; i < poiData.Count; i++)
+                {
+                    var poi = poiData[i];
+                    editorScene.PoIs.Add(new EditorPointOfInterest(poi, editorScene)
+                    {
+                        Parent = (EditorJoint)editorScene.Joints[poi.ParentJointIdx]
+                    });
                 }
             }
-
-            editorScene.Textures = new ObservableCollection<RenderTexture>(textures);
 
             if (scene.Metadata != null) // A bit of a sanity check
             {
@@ -395,7 +449,25 @@ namespace Diorama.Editor
                 Console.WriteLine("Could not open / parse nxg_textures file!");
             }
 
-            EditorScene editorScene = FromGScene(scene, textures, out problems);
+            NxgTextures cubemap_textures = null;
+            string? directory = Path.GetDirectoryName(filePath);
+            string fileName = Path.GetFileNameWithoutExtension(filePath);
+
+            string cubemapPath = Path.Combine(
+                directory ?? "",
+                $"{fileName}_cubemaps_dx11.nxg_textures"
+            );
+
+            try
+            {
+                cubemap_textures = NxgTextures.Read(cubemapPath);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Could not open / parse cubemap.nxg_textures file!");
+            }
+
+            EditorScene editorScene = FromGScene(scene, textures, cubemap_textures, out problems);
 
             return editorScene;   
         }
@@ -452,6 +524,7 @@ namespace Diorama.Editor
             ConvertResourceHeader(scene);
             ConvertMaterials(scene);
             ConvertMetadata(scene);
+            ConvertCharacterData(scene);
 
             HandleShaders(scene);
 
@@ -466,6 +539,13 @@ namespace Diorama.Editor
                 GSerializationContext ctx = new GSerializationContext();
                 nuScene.Write(file, ctx);
             }
+        }
+
+        public static void ConvertCharacterData(EditorScene scene)
+        {
+            var nuScene = scene.OriginalScene;
+
+
         }
 
         public static void ConvertMaterials(EditorScene scene)
@@ -608,18 +688,6 @@ namespace Diorama.Editor
             //    Console.WriteLine("Could not find any shaders files that are referenced in the resource header - Cannot update shaders!");
             //}
 
-            Dictionary<string, string> datPaths =
-                        Directory.EnumerateFiles(
-                                AppSettings.Settings.DatLocation,
-                                "*.dat*",
-                                SearchOption.AllDirectories)
-                            .ToDictionary(
-                                f => Path.GetFileNameWithoutExtension(f),
-                                f => f,
-                                StringComparer.OrdinalIgnoreCase);
-
-            Dictionary<string, DATFile> cache = new();
-
             foreach (var shaderPath in shaderPaths)
             {
                 string shaderExtension = Path.GetExtension(shaderPath);
@@ -734,35 +802,20 @@ namespace Diorama.Editor
 
                     foreach ((string otherFilePath, HashSet<uint> otherShaders) in shadersToLocate)
                     {
-                        string datName = GetDatFile(otherFilePath);
-
-                        DATFile datFile = null;
-                        if (cache.ContainsKey(datName))
+                        RawFile newShadersFile = null;
+                        if (FileProvider.State == FileProvider.FileProviderState.Archives)
                         {
-                            datFile = cache[datName];
-
-                            if (datFile == null) continue;
-                        }
-                        else if (!datPaths.TryGetValue(datName, out var datFilePath))
-                        {
-                            Console.WriteLine($"Could not locate DAT file: {datName} when attempting to rebuild shaders file");
-                            cache.Add(datName, null);
-                            continue;
+                            string datName = GetDatFile(otherFilePath);
+                            string filePath = otherFilePath.Substring(datName.Length + 1);
+                            newShadersFile = FileProvider.GetFileFromArchive(datName, filePath);
                         }
                         else
                         {
-                            datFile = DATFile.Open(datFilePath);
-
-                            cache.Add(datName, datFile);
+                            newShadersFile = FileProvider.GetFile(otherFilePath);
                         }
 
-                        var archiveFile = datFile.FileTree.GetFile(otherFilePath.Substring(datName.Length + 1));
-                        
-                        using (var ctx = datFile.GetExtractionContext())
-                        using (RawFile newShadersFile = new RawFile(new MemoryStream()))
+                        using (newShadersFile)
                         {
-                            datFile.ExtractFile(archiveFile, ctx, newShadersFile.fileStream);
-
                             NxgShaders newShaders = NxgShaders.Read(newShadersFile);
 
                             foreach (var shader in newShaders.ShaderCache)

@@ -115,7 +115,7 @@ namespace Diorama.Core.Filetypes.GSC
             hack.Handle(schema, nu20Version);
 
             //gsc.Parse(context);
-            gsc.Path = gsc.file.FileLocation;
+            gsc.Path = gsc.file.FileLocation.FullPath;
 
             //if (file.Position != resourceHeaderSize + 4 + 4 + gscSize)
             //{

@@ -257,9 +257,9 @@ namespace Diorama.Rendering
             }
         }
 
-        public void AddScene(GScene gscene, NxgTextures nxg_textures)
+        public void AddScene(GScene gscene, NxgTextures nxg_textures, NxgTextures? cubemap_textures)
         {
-            Scenes.Add(GSceneConverter.FromGScene(gscene, nxg_textures, out List<string> problems));
+            Scenes.Add(GSceneConverter.FromGScene(gscene, nxg_textures, cubemap_textures, out List<string> problems));
             ShowSceneLoadProblems(problems);
         }
 

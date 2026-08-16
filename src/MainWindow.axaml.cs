@@ -6,6 +6,8 @@ using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using BrickVault;
 using BrickVault.Types;
+using Diorama.Core.Filetypes.TEXTURES;
+using Diorama.Core.IO;
 using Diorama.Rendering;
 using Diorama.UI.Controls;
 using Diorama.UI.ViewModels;
@@ -25,6 +27,8 @@ namespace Diorama
         {
             InitializeComponent();
 
+            AppSettings.Initialize();
+
             var renderService = new RenderService();
 
             var viewportRenderer = new ViewportRenderer();
@@ -42,7 +46,7 @@ namespace Diorama
             Inspector = new InspectorPanel(sceneController);
             InspectorHost.Content = Inspector;
 
-            RenderOptionsPanel.DataContext = new RenderOptions();
+            RenderOptionsItems.DataContext = new RenderOptions();
 
             //Geometry = new InspectorPanel(sceneController);
             //GeometryHost.Content = Geometry;
@@ -149,28 +153,14 @@ namespace Diorama
 
         private async void OpenArchiveFile()
         {
-            Dictionary<DATFile, List<ArchiveFile>> archives = new();
-            string datLocations = AppSettings.Settings.DatLocation;
+            List<FileLocation> filePaths = new();
 
-            if (string.IsNullOrEmpty(datLocations) || !Directory.Exists(datLocations)) return;
-
-            foreach (var dat in Directory.EnumerateFiles(datLocations, "*.DAT", SearchOption.AllDirectories))
+            foreach (var fileLocation in FileProvider.EnumerateLocations("gsc", "ghg"))
             {
-                var archive = DATFile.Open(dat);
-                if (archive == null) continue;
-                archives.Add(archive, new());
-                foreach (var file in archive.GetFilesWithExtension("gsc"))
-                {
-                    archives[archive].Add(file);
-                }
-
-                foreach (var file in archive.GetFilesWithExtension("ghg"))
-                {
-                    archives[archive].Add(file);
-                }
+                filePaths.Add(fileLocation);
             }
 
-            OpenFromArchiveViewModel vm = new OpenFromArchiveViewModel(archives);
+            OpenFromArchiveViewModel vm = new OpenFromArchiveViewModel(filePaths);
             OpenFromArchive modal = new OpenFromArchive()
             {
                 DataContext = vm
@@ -178,48 +168,17 @@ namespace Diorama
 
             await modal.ShowDialog(this);
 
-            using (RawFile scene = new RawFile(new MemoryStream()))
-            using (RawFile textures = new RawFile(new MemoryStream()))
+            if (vm.Commited && vm.Selected != null)
             {
-                if (vm.Commited && vm.Selected != null)
-                {
-                    bool hasScene = false;
-                    bool hasTextures = false;
+                var sceneLocation = vm.Selected;
+                var texturesLocation = FileProvider.ReplaceLocationExtension(sceneLocation, "nxg_textures");
+                var cubemapsLocation = FileProvider.ReplaceInLocation(texturesLocation, "_dx11.nxg_textures", "_cubemaps_dx11.nxg_textures");
 
-                    foreach ((DATFile archive, List<ArchiveFile> files) in archives)
-                    {
-                        ArchiveFile texturesFile = archive.FileTree.GetFile(Path.ChangeExtension(vm.Selected.Path, "nxg_textures"));
+                using RawFile scene = FileProvider.GetFile(sceneLocation);
+                using RawFile textures = FileProvider.GetFile(texturesLocation);
+                using RawFile cubemap_textures = FileProvider.GetFile(cubemapsLocation);
 
-                        using (var ctx = archive.GetExtractionContext())
-                        {
-                            ctx.Parallelise = true;
-
-                            if (!hasTextures && texturesFile != null)
-                            {
-                                ((MemoryStream)textures.fileStream).Capacity = (int)texturesFile.DecompressedSize;
-
-                                archive.ExtractFile(texturesFile, ctx, textures.fileStream);
-
-                                textures.Seek(0, SeekOrigin.Begin);
-
-                                hasTextures = true;
-                            }
-
-                            if (!hasScene && files.Contains(vm.Selected))
-                            {
-                                archive.ExtractFile(vm.Selected, ctx, scene.fileStream);
-
-                                scene.Seek(0, SeekOrigin.Begin);
-
-                                hasScene = true;
-                            }
-
-                            if (hasTextures && hasScene) break;
-                        }
-                    }
-
-                    MainViewport.LoadScene(scene, textures, $"dat://{vm.Selected.Path}");
-                }
+                MainViewport.LoadScene(scene, textures, cubemap_textures, sceneLocation.FullPath);
             }
         }
 

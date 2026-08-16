@@ -1,4 +1,5 @@
-﻿using Diorama.Core.Filetypes.GSC.Components;
+﻿using Diorama.Core;
+using Diorama.Core.Filetypes.GSC.Components;
 using Diorama.Rendering.Shaders;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
@@ -56,6 +57,8 @@ namespace Diorama.Rendering
             {
                 vb.Use();
 
+                Debug.Assert(vb.HasFinalised);
+
                 foreach (var def in vb.Attributes)
                 {
                     int location = (int)def.Variable;
@@ -79,6 +82,7 @@ namespace Diorama.Rendering
         public void Draw()
         {
             GL.BindVertexArray(VAO);
+
             GL.DrawElementsBaseVertex(
                 PrimitiveType.Triangles,
                 IndicesCount,

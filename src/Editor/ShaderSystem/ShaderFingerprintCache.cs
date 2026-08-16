@@ -3,6 +3,7 @@ using Diorama.Core;
 using Diorama.Core.Filetypes.GSC;
 using Diorama.Core.Filetypes.GSC.Components;
 using Diorama.Core.Filetypes.GSC.Components.RESH;
+using Diorama.Editor.Material;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -14,7 +15,7 @@ namespace Diorama.Editor.ShaderSystem
     {
         public uint Version = 1;
 
-        public string ArchivesLocation;
+        public string ProviderLocation;
 
         public NuFileTree FileTree;
 
@@ -34,7 +35,7 @@ namespace Diorama.Editor.ShaderSystem
 
             using (SchemaRegion region = new SchemaRegion(schema))
             {
-                schema.HandlePascalString(ref ArchivesLocation);
+                schema.HandlePascalString(ref ProviderLocation);
 
                 schema.Handle(ref FileTree);
 

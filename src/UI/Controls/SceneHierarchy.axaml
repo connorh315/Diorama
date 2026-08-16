@@ -25,7 +25,7 @@
       <ControlTemplate>
         <TreeView AutoScrollToSelectedItem="True" ItemsSource="{Binding Scenes}" SelectedItem="{Binding SelectedHierarchyObject, Mode=TwoWay}">
           <TreeView.DataTemplates>
-            <TreeDataTemplate DataType="editor:EditorScene" ItemsSource="{Binding Objects}">
+            <TreeDataTemplate DataType="editor:EditorScene" ItemsSource="{Binding HierarchyItems}">
               <TextBlock Text="{Binding Name}">
                 <TextBlock.ContextMenu>
                   <ContextMenu>
@@ -38,6 +38,12 @@
                   </ContextMenu>
                 </TextBlock.ContextMenu>  
               </TextBlock>
+            </TreeDataTemplate>
+            <TreeDataTemplate DataType="editor:EditorHierarchyGroup" ItemsSource="{Binding Children}">
+              <TextBlock Text="{Binding Name}"/>
+            </TreeDataTemplate>
+            <TreeDataTemplate DataType="editor:EditorPointOfInterest">
+              <TextBlock Text="{Binding Name}"/>
             </TreeDataTemplate>
             <TreeDataTemplate DataType="editor:EditorSceneObject" ItemsSource="{Binding Children}">
               <TextBlock Text="{Binding Name}"/>

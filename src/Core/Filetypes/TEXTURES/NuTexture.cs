@@ -31,9 +31,11 @@ namespace Diorama.Core.Filetypes.TEXTURES
         public uint Discriminator2;
 
         public bool IsCubemap;
+        public bool HasVolume;
 
         public byte[] ImageHeader;
         public byte[] Data;
+        public byte[] AdditionalData;
 
         public bool IsCompressed = true;
 
@@ -48,6 +50,11 @@ namespace Diorama.Core.Filetypes.TEXTURES
 
             Height = file.ReadInt();
             Width = file.ReadInt();
+
+            if (Width == 0)
+            {
+                Console.WriteLine();
+            }
 
             file.Seek(8, SeekOrigin.Current);
 
@@ -68,6 +75,7 @@ namespace Diorama.Core.Filetypes.TEXTURES
             file.Seek(4, SeekOrigin.Current);
 
             IsCubemap = (caps2 & 0x00000200) != 0;
+            HasVolume = (caps2 & 0x00400000) != 0;
 
             int blockSize;
 
@@ -100,20 +108,23 @@ namespace Diorama.Core.Filetypes.TEXTURES
 
             int totalDataSize = 0;
 
-            for (int mip = 0; mip < MipCount; mip++)
+            if (Width > 0 && Height > 0)
             {
-                int w = Math.Max(1, Width >> mip);
-                int h = Math.Max(1, Height >> mip);
+                for (int mip = 0; mip < MipCount; mip++)
+                {
+                    int w = Math.Max(1, Width >> mip);
+                    int h = Math.Max(1, Height >> mip);
 
-                if (IsCompressed)
-                {
-                    int bw = (w + 3) / 4;
-                    int bh = (h + 3) / 4;
-                    totalDataSize += bw * bh * blockSize;
-                }
-                else
-                {
-                    totalDataSize += w * h * blockSize;
+                    if (IsCompressed)
+                    {
+                        int bw = (w + 3) / 4;
+                        int bh = (h + 3) / 4;
+                        totalDataSize += bw * bh * blockSize;
+                    }
+                    else
+                    {
+                        totalDataSize += w * h * blockSize;
+                    }
                 }
             }
 
@@ -124,7 +135,19 @@ namespace Diorama.Core.Filetypes.TEXTURES
             ImageHeader = file.ReadArray(4 + HeaderSize);
             Data = file.ReadArray(totalDataSize);
 
-            return 4 + HeaderSize + totalDataSize;
+            int additionalDataSize = 0;
+            if (HasVolume)
+            {
+                additionalDataSize = file.ReadInt(true); 
+                if (additionalDataSize % 4 != 0)
+                {
+                    Console.WriteLine("Unexpected cubemap size!!!");
+                }
+
+                AdditionalData = file.ReadArray(additionalDataSize);
+            }
+
+            return 4 + HeaderSize + totalDataSize + additionalDataSize;
         }
 
         public static NuTexture Load(RawFile file, NuTexGenHdr header)

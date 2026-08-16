@@ -23,11 +23,16 @@
           <ResourceInclude Source="UI/Controls/TextureUVInput.axaml"/>
           <ResourceInclude Source="UI/Controls/CheckboxInput.axaml"/>
           <ResourceInclude Source="UI/Controls/EnumInput.axaml"/>
+          <ResourceInclude Source="UI/Controls/TextureAnimInput.axaml"/>
+          <ResourceInclude Source="UI/Controls/TransformInput.axaml"/>
 
           <ResourceInclude Source="UI/Controls/TextureSlotControl.axaml"/>
 
           <ResourceInclude Source="UI/Panels/InspectorPanel.axaml"/>
           <ResourceInclude Source="UI/Panels/RenderOptionsPanel.axaml"/>
+
+          <ResourceInclude Source="UI/Panels/Inspectors/GeometryInspector.axaml"/>
+          <ResourceInclude Source="UI/Panels/Inspectors/PoIInspector.axaml"/>
         </ResourceDictionary.MergedDictionaries>
       </ResourceDictionary>
     </Application.Resources>

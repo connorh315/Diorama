@@ -1,7 +1,8 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="using:Diorama"
-        xmlns:views="using:Diorama.UI.ViewModels">
+        xmlns:views="using:Diorama.UI.ViewModels"
+        xmlns:editor="using:Diorama.Editor">
 
   <!--
     Additional resources 
@@ -22,44 +23,16 @@
   <ControlTheme x:Key="{x:Type controls:InspectorPanel}" TargetType="controls:InspectorPanel">
     <Setter Property="Template">
       <ControlTemplate>
-        <TabControl Margin="5" IsVisible="{Binding Controller.SelectedGeometry, Converter={x:Static ObjectConverters.IsNotNull}}">
-          <TabItem Header="Model">
-            <StackPanel Margin="5">
-              <controls:Vec3Input
-                  Value="{Binding Controller.SelectedGeometry.Position, Mode=TwoWay}"
-                  InputLabel="Position" IsEnabled="{Binding Controller.SelectedGeometry.CanEditTransform}"/>
-              <controls:Vec3Input
-                  Value="{Binding Controller.SelectedGeometry.Rotation, Mode=TwoWay}"
-                  InputLabel="Rotation" IsEnabled="{Binding Controller.SelectedGeometry.CanEditTransform}"/>
-              <controls:Vec3Input
-                  Value="{Binding Controller.SelectedGeometry.Scale, Mode=TwoWay}"
-                  InputLabel="Scale" IsEnabled="{Binding Controller.SelectedGeometry.CanEditTransform}"/>
-                
-              <StackPanel Orientation="Horizontal">
-                <Button Content="Replace mesh" x:Name="ReplaceMesh"/>
-                <Button Content="Export mesh" x:Name="ExportMesh"/>
-                <Button Content="DEBUG" x:Name="DebugMesh" />
-              </StackPanel>
-            </StackPanel>
-            
-          </TabItem>
-          <TabItem Header="Material">
-            <Grid Margin="5" RowDefinitions="Auto,Auto,*">
-              <controls:ListInput Grid.Row="0" InputLabel="Material" Items="{Binding Controller.SelectedGeometry.Parent.SceneOwner.Materials}" SelectedItem="{Binding Controller.SelectedGeometry.Material}"/>
-              <StackPanel Grid.Row="1" IsVisible="{Binding !Controller.SelectedGeometry.MaterialCompatible}" Orientation="Horizontal" Spacing="10" Margin="5">
-                <TextBlock Foreground="Red" VerticalAlignment="Center" ToolTip.Tip="Material vertex layout does not align with mesh">Material Incompatible!</TextBlock>
-                <Button x:Name="RebuildVertexDescriptors" ToolTip.Tip="Caution: If this material is used by other meshes, they will come out of alignment">Attempt Re-Align</Button>
-              </StackPanel>
-              <controls:MaterialPanel Grid.Row="2" Textures="{Binding DataContext.Controller.SelectedTextures, RelativeSource={RelativeSource AncestorType=controls:InspectorPanel}}" DataContext="{Binding Controller.SelectedGeometry.Material}" />
-            </Grid>
-          </TabItem>
-          <TabItem Header="SpecialObject">
-            <controls:SpecialObjectPanel DataContext="{Binding Controller.SelectedSceneObject}" />
-          </TabItem>
-          <TabItem Header="Lightmap">
-            <controls:LightmapPanel Textures="{Binding DataContext.Controller.SelectedTextures, RelativeSource={RelativeSource AncestorType=controls:InspectorPanel}}" DataContext="{Binding Controller.SelectedGeometry.Lightmap}" />
-          </TabItem>
-        </TabControl>
+        <ContentControl Content="{Binding Controller.SelectedHierarchyObject}">
+          <ContentControl.DataTemplates>
+            <DataTemplate DataType="editor:EditorGeometryObject">
+              <controls:GeometryInspector />
+            </DataTemplate>
+            <DataTemplate DataType="editor:EditorPointOfInterest">
+              <controls:PoIInspector />
+            </DataTemplate>
+          </ContentControl.DataTemplates>
+        </ContentControl>
       </ControlTemplate>
     </Setter>
   </ControlTheme>

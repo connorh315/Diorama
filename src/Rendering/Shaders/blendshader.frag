@@ -38,6 +38,9 @@ uniform sampler2D specular0;
 uniform bool hasSpecularMap;
 uniform int specular0_uvset;
 
+uniform bool use_scene_envmap;
+uniform samplerCube scene_envmap_tex;
+
 uniform int diffuse0_uvset;
 uniform int diffuse1_uvset;
 uniform int diffuse2_uvset;
@@ -67,17 +70,10 @@ uniform int layer1blendmode;
 uniform int layer2blendmode;
 uniform int layer3blendmode;
 
-uniform bool layer1_texanim;
-uniform float layer1_du;
-uniform float layer1_dv;
-uniform float layer1_speedu;
-uniform float layer1_speedv;
-
-uniform bool layer2_texanim;
-uniform float layer2_du;
-uniform float layer2_dv;
-uniform float layer2_speedu;
-uniform float layer2_speedv;
+uniform vec2 layer0texanim;
+uniform vec2 layer1texanim;
+uniform vec2 layer2texanim;
+uniform vec2 layer3texanim;
 
 uniform int lightingmodel;
 
@@ -107,6 +103,7 @@ uniform bool debug_color1b;
 uniform bool debug_color1a;
 
 uniform bool debug_showSpecular;
+uniform bool debug_showEnvMap;
 
 vec4 CompositeOver(vec4 bottom, vec4 top)
 {
@@ -230,7 +227,9 @@ void main()
 
     if (hasNormalMap)
     {
-        surfaceSample = texture(normal0, GetUVSet(normal0_uvset) * PerLayerUVScale1);
+        vec2 normal0uv = GetUVSet(normal0_uvset) * PerLayerUVScale1;
+        normal0uv += layer0texanim;
+        surfaceSample = texture(normal0, normal0uv);
 
         vec3 tangentNormal = surfaceSample.agb;
 
@@ -286,15 +285,9 @@ void main()
     vec2 diffuse1uv = GetUVSet(diffuse1_uvset) * PerLayerUVScale2;
     vec2 diffuse2uv = GetUVSet(diffuse2_uvset) * PerLayerUVScale3;
 
-    if (layer1_texanim)
-    {
-        diffuse1uv += vec2(layer1_dv, layer1_du) * vec2(layer1_speedv, layer1_speedu) * time;
-    }
-
-    if (layer2_texanim)
-    {
-        diffuse2uv += vec2(layer2_dv, layer2_du) * vec2(layer2_speedv, layer2_speedu) * time;
-    }
+    diffuse0uv += layer0texanim;
+    diffuse1uv += layer1texanim;
+    diffuse2uv += layer2texanim;
 
     vec4 diffuse0 = texture(diffuse0tex, diffuse0uv) * diffuse0_color;
     vec4 diffuse1 = texture(diffuse1tex, diffuse1uv) * diffuse1_color;
@@ -415,7 +408,7 @@ void main()
 
     //vec4 color = vec4(albedo, 1) * (has_vertex_colors ? vec4(outColor.b, outColor.g, outColor.r, 1) : vec4(1)) * lighting * vec4(bakedLighting, 1);
 
-    vec3 finalDiffuse = bakedMaterialResponse * bakedLighting;
+    vec3 finalDiffuse = bakedMaterialResponse * bakedLighting * lit;
 
     vec4 color = vec4(finalDiffuse, albedoAlpha);
 
@@ -504,6 +497,25 @@ void main()
     if (debug_showSpecular)
         color.rgb += specular;
 
+    vec3 environment = vec3(1.0);
+    if (use_scene_envmap && debug_showEnvMap)
+    {
+        vec3 reflectionDir = reflect(-viewDir, normal);
+        environment = texture(scene_envmap_tex, reflectionDir).rgb;
+
+        float envFresnel =
+            pow(1.0 - NdotV, 5.0);
+
+        vec3 envF =
+            F0 + (vec3(1.0) - F0) * envFresnel;
+
+        vec3 environmentSpecular =
+            environment * envF;
+
+
+        color.rgb += environmentSpecular;
+    }
+
     float glowAmount = glow ? glowIntensity : 0.0;
 
     float rim = pow(
@@ -516,18 +528,6 @@ void main()
     color.a = albedoAlpha;
 
     FragColor = color;
-
-    //FragColor = vec4(vec3(bakedLighting), 1);
-
-    //FragColor = vec4(texture(texture3, lmUv).rgb, 1.0);
-
-    //FragColor = vec4(vec3(roughness), 1);
-
-    //FragColor = vec4(vec3(specularSample.b), 1.0);
-
-    //FragColor = vec4(textureLod(normal0, (GetUVSet(normal0_uvset) * PerLayerUVScale1), 0).agb, 1);
-
-    //FragColor = vec4(texture(texture2, lmUv));
 
     if (debug_color0)
         FragColor = outColor.bgra;

@@ -23,6 +23,41 @@ namespace Diorama.Core
                     m.M41, m.M42, m.M43, m.M44
         ];
 
+        public static OpenTK.Mathematics.Matrix4 ToMatrix4(this IList<float> m)
+        {
+            if (m.Count != 16)
+                throw new ArgumentException("Matrix must contain exactly 16 values.", nameof(m));
+
+            return new OpenTK.Mathematics.Matrix4(
+                m[0], m[1], m[2], m[3],
+                m[4], m[5], m[6], m[7],
+                m[8], m[9], m[10], m[11],
+                m[12], m[13], m[14], m[15]
+            );
+        }
+
+        public static float[] ToArray(this OpenTK.Mathematics.Matrix4 m) =>
+        [
+            m.M11, m.M12, m.M13, m.M14,
+            m.M21, m.M22, m.M23, m.M24,
+            m.M31, m.M32, m.M33, m.M34,
+            m.M41, m.M42, m.M43, m.M44
+        ];
+
+        public static OpenTK.Mathematics.Matrix4 ToMatrix4(this float[] m)
+        {
+            if (m.Length != 16)
+                throw new ArgumentException(
+                    "Matrix must contain exactly 16 values.",
+                    nameof(m));
+
+            return new OpenTK.Mathematics.Matrix4(
+                m[0], m[1], m[2], m[3],
+                m[4], m[5], m[6], m[7],
+                m[8], m[9], m[10], m[11],
+                m[12], m[13], m[14], m[15]
+            );
+        }
     }
 
     public static class NuExtensions

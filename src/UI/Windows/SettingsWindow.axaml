@@ -5,8 +5,12 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Diorama.SettingsWindow"
         xmlns:controls="using:Diorama">
-  <StackPanel Width="400" Margin="5">
-    <controls:PropertyEditor Property="DatLocation" />
+  <StackPanel Width="400" Margin="5" Spacing="5">
+    <TextBlock>Files Source:</TextBlock>
+    <controls:PropertyEditor Property="UsingArchives" />
+    <controls:PropertyEditor Property="UsingExtracted" />
+    <controls:PropertyEditor Property="ProviderPath" />
+    
     <Button Click="GenerateFingerprints_Click" HorizontalAlignment="Center">Generate Material Fingerprints</Button>
     <Button Click="SaveSettings_Click" HorizontalAlignment="Center">Save Settings</Button>
   </StackPanel>

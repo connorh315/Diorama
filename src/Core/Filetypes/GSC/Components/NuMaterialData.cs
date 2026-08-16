@@ -1590,7 +1590,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             for (int i = 0; i < 4; i++)
             {
-                TexAnimBlocks[i].Handle(schema);
+                schema.Handle(ref TexAnimBlocks[i]);
             }
 
             schema.HandleInt(ref Colour1);

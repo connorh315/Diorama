@@ -1,0 +1,41 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:Diorama">
+
+  <!--
+    Additional resources 
+    Using Control Themes:
+         https://docs.avaloniaui.net/docs/basics/user-interface/styling/control-themes
+    Using Theme Variants:
+         https://docs.avaloniaui.net/docs/guides/styles-and-resources/how-to-use-theme-variants
+  -->
+  
+  <Design.PreviewWith>
+    <StackPanel Width="400" Spacing="10">      
+        <StackPanel Background="{DynamicResource SystemRegionBrush}">
+          <controls:TransformInput />
+        </StackPanel>
+    </StackPanel>
+  </Design.PreviewWith>
+ 
+  <ControlTheme x:Key="{x:Type controls:TransformInput}" TargetType="controls:TransformInput">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <StackPanel>
+          <TextBlock Text="{TemplateBinding InputLabel}" />
+          <StackPanel Margin="5">
+            <controls:Vec3Input
+                    Value="{Binding Position, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                    InputLabel="Position" />
+            <controls:Vec3Input
+                Value="{Binding Rotation, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                InputLabel="Rotation" />
+            <controls:Vec3Input
+                Value="{Binding Scale, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                InputLabel="Scale" />
+          </StackPanel>
+        </StackPanel>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+</ResourceDictionary>

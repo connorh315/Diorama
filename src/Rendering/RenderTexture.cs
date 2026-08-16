@@ -20,6 +20,8 @@ namespace Diorama.Rendering
 
         public bool Deleted { get; private set; } = false;
 
+        public TextureTarget Target { get; private set; } = TextureTarget.Texture2D;
+
         public void Delete()
         {
             Original?.Header?.Name = "DELETED TEXTURE";
@@ -63,10 +65,10 @@ namespace Diorama.Rendering
             GL.ActiveTexture(unit);
             if (Deleted)
             {
-                GL.BindTexture(TextureTarget.Texture2D, GetInvalidTexture().Handle);
+                GL.BindTexture(Target, GetInvalidTexture().Handle);
                 return;
             }
-            GL.BindTexture(TextureTarget.Texture2D, Handle);
+            GL.BindTexture(Target, Handle);
         }
 
         private void CreateTextureFromData(byte[] data, int width, int height)
@@ -131,40 +133,82 @@ namespace Diorama.Rendering
                     break;
             }
 
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureBaseLevel, 0);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMaxLevel, texture.MipCount - 1);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.LinearMipmapLinear);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
+            GL.TexParameter(Target, TextureParameterName.TextureBaseLevel, 0);
+            GL.TexParameter(Target, TextureParameterName.TextureMaxLevel, texture.MipCount - 1);
+            GL.TexParameter(Target, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+            GL.TexParameter(Target, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.LinearMipmapLinear);
+            GL.TexParameter(Target, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
+            GL.TexParameter(Target, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
 
+            if (Target == TextureTarget.TextureCubeMap)
+            {
+                GL.TexParameter(
+                    Target,
+                    TextureParameterName.TextureWrapR,
+                    (int)TextureWrapMode.ClampToEdge);
+            }
+
+            if (Target == TextureTarget.Texture2D)
+            {
+                UploadFace(texture, Target, 0, compressionFormat, blockSize, uncompressedPixelSize);
+            }
+            else if (Target == TextureTarget.TextureCubeMap)
+            {
+                TextureTarget[] faces =
+                [
+                    TextureTarget.TextureCubeMapPositiveX,
+                    TextureTarget.TextureCubeMapNegativeX,
+                    TextureTarget.TextureCubeMapPositiveY,
+                    TextureTarget.TextureCubeMapNegativeY,
+                    TextureTarget.TextureCubeMapPositiveZ,
+                    TextureTarget.TextureCubeMapNegativeZ
+                ];
+
+                int offset = 0;
+
+                foreach (TextureTarget face in faces)
+                {
+                    offset = UploadFace(
+                        texture,
+                        face,
+                        offset,
+                        compressionFormat,
+                        blockSize,
+                        uncompressedPixelSize);
+                }
+            }
+        }
+
+        private int UploadFace(
+            NuTexture texture,
+            TextureTarget faceTarget,
+            int offset,
+            InternalFormat compressionFormat,
+            int blockSize,
+            int uncompressedPixelSize)
+        {
             int width = texture.Width;
             int height = texture.Height;
 
-            int offset = 0; // where mip data starts
+            if (width == 0 && height == 0) return offset;
 
-            for (int i = 0; i < texture.MipCount; i++)
+            for (int mip = 0; mip < texture.MipCount; mip++)
             {
                 int w = Math.Max(1, width);
                 int h = Math.Max(1, height);
 
                 int mipSize;
 
-                if (width == 0 || height == 0)
-                {
-                    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMaxLevel, i - 1);
-                    break;
-                }
-
                 if (texture.IsCompressed)
                 {
                     int bw = (w + 3) / 4;
                     int bh = (h + 3) / 4;
+
                     mipSize = bw * bh * blockSize;
 
                     GL.CompressedTexImage2D(
-                        TextureTarget.Texture2D,
-                        i,
+                        faceTarget,
+                        mip,
                         compressionFormat,
                         w,
                         h,
@@ -178,8 +222,8 @@ namespace Diorama.Rendering
                     mipSize = w * h * uncompressedPixelSize;
 
                     GL.TexImage2D(
-                        TextureTarget.Texture2D,
-                        i,
+                        faceTarget,
+                        mip,
                         (PixelInternalFormat)compressionFormat,
                         w,
                         h,
@@ -195,6 +239,8 @@ namespace Diorama.Rendering
                 width /= 2;
                 height /= 2;
             }
+
+            return offset;
         }
 
         public static RenderTexture FromNuTexture(NuTexture texture)
@@ -204,6 +250,8 @@ namespace Diorama.Rendering
             renderTexture.Original = texture;
 
             renderTexture.GscName = texture.Header.Name;
+
+            renderTexture.Target = texture.IsCubemap ? TextureTarget.TextureCubeMap : TextureTarget.Texture2D;
 
             if (texture.Data == null)
             {

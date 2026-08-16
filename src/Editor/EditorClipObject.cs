@@ -17,6 +17,14 @@ namespace Diorama.Editor
 
         public List<EditorGeometryObject> Elements { get; set; } = new();
 
+        public void AddRenderables(RenderContext ctx)
+        {
+            foreach (var geo in Elements)
+            {
+                geo.AddRenderables(ctx);
+            }
+        }
+
         public void Draw(Shader shader, RenderContext ctx) 
         {             
             foreach (var geo in Elements)
