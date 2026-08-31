@@ -171,15 +171,29 @@ namespace Diorama
             if (vm.Commited && vm.Selected != null)
             {
                 var sceneLocation = vm.Selected;
-                var texturesLocation = FileProvider.ReplaceLocationExtension(sceneLocation, "nxg_textures");
-                var cubemapsLocation = FileProvider.ReplaceInLocation(texturesLocation, "_dx11.nxg_textures", "_cubemaps_dx11.nxg_textures");
-
-                using RawFile scene = FileProvider.GetFile(sceneLocation);
-                using RawFile textures = FileProvider.GetFile(texturesLocation);
-                using RawFile cubemap_textures = FileProvider.GetFile(cubemapsLocation);
-
-                MainViewport.LoadScene(scene, textures, cubemap_textures, sceneLocation.FullPath);
+                LoadCompleteScene(sceneLocation);
             }
+        }
+
+        private void LoadCompleteScene(FileLocation sceneLocation)
+        {
+#if DEBUG
+            File.WriteAllText("openhistory.txt", sceneLocation.SerializedString);
+#endif
+
+            var texturesLocation = FileProvider.ReplaceLocationExtension(sceneLocation, "nxg_textures");
+            var cubemapsLocation = FileProvider.ReplaceInLocation(texturesLocation, "_dx11.nxg_textures", "_cubemaps_dx11.nxg_textures");
+
+            using RawFile scene = FileProvider.GetFile(sceneLocation);
+            using RawFile textures = FileProvider.GetFile(texturesLocation);
+            using RawFile cubemap_textures = FileProvider.GetFile(cubemapsLocation);
+
+            if (scene == null)
+                return;
+
+            MainViewport.LoadScene(scene, textures, cubemap_textures, sceneLocation.FullPath);
+
+            File.WriteAllText("openhistory.txt", sceneLocation.SerializedString);
         }
 
         public async Task<string?> OpenSaveMenu(string title, string extension)
@@ -216,6 +230,14 @@ namespace Diorama
             else if (e.Key == Key.O && e.KeyModifiers == KeyModifiers.Control)
             {
                 OpenFileMenu();
+            }
+            else if (e.Key == Key.D1 && e.KeyModifiers == KeyModifiers.Alt)
+            {
+                if (Path.Exists("openhistory.txt"))
+                {
+                    string[] paths = File.ReadAllLines("openhistory.txt");
+                    LoadCompleteScene(FileLocation.FromSerializedString(paths[0]));
+                }
             }
 
         }

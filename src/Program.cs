@@ -1,5 +1,6 @@
 ﻿global using Common;
 using Avalonia;
+using Avalonia.Controls.Documents;
 using Avalonia.OpenGL;
 using BrickVault.Types;
 using Diorama.Core;
@@ -7,10 +8,12 @@ using Diorama.Core.Filetypes.GSC;
 using Diorama.Core.Filetypes.GSC.Components;
 using Diorama.Core.Filetypes.SHADERS;
 using Diorama.Core.Filetypes.TEXTURES;
+using Diorama.Core.IO;
 using Diorama.Editor;
 using Diorama.Editor.glTF;
 using Diorama.Editor.ShaderSystem;
 using OpenTK.Graphics.ES11;
+using OpenTK.Platform.Windows;
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -34,293 +37,43 @@ namespace Diorama
             => AppBuilder.Configure<App>()
                 .UsePlatformDetect()
                 .WithInterFont()
-                //.WithDataAnnotationsValidation()
                 .UseSkia()
-                //.WithDeveloperTools()
-                //.With(new Win32PlatformOptions
-                //{
-                //    RenderingMode = new Collection<Win32RenderingMode> { Win32RenderingMode.Wgl }
-                //})
                 .LogToTrace();
 
         private static readonly Stopwatch AppTimer = Stopwatch.StartNew();
 
         public static float TimeSinceStart => (float)AppTimer.Elapsed.TotalSeconds;
 
-        public static void MainX(string[] args)
+        public static void Mainaqa(string[] args)
         {
-            GScene jayFlail = GScene.Parse(@"A:\JAYFLAIL_DX11.GHG");
+            AppSettings.Initialize();
 
-            GScene hardScene = GScene.Parse(@"A:\CHARS\ITEMS\LOBO_GRENADE_DX11.GSC"); // mat 0
+            //var gFile = FileProvider.GetFile("chars\\minifigs\\super_characters\\super_city\\super_city_dx11.ghg");
 
-            GScene stipplingScene = GScene.Parse(@"A:\COMMONOBJECTS\CUT_TVBANK_DX11.GSC"); // mat 0
+            //GScene.Parse(gFile);
 
-            NuMaterialData[] materials = new NuMaterialData[4];
-            materials[0] = jayFlail.MaterialBlock.Materials[0];
-            materials[1] = jayFlail.MaterialBlock.Materials[1];
-
-            materials[2] = hardScene.MaterialBlock.Materials[0];
-            materials[3] = stipplingScene.MaterialBlock.Materials[0];
-            Console.WriteLine();
-        }
-
-        static void MainZZ(string[] args)
-        {
-            var datFiles = Directory.GetFiles(
-                @"G:\SteamLibrary\steamapps\common\LEGO DC Super-Villains",
-                "*.DAT",
-                SearchOption.AllDirectories
-            );
-
-            Histogram<NuMaterialData> histogram = new Histogram<NuMaterialData>();
-
-            Dictionary<string, int> states = new();
-
-            foreach (string datPath in datFiles)
-            {
-                var dat = DATFile.Open(datPath);
-                if (dat == null) continue;
-                using (var extractionCtx = dat.GetExtractionContext())
-                {
-                    foreach (var file in dat.GetFilesWithExtension("gsc"))
-                    {
-                        using (RawFile gsc = new RawFile(new MemoryStream()))
-                        {
-                            dat.ExtractFile(file, extractionCtx, gsc.fileStream);
-    
-                            try
-                            {
-                                GScene scene = GScene.Parse(gsc);
-
-                                foreach (var mat in scene.MaterialBlock.Materials)
-                                {
-                                    if ((mat.TexAnimData1 != -1 && mat.TexAnimData1 != 0)
-                                        || (mat.TexAnimData2 != -1 && mat.TexAnimData2 != 1)
-                                        || (mat.TexAnimData3 != -1 && mat.TexAnimData3 != 2)
-                                        || (mat.TexAnimData4 != -1 && mat.TexAnimData4 != 3))
-                                    {
-                                        Console.WriteLine();
-                                    }
-                                }
-                            }
-                            catch (Exception e)
-                            {
-                                Console.WriteLine($"Failed on {file.Path} due to: {e.Message}");
-                            }
-                        }
-                    }
-                }
-            }
-
-            foreach (var state in states)
-            {
-                Console.WriteLine($"{state.Key} ||| {state.Value}");
-            }
-
-            histogram.Save(@"A:\testnoglow.txt");
-        }
-
-        static void Main2(string[] args)
-        {
-
-            //ParseFile(@"A:\ADDITIONALCONTENT\OPUS_ADVENTURETIME\LEVELS\LEVELPACK\OPUS_ADVENTURETIME\OPUS_ADVENTURETIME_MIDTRO3\CUT_GIZ_ENCHIRIDION_BDOOTH_DX11.GSC");
-            //TryParseFile(@"A:\CHARS\CREATURE\GHOST_75827\GHOST_75827_KRAWLIE_DX11.GHG");
-            //TryParseFile(@"A:\CHARS\SUPER_CHARACTER\FACE\FACE_METALBEARD_DX11.GHG");
-            //TryParseFile(@"A:\LEVELS\BUILDER\BUILDERGAMEMECHANICS\BUILDERMASTERBUILD\BUILDERMASTERBUILD_DX11.GSC");
-            //TryParseFile("A:\\levels\\builder\\buildergamemechanics\\builderghostreceptor\\builderghostreceptor_dx11.gsc");
-            //ParseFile("A:\\levels\\vfx\\vfx_story\\vfx_1wizardofoz\\vfx_1wizardofoza\\vfx_1wizardofoza_dx11.gsc");
-            //TryParseFile("A:\\levels\\vfx\\vfx_ipsharedscenes\\vfx_puncheffects\\vfx_puncheffects_dx11.gsc");
             //return;
 
-            int counter = 0;
+
             int total = 0;
+            int success = 0;
 
-            var datFiles = Directory.GetFiles(
-                @"G:\SteamLibrary\steamapps\common\LEGO Batman 3 Beyond Gotham",
-                "*.DAT",
-                SearchOption.AllDirectories
-            );
-            //Parallel.ForEach(
-            //    datFiles,
-            //    new ParallelOptions { MaxDegreeOfParallelism = 4 },
-            //datPath =>
-            byte[] compressedShare = new byte[32000000];
-            byte[] decompressedShare = new byte[96000000];
-
-            using var file = new RawFile(new MemoryStream(100000000));
-            foreach (string datPath in datFiles)
+            foreach (var file in FileProvider.EnumerateFiles("gsc", "ghg"))
             {
-                var dat = DATFile.Open(datPath);
-
-
-                using (var datFile = new RawFile(dat.FileLocation))
+                total++;
+                try
                 {
-                    foreach (var entry in dat.Files)
-                    {
-                        if (!entry.Path.EndsWith("nxg_textures"))
-                            continue;
+                    GScene scene = GScene.Parse(file);
 
-                        if (compressedShare.Length < entry.CompressedSize)
-                        {
-                            compressedShare = new byte[entry.CompressedSize];
-                        }
-
-                        if (decompressedShare.Length < entry.DecompressedSize)
-                        {
-                            decompressedShare = new byte[entry.DecompressedSize];
-                        }
-
-                        Interlocked.Increment(ref total);
-
-                        file.fileStream.Position = 0;
-
-                        dat.Extract(entry, file.fileStream, datFile, compressedShare, decompressedShare);
-                        file.fileStream.Position = 0;
-
-                        file.Opaque = entry.Path;
-
-                        if (TryParseFile(file))
-                        {
-                            Interlocked.Increment(ref counter);
-                        }
-                    }
+                    success++;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Skipped file: {ex.Message}");
                 }
             }
-            //);
 
-            Console.WriteLine($"Successfully processed {counter} meshes out of {total} files.");
-            foreach (var pair in countFails)
-            {
-                Console.WriteLine($"{pair.Key}: {pair.Value}");
-            }
+            Console.WriteLine($"{success} / {total}");
         }
-
-        static ConcurrentDictionary<string, int> countFails =
-            new ConcurrentDictionary<string, int>();
-
-
-        static bool TryParseFile(string path)
-        {
-            try
-            {
-                ParseFile(path, false);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                if (!ex.Message.StartsWith("Unsupported NU20 version"))
-                    //Console.WriteLine($"Failed to parse {path}: {ex}");
-
-                    if (!countFails.ContainsKey(ex.Message))
-                        countFails[ex.Message] = 0;
-
-                countFails[ex.Message]++;
-            }
-            return false;
-        }
-
-        static bool TryParseFile(RawFile file)
-        {
-            try
-            {
-                ParseRawFile(file);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                if (ex.Message == "should be 0")
-                {
-                    Console.WriteLine();
-                }
-
-                //if (!ex.Message.StartsWith("Unsupported NU20 version"))
-                //    Console.WriteLine($"Failed to parse {file.FileLocation}: {ex}");
-
-                //countFails.AddOrUpdate(
-                //    ex.Message,
-                //    1,                  // if key does not exist
-                //    (_, old) => old + 1 // if key exists
-                //);
-
-                countFails.AddOrUpdate(
-                    (string)file.Opaque,
-                    1, // if key does not exist
-                    (_, old) => old + 1 // if key exists
-                );
-            }
-            return false;
-        }
-
-        static void ParseRawFile(RawFile file)
-        {
-            NxgTextures textures = NxgTextures.Read(file);
-
-            foreach (var header in textures.TextureSet.TextureHeaders)
-            {
-                if (header.Name.Contains("lego_white"))
-                {
-                    Console.WriteLine();
-                }
-            }
-        }
-
-        static void ParseFile(string path, bool shouldExport = true)
-        {
-            GScene file = GScene.Parse(path);
-
-            var display = file.DisplayScene;
-            Dictionary<int, bool> used = new();
-            for (int i = 0; i < display.SceneInstances.Count; i++)
-            {
-                var instance = display.SceneInstances[i];
-
-                if (instance.ClipObjectIndex > -1)
-                {
-                    if (used.ContainsKey(instance.ClipObjectIndex))
-                    {
-                        Console.WriteLine("not unique!");
-                    }
-                    used.Add(instance.ClipObjectIndex, true);
-                }
-            }
-        }
-
-        static void WriteObjFacesFromTriangleStrip(
-            List<string> lines,
-            ushort[] indices,
-            uint indicesOffset,
-            uint indicesCount,
-            uint verticesOffset,
-            uint verticesCount
-        )
-        {
-            bool flip = false;
-
-            for (uint i = indicesOffset; i < indicesOffset + indicesCount; i += 3)
-            {
-                ushort i0 = (ushort)(indices[i] + 1);
-                ushort i1 = (ushort)(indices[i + 1] + 1);
-                ushort i2 = (ushort)(indices[i + 2] + 1);
-
-                // Degenerate triangle → strip restart or stitch
-                if (i0 == i1 || i1 == i2 || i0 == i2)
-                {
-                    flip = false; // reset winding after degenerates
-                    continue;
-                }
-
-                if (!flip)
-                {
-                    lines.Add($"f {i0} {i1} {i2}");
-                }
-                else
-                {
-                    lines.Add($"f {i1} {i0} {i2}");
-                }
-
-                flip = !flip;
-            }
-        }
-
     }
 }

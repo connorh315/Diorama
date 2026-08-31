@@ -87,6 +87,12 @@
     <None Update="Rendering\Shaders\blendshader.vert">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Rendering\Shaders\cubepreview.frag">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Rendering\Shaders\cubepreview.vert">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Rendering\Shaders\debugshader.frag">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

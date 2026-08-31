@@ -12,14 +12,34 @@ namespace Diorama.Core.Filetypes.GSC.Components
     public class NuSpline : ISchemaSerializable
     {
         public string Title;
+        public uint NameIndex;
         public List<Vector3> Path;
+        public List<NuVec> Points;
         public byte isPeriodic;
         public byte isBezier;
 
         public void Handle(SchemaSerializer schema, uint parentVersion)
         {
-            schema.HandlePascalString(ref Title, 1);
-            schema.HandleVector3Vector(ref Path);
+            if (parentVersion < 0x45)
+            {
+                schema.HandleUInt(ref NameIndex);
+                if (schema.Context is GSerializationContext ctx)
+                {
+                    ctx.AddReference(this);
+                }
+            }
+            else
+            {
+                schema.HandlePascalString(ref Title, 1);
+            }
+            if (parentVersion < 0x45)
+            {
+                schema.HandleSchemaVarArray(ref Points);
+            }
+            else
+            {
+                schema.HandleSchemaVector(ref Points);
+            }
             if (parentVersion > 0x4f)
             {
                 schema.HandleByte(ref isPeriodic);

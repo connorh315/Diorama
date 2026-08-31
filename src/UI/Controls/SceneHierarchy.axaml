@@ -43,10 +43,13 @@
               <TextBlock Text="{Binding Name}"/>
             </TreeDataTemplate>
             <TreeDataTemplate DataType="editor:EditorPointOfInterest">
-              <TextBlock Text="{Binding Name}"/>
+              <TextBlock Text="{Binding DisplayName}"/>
+            </TreeDataTemplate>
+            <TreeDataTemplate DataType="editor:EditorJoint" ItemsSource="{Binding Children}">
+              <TextBlock Text="{Binding DisplayName}"/>
             </TreeDataTemplate>
             <TreeDataTemplate DataType="editor:EditorSceneObject" ItemsSource="{Binding Children}">
-              <TextBlock Text="{Binding Name}"/>
+              <TextBlock Text="{Binding DisplayName}"/>
             </TreeDataTemplate>
             <TreeDataTemplate DataType="editor:EditorLodGroup" ItemsSource="{Binding Children}">
               <StackPanel Orientation="Horizontal">
@@ -57,6 +60,9 @@
             </TreeDataTemplate>
             <TreeDataTemplate DataType="editor:EditorGeometryObject">
               <TextBlock Text="{Binding Name}"/>
+            </TreeDataTemplate>
+            <TreeDataTemplate DataType="controls:INamedItem">
+              <TextBlock Text="{Binding DisplayName}"/>
             </TreeDataTemplate>
           </TreeView.DataTemplates>
         </TreeView>

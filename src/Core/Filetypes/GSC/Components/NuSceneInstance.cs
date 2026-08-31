@@ -37,7 +37,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 schema.HandleFloat(ref FadeDistances[i]);
             }
 
-            schema.HandleFloat(ref ApproxSize);
+            if (parentVersion > 0x17)
+            {
+                schema.HandleFloat(ref ApproxSize);
+            }
 
             if (!HasLods)
             {

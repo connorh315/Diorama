@@ -16,6 +16,7 @@ using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -82,6 +83,7 @@ namespace Diorama.Editor
             }
 
             var textures = new List<RenderTexture>();
+            bool needsSharedTextures = false;
 
             try
             {
@@ -90,7 +92,16 @@ namespace Diorama.Editor
                 {
                     for (int i = 0; i < nxg_textures.TextureSet.Textures.Length; i++)
                     {
-                        textures.Add(RenderTexture.FromNuTexture(nxg_textures.TextureSet.Textures[i]));
+                        var texture = nxg_textures.TextureSet.Textures[i];
+                        if (texture.Data == null && nxg_textures.TextureSet.Version == 1)
+                            needsSharedTextures = true;
+                        //if (nxg_textures.TextureSet.Version == 1 && texture.Data == null)
+                        //{
+                        //    texture.Header.Path = texStrings[i].Value;
+                        //    NxgTextures.LoadExternalTexture(texture);
+                        //}
+
+                        textures.Add(RenderTexture.FromNuTexture(texture));
                     }
                     editorScene.OriginalTextures = nxg_textures;
                 }
@@ -99,6 +110,40 @@ namespace Diorama.Editor
             {
                 Console.WriteLine("No texture sheet found for scene, using blank textures");
             }
+
+            var texStrings = scene.Metadata.MetaStrings;
+
+            //if (nxg_textures.TextureSet.Version == 1)
+            //{
+            //    try
+            //    {
+            //        var legoCityShared = FileProvider.GetFile(@"levels\lego_city\lego_city\lego_city_shared_textures_dx11.nxg_textures");
+            //        if (legoCityShared != null)
+            //        {
+            //            var legoCityTextures = NxgTextures.Read(legoCityShared);
+            //            for (int i = 0; i < nxg_textures.TextureSet.Textures.Length; i++)
+            //            {
+            //                var texture = nxg_textures.TextureSet.Textures[i];
+            //                if (texture.Data == null)
+            //                {
+            //                    foreach (var legoCityTex in legoCityTextures.TextureSet.Textures)
+            //                    {
+            //                        if (legoCityTex.Header.Path == texStrings[i].Value)
+            //                        {
+            //                            nxg_textures.TextureSet.Textures[i] = legoCityTex;
+            //                            textures[i] = RenderTexture.FromNuTexture(legoCityTex);
+            //                            break;
+            //                        }
+            //                    }
+            //                }
+            //            }
+            //        }
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        Console.WriteLine($"Could not load shared textures: {ex.Message}");
+            //    }
+            //}
 
             var cubemap_tex = new List<RenderTexture>();
 
@@ -355,7 +400,7 @@ namespace Diorama.Editor
                     sceneObject.ClipObject.Parent = sceneObject;
                 }
 
-                if (instance.HasLods && instance.ClipObjectIndex != -1)
+                if (instance.HasLods)
                 {
                     sceneObject.Lods = new EditorLodGroup[4];
 
@@ -367,9 +412,25 @@ namespace Diorama.Editor
 
                         if (lod.NumInstances == 0) continue;
 
-                        var lodClip = allClipObjects[lod.FirstInstance];
-                        sceneObject.Lods[j].ClipObject = lodClip;
-                        lodClip.Parent = sceneObject;
+                        sceneObject.Lods[j].Spare = new();
+                        for (int k = 0; k < lod.NumInstances; k++)
+                        {
+                            if (lod.LodHeirarchical == 0)
+                            {
+                                var lodClip = allClipObjects[lod.FirstInstance + k];
+                                sceneObject.Lods[j].ClipObject = lodClip;
+                                lodClip.Parent = sceneObject;
+                                sceneObject.Lods[j].Spare.Add(lodClip);
+                            }
+                            else
+                            {
+                                var childInstance = display.SceneInstances[lod.FirstInstance + k];
+                                var lodClip = allClipObjects[childInstance.ClipObjectIndex];
+                                sceneObject.Lods[j].ClipObject = lodClip;
+                                lodClip.Parent = sceneObject;
+                                sceneObject.Lods[j].Spare.Add(lodClip);
+                            }
+                        }
                     }
 
                     sceneObject.UseLodGroups = true;
@@ -379,11 +440,16 @@ namespace Diorama.Editor
             for (int i = 0; i < display.SpecialObjects.Count; i++)
             {
                 var specialObject = display.SpecialObjects[i];
+                if (specialObject.Name == null)
+                {
+                    specialObject.Name = scene.NameTable.Names.GetString((int)specialObject.NameIndex);
+                }
+                EditorSpecialObject eSpecialObject = new EditorSpecialObject(specialObject);
+                editorScene.SpecialObjects.Add(eSpecialObject);
                 if (specialObject.InstanceIndex != -1)
                 {
                     EditorSceneObject sceneObject = (EditorSceneObject)editorScene.Objects[specialObject.InstanceIndex];
-                    sceneObject.Name = specialObject.Name;
-                    sceneObject.SpecialObject = specialObject;
+                    sceneObject.SpecialObject = eSpecialObject;
                 }
             }
 
@@ -392,26 +458,89 @@ namespace Diorama.Editor
 
             if (scene.CharacterData.Count > 0)
             {
-                var joints = scene.CharacterData[0].JointData;
-                var jointTransforms = scene.CharacterData[0].Inv_Wt;
+                var char0data = scene.CharacterData[0];
+
+                var joints = char0data.JointData;
+                var jointTransforms = char0data.Inv_Wt;
 
                 for (int i = 0; i < joints.Count; i++)
                 {
-                    editorScene.Joints.Add(new EditorJoint
+                    var mtx = jointTransforms[i].mtx.ToMatrix4().Inverted();
+                    var joint = new EditorJoint(joints[i], mtx, editorScene);
+
+                    if (joint.Original.ParentIndex != 255)
                     {
-                        Original = joints[i],
-                        WorldTransform = jointTransforms[i].mtx.ToMatrix4().Inverted()
-                    });
+                        EditorJoint parent = (EditorJoint)editorScene.AllJoints[joint.Original.ParentIndex];
+                        joint.Parent = parent;
+                    }
+                    else
+                    {
+                        editorScene.Joints.Add(joint);
+                    }
+
+                    editorScene.AllJoints.Add(joint);
                 }
 
-                var poiData = scene.CharacterData[0].PointsOfInterest;
+                var poiData = char0data.PointsOfInterest;
                 for (int i = 0; i < poiData.Count; i++)
                 {
                     var poi = poiData[i];
                     editorScene.PoIs.Add(new EditorPointOfInterest(poi, editorScene)
                     {
-                        Parent = (EditorJoint)editorScene.Joints[poi.ParentJointIdx]
+                        Parent = (EditorJoint)editorScene.AllJoints[poi.ParentJointIdx]
                     });
+                }
+
+                EditorLayerMetadata[] metadataItems = new EditorLayerMetadata[char0data.LayerMetadata.Count];
+                for (int i = 0; i < char0data.LayerMetadata.Count; i++)
+                {
+                    var metadata = char0data.LayerMetadata[i];
+
+                    var editorMetadata = new EditorLayerMetadata(metadata)
+                    {
+                        SceneOwner = editorScene
+                    };
+
+                    if (metadata.JointIndex != 255)
+                    {
+                        editorMetadata.Joint = (EditorJoint)editorScene.AllJoints[metadata.JointIndex];
+                    }
+                    if (metadata.SpecialIndex != -1)
+                    {
+                        editorMetadata.SpecialObject = (EditorSpecialObject)editorScene.SpecialObjects[metadata.SpecialIndex];
+                    }
+
+                    metadataItems[i] = editorMetadata;
+                }
+
+                for (int i = 0; i < char0data.Layers.Count; i++)
+                {
+                    var layer = char0data.Layers[i];
+
+                    var editorLayer = new EditorLayer(layer);
+
+                    int total = layer.NumRigids + layer.NumSkins;
+                    for (int j = 0; j < total; j++)
+                    {
+                        editorLayer.LayerItems.Add(metadataItems[layer.MetaDataIndex + j]);
+                    }
+
+                    editorScene.Layers.Add(editorLayer);
+                }
+
+                for (int i = 0; i < scene.CharacterData.Count; i++)
+                {
+                    var lodGroup = scene.CharacterData[i];
+                    for (int j = 0; j < lodGroup.LayerMetadata.Count; j++)
+                    {
+                        var metadata = lodGroup.LayerMetadata[j];
+
+                        if (metadata.SpecialIndex != -1)
+                        {
+                            EditorSpecialObject obj = (EditorSpecialObject)editorScene.SpecialObjects[metadata.SpecialIndex];
+                            obj.LODGroup = i;
+                        }
+                    }
                 }
             }
 
@@ -528,6 +657,8 @@ namespace Diorama.Editor
 
             HandleShaders(scene);
 
+            CreateNameTable(scene);
+
             string path = nuScene.Path;
 
 #if DEBUG
@@ -541,11 +672,30 @@ namespace Diorama.Editor
             }
         }
 
+        private const string defaultString = "default_string";
+        public static void CreateNameTable(EditorScene scene)
+        {
+            NuAlignedBuffer nameTable = new NuAlignedBuffer();
+            nameTable.SetPadding(1);
+            nameTable.AddString(defaultString);
+            foreach (EditorSpecialObject specialObject in scene.SpecialObjects)
+            {
+                specialObject.Original.NameIndex = (uint)nameTable.AddString(specialObject.Name);
+            }
+            nameTable.Finalise();
+            scene.OriginalScene.NameTable.Names = nameTable;
+        }
+
         public static void ConvertCharacterData(EditorScene scene)
         {
-            var nuScene = scene.OriginalScene;
+            var char0data = scene.OriginalScene.CharacterData;
 
-
+            //if (char0data != null && char0data.Count > 1)
+            //{
+            //    var item0 = char0data[0];
+            //    char0data.Clear();
+            //    char0data.Add(item0);
+            //}
         }
 
         public static void ConvertMaterials(EditorScene scene)

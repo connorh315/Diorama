@@ -10,8 +10,11 @@ namespace Diorama.Core.Filetypes.GSC.Components
     {
         public byte[] Checksum = new byte[16];
         public string Path = "";
-        public string Name = "NewImage";
+        public short ResourceId;
+        public const string DefaultName = "UnnamedImage";
+        public string Name = DefaultName;
         public byte NutType;
+        public byte Flags;
 
         public uint Level;
         public string ObjectId = "";
@@ -20,9 +23,23 @@ namespace Diorama.Core.Filetypes.GSC.Components
         public void Handle(SchemaSerializer schema, uint parentVersion)
         {
             schema.HandleArray(ref Checksum, 16);
-            schema.HandlePascalString(ref Path, 1);
-            schema.HandlePascalString(ref Name, 1);
+            if (parentVersion < 0xc)
+            {
+                schema.HandleIntPascalString(ref Path, 1);
+                schema.HandleShort(ref ResourceId);
+            }
+            else
+            {
+                schema.HandlePascalString(ref Path, 1);
+                schema.HandlePascalString(ref Name, 1);
+            }
+
             schema.HandleByte(ref NutType);
+
+            if (parentVersion < 0xc)
+            {
+                schema.HandleByte(ref Flags);
+            }
 
             if (parentVersion > 0xc)
             {

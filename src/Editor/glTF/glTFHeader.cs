@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Diorama.Editor.glTF
 {
@@ -83,12 +85,26 @@ namespace Diorama.Editor.glTF
             var options = new JsonSerializerOptions
             {
                 WriteIndented = true,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
             };
 
             string json = JsonSerializer.Serialize(this, options);
 
             File.WriteAllText(filePath, json);
+        }
+
+        public static glTFHeader ReadFromFile(string filePath)
+        {
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
+
+            string json = File.ReadAllText(filePath);
+
+            return JsonSerializer.Deserialize<glTFHeader>(json, options);
         }
     }
 
@@ -110,6 +126,10 @@ namespace Diorama.Editor.glTF
         public int? Skin { get; set; }
         public List<int>? Children { get; set; }
         public List<float>? Matrix { get; set; }
+
+        public List<float>? Translation { get; set; }
+        public List<float>? Rotation { get; set; }
+        public List<float>? Scale { get; set; }
     }
 
     public class GltfMesh

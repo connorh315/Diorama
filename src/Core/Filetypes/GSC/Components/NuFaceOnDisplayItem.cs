@@ -9,6 +9,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
 {
     public class NuFaceOnDisplayItem : IVectorSerializable, ISchemaSerializable
     {
+        public uint IsFixedUp;
         public uint Type;
         public List<NuFaceOnInstance> Instances;
 
@@ -22,8 +23,19 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
         public void Handle(SchemaSerializer schema, uint parentVersion)
         {
+            if (parentVersion < 0x1e)
+            {
+                schema.HandleUInt(ref IsFixedUp);
+            }
             schema.HandleUInt(ref Type);
-            schema.HandleSchemaVector(ref Instances);
+            if (parentVersion < 0x1f)
+            {
+                schema.HandleSchemaVarArray(ref Instances);
+            }
+            else
+            {
+                schema.HandleSchemaVector(ref Instances);
+            }
         }
 
         public void Serialize(RawFile file, uint parentVersion)

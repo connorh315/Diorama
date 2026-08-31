@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Diorama.Core.Filetypes.TEXTURES
 {
@@ -88,6 +89,19 @@ namespace Diorama.Core.Filetypes.TEXTURES
 
         public NuTextureSet TextureSet;
 
+        public static void LoadExternalTexture(NuTexture tex)
+        {
+            Console.WriteLine($"Loading {tex.Header.Path} as external texture!");
+            using (RawFile loaded = FileProvider.GetFile(tex.Header.Path))
+            {
+                if (loaded != null)
+                {
+                    tex.Calculate(loaded);
+                }
+            }
+            // otherwise white texture will default
+        }
+
         public void Handle(SchemaSerializer schema, uint parentVersion)
         {
             schema.Handle(ref ResourceHeader);
@@ -107,15 +121,7 @@ namespace Diorama.Core.Filetypes.TEXTURES
                     var tex = TextureSet.Textures[i];
                     if (tex.Header.Name == string.Empty)
                     {
-                        Console.WriteLine($"Pulling {tex.Header.Path} from game archives!");
-                        using (RawFile loaded = FileProvider.GetFile(tex.Header.Path))
-                        {
-                            if (loaded != null)
-                            {
-                                TextureSet.Textures[i].Calculate(loaded);
-                            }
-                        }
-                        // otherwise white texture will default
+                        LoadExternalTexture(tex);
                     }
                 }
             }

@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls.Shapes;
+using BrickVault;
 using Diorama.Core.Filetypes.GSC;
 using Diorama.Core.Types;
 using System;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Diorama.Core.Filetypes.GSC.Components
 {
-    public class NuBlendShape
+    public class NuBlendShape : ISchemaSerializable
     {
         public NuBlendShape Next;
 
@@ -18,11 +19,60 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
         public List<NuVec> Offsets;
 
+        public byte HasAlphas;
+        public List<NuBlendShapeAlpha> Alphas;
+
         public uint CompressionFormat;
+
+        public List<NuBlendRunV1> RunV1;
 
         public byte[] Buffer;
 
         public List<uint> RunBatchTableV2;
+
+        public void Handle(SchemaSerializer schema, uint parentVersion)
+        {
+            GSerializationContext? ctx = schema.Context as GSerializationContext;
+            
+            ctx?.AddReference(this);
+
+            schema.HandleUInt(ref Id);
+
+            schema.HandleOptional(ref Next, parentVersion);
+
+            if (parentVersion < 0xae)
+            {
+                schema.HandleSchemaVarArray(ref Offsets);
+            }
+            else
+            {
+                schema.HandleSchemaVector(ref Offsets);
+            }
+
+            if (parentVersion < 0xae)
+            {
+                schema.HandleByte(ref HasAlphas);
+                schema.HandleSchemaVarArray(ref Alphas);
+            }
+
+            schema.HandleUInt(ref CompressionFormat);
+            if (parentVersion < 0xae)
+            {
+                schema.HandleSchemaVarArray(ref RunV1);
+            }
+            schema.HandleBuffer(ref Buffer);
+            if (Buffer.Length != 0)
+                ctx?.AddReference(Buffer);
+
+            if (parentVersion < 0xae)
+            {
+                schema.HandleSchemaVarArray(ref RunBatchTableV2);
+            }
+            else
+            {
+                schema.HandleSerializableVector(ref RunBatchTableV2);
+            }
+        }
 
         public static NuBlendShape Parse(RawFile file, GSerializationContext ctx, uint parentVersion)
         {

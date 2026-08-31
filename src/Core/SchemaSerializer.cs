@@ -489,6 +489,18 @@ namespace Diorama.Core
             }
         }
 
+        public void HandleLegacyVarArray(ref List<Vector4> arr)
+        {
+            if (Writing)
+            {
+                NuSerializer.WriteLegacyVarArray(File, arr);
+            }
+            else
+            {
+                arr = NuSerializer.ReadLegacyVarArray<Vector4>(File);
+            }
+        }
+
         public void Expect(string expected)
         {
             if (Writing)

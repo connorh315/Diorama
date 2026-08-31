@@ -8,7 +8,7 @@ namespace Diorama.Core.Filetypes.GSC
 {
     public class GSerializationContext
     {
-        public int ReferenceCounter = 5;
+        public int ReferenceCounter = 0;
         public Dictionary<object, int> References = new();
         private Dictionary<int, object> ReferenceLookup = new();
         
@@ -27,6 +27,7 @@ namespace Diorama.Core.Filetypes.GSC
 
         public T GetObject<T>(int reference)
         {
+            //Console.WriteLine($"Successful lookup: {reference}");
             return (T)ReferenceLookup[reference];
         }
 

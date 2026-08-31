@@ -59,7 +59,7 @@ namespace Diorama.Rendering
                 OnPropertyChanged(nameof(SelectedTextures));
             }
         }
-
+        public ICommand SafeRestructure { get; }
         public ICommand SaveSceneCommand { get; }
         public ICommand RemoveSceneCommand { get; }
         public ICommand ExportSceneCommand { get; }
@@ -77,6 +77,11 @@ namespace Diorama.Rendering
 
             Camera = new Camera(Vector3.Zero);
             CameraController = new CameraController(Camera);
+
+            SafeRestructure = new RelayCommand<IHierarchySelectable>(async (IHierarchySelectable? sender) =>
+            {
+                SelectedHierarchyObject = null;
+            });
 
             SaveSceneCommand = new RelayCommand<EditorScene>(async (EditorScene? sender) =>
             {
@@ -233,6 +238,16 @@ namespace Diorama.Rendering
 
                 action();
             }
+        }
+
+        public void ShowMessageDialog(string title, IEnumerable<string> messages)
+        {
+            Dispatcher.UIThread.Post(async () =>
+            {
+                MessageWindow problemModal = new MessageWindow(title, (IEnumerable<string>)messages);
+
+                await problemModal.ShowDialog(MainWindow);
+            });
         }
 
         private void ShowSceneLoadProblems(List<string> problems)

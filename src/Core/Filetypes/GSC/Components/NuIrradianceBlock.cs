@@ -14,7 +14,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
         public List<ushort> Boxes;
         public List<ushort> Planes;
-        public List<ushort> PlaneLayers;
+        public List<NuIrradiancePlaneLayers> PlaneLayers;
 
         public void Handle(SchemaSerializer schema, uint parentVersion)
         {
@@ -31,7 +31,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
             {
                 schema.HandleLegacyVarArray(ref Boxes);
                 schema.HandleLegacyVarArray(ref Planes);
-                schema.HandleLegacyVarArray(ref PlaneLayers);
+                schema.HandleSchemaVarArray(ref PlaneLayers, Version);
             }
             else
             {

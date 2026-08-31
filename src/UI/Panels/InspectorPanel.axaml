@@ -31,6 +31,15 @@
             <DataTemplate DataType="editor:EditorPointOfInterest">
               <controls:PoIInspector />
             </DataTemplate>
+            <DataTemplate DataType="editor:EditorJoint">
+              <controls:JointInspector />
+            </DataTemplate>
+            <DataTemplate DataType="editor:EditorLayer">
+              <controls:LayerInspector />
+            </DataTemplate>
+            <DataTemplate DataType="editor:EditorSceneObject">
+              <controls:SceneObjectInspector />
+            </DataTemplate>
           </ContentControl.DataTemplates>
         </ContentControl>
       </ControlTemplate>

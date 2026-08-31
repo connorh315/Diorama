@@ -30,16 +30,20 @@ uniform sampler2D texture2;
 uniform sampler2D texture3;
 
 uniform sampler2D normal0;
-uniform bool hasNormalMap;
+uniform bool hasNormal0Map;
 uniform int normal0_uvset;
 uniform float normalStrength;
 
 uniform sampler2D specular0;
 uniform bool hasSpecularMap;
 uniform int specular0_uvset;
+uniform vec4 specular0_specular;
 
 uniform bool use_scene_envmap;
 uniform samplerCube scene_envmap_tex;
+
+uniform bool use_custom_envmap;
+uniform samplerCube custom_envmap_tex;
 
 uniform int diffuse0_uvset;
 uniform int diffuse1_uvset;
@@ -225,7 +229,7 @@ void main()
     vec3 normal = normalize(Normal);
     vec3 lightDir = normalize(camera - FragPos);
 
-    if (hasNormalMap)
+    if (hasNormal0Map)
     {
         vec2 normal0uv = GetUVSet(normal0_uvset) * PerLayerUVScale1;
         normal0uv += layer0texanim;
@@ -425,7 +429,7 @@ void main()
 
     float baseRoughness = 0.5; // possibly pulled from the ColourX
     float surfaceStrength = 1.0;
-    float roughnessBias = -0.00392;
+    float roughnessBias = specular0_specular.y;
     float roughness;
     if (hasSpecularMap)
     {
@@ -498,10 +502,17 @@ void main()
         color.rgb += specular;
 
     vec3 environment = vec3(1.0);
-    if (use_scene_envmap && debug_showEnvMap)
+    if ((use_scene_envmap || use_custom_envmap) && debug_showEnvMap)
     {
         vec3 reflectionDir = reflect(-viewDir, normal);
-        environment = texture(scene_envmap_tex, reflectionDir).rgb;
+        if (use_scene_envmap) 
+        {
+            environment = texture(scene_envmap_tex, reflectionDir).rgb;
+        }
+        else
+        {
+            environment = texture(custom_envmap_tex, reflectionDir).rgb;
+        }
 
         float envFresnel =
             pow(1.0 - NdotV, 5.0);

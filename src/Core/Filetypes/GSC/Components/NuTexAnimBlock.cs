@@ -32,12 +32,15 @@ namespace Diorama.Core.Filetypes.GSC.Components
             schema.HandleFloat(ref DV);
             schema.HandleFloat(ref SpeedU);
             schema.HandleFloat(ref SpeedV);
-            schema.HandleByte(ref SSNumColumns);
-            schema.HandleByte(ref SSNumRows);
-            schema.HandleByte(ref SSRowIndex);
-            schema.HandleByte(ref SSNumImages);
-            schema.HandleFloat(ref SSDuration);
-            schema.HandleByte(ref SSOffset);
+            if (parentVersion > 0xb8)
+            {
+                schema.HandleByte(ref SSNumColumns);
+                schema.HandleByte(ref SSNumRows);
+                schema.HandleByte(ref SSRowIndex);
+                schema.HandleByte(ref SSNumImages);
+                schema.HandleFloat(ref SSDuration);
+                schema.HandleByte(ref SSOffset);
+            }
         }
     }
 }

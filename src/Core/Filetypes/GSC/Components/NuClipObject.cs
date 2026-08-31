@@ -29,47 +29,86 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
     public class NuClipObject : ISchemaSerializable
     {
+        public short UnusedLightmapIndex;
+
         public NuClipItem[] Elements;
 
         public void Handle(SchemaSerializer schema, uint parentVersion)
         {
+            if (parentVersion < 0x18)
+            {
+                schema.HandleShort(ref UnusedLightmapIndex);
+            }
+
             short elementCount = (short)((schema.Writing) ? Elements.Length : 0);
-            schema.HandleShort(ref elementCount);
+            if (parentVersion < 0x18)
+            {
+                int extendedElementCount = elementCount;
+                schema.HandleInt(ref extendedElementCount);
+                elementCount = (short)extendedElementCount;
+            }
+            else
+            {
+                schema.HandleShort(ref elementCount);
+            }
 
             if (!schema.Writing)
             {
                 Elements = new NuClipItem[elementCount];
             }
 
-            for (int i = 0; i < elementCount; i++)
+            if (parentVersion < 0x18)
             {
-                if (!schema.Writing)
-                    Elements[i] = new NuClipItem();
 
-                if (parentVersion < 0x22)
+                for (int i = 0; i < elementCount; i++)
                 {
-                    schema.HandleInt(ref Elements[i].OldGeometryIndex);
+                    if (!schema.Writing)
+                        Elements[i] = new NuClipItem();
+
                     schema.HandleInt(ref Elements[i].OldMaterialIndex);
                 }
-                else
+
+                int elementCount2 = schema.Writing ? Elements.Length : elementCount;
+                schema.HandleInt(ref elementCount2);
+                Debug.Assert(elementCount == elementCount2);
+
+                for (int i = 0; i < elementCount; i++)
                 {
-                    schema.HandleShort(ref Elements[i].MaterialIndex);
-                    schema.HandleShort(ref Elements[i].TransformIndex);
-                    schema.HandleShort(ref Elements[i].LightmapIndex);
-                    schema.HandleShort(ref Elements[i].TransformIndex2);
-                    schema.HandleShort(ref Elements[i].MeshIndex);
+                    schema.HandleInt(ref Elements[i].OldGeometryIndex);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < elementCount; i++)
+                {
+                    if (!schema.Writing)
+                        Elements[i] = new NuClipItem();
 
-                    schema.HandleByte(ref Elements[i].LightmapType);
-                    schema.HandleByte(ref Elements[i].TransformType);
-                    schema.HandleByte(ref Elements[i].GeomType);
-                    if (parentVersion > 0x22)
+                    if (parentVersion < 0x22)
                     {
-                        schema.HandleByte(ref Elements[i].Unused);
+                        schema.HandleInt(ref Elements[i].OldGeometryIndex);
+                        schema.HandleInt(ref Elements[i].OldMaterialIndex);
                     }
+                    else
+                    {
+                        schema.HandleShort(ref Elements[i].MaterialIndex);
+                        schema.HandleShort(ref Elements[i].TransformIndex);
+                        schema.HandleShort(ref Elements[i].LightmapIndex);
+                        schema.HandleShort(ref Elements[i].TransformIndex2);
+                        schema.HandleShort(ref Elements[i].MeshIndex);
 
-                    schema.HandleByte(ref Elements[i].RequiresLightState);
+                        schema.HandleByte(ref Elements[i].LightmapType);
+                        schema.HandleByte(ref Elements[i].TransformType);
+                        schema.HandleByte(ref Elements[i].GeomType);
+                        if (parentVersion > 0x22)
+                        {
+                            schema.HandleByte(ref Elements[i].Unused);
+                        }
 
-                    schema.HandleByte(ref Elements[i].IsFaceOn);
+                        schema.HandleByte(ref Elements[i].RequiresLightState);
+
+                        schema.HandleByte(ref Elements[i].IsFaceOn);
+                    }
                 }
             }
         }

@@ -16,22 +16,48 @@ using System.Threading.Tasks;
 
 namespace Diorama.Editor
 {
-    public class EditorSceneObject : INotifyPropertyChanged, IHierarchySelectable, INamedItem
+    public class EditorSceneObject : EditableItem, INotifyPropertyChanged, IHierarchySelectable, INamedItem
     {
         private string name;
-        public string Name
+        public string? Name
         {
-            get => name;
+            get
+            {
+                if (SpecialObject != null)
+                {
+                    return SpecialObject.Name;
+                }
+                else
+                {
+                    return name;
+                }
+            }
             set
             {
-                if (name == value) return;
-                name = value;
-                OnPropertyChanged(nameof(Name));
-
                 if (SpecialObject != null)
                 {
                     SpecialObject.Name = value;
                 }
+                else
+                {
+                    name = value;
+                }
+
+                OnPropertyChanged(nameof(Name));
+                OnPropertyChanged(nameof(DisplayName));
+            }
+        }
+
+        public string DisplayName
+        {
+            get
+            {
+                if (SpecialObject != null && SpecialObject.LODGroup != -1)
+                {
+                    return $"{Name} (LOD {SpecialObject.LODGroup})";
+                }
+
+                return Name;
             }
         }
 
@@ -41,7 +67,40 @@ namespace Diorama.Editor
 
         public EditorLodGroup[] Lods { get; set; }
 
-        public NuSpecialObject? SpecialObject { get; set; }
+        private EditorSpecialObject? specialObject;
+        public EditorSpecialObject? SpecialObject 
+        { 
+            get => specialObject; 
+            set
+            {
+                if (specialObject == value)
+                    return;
+
+                if (specialObject != null)
+                    specialObject.PropertyChanged -= SpecialObject_PropertyChanged;
+
+                specialObject = value;
+
+                if (specialObject != null)
+                    specialObject.PropertyChanged += SpecialObject_PropertyChanged;
+
+                OnPropertyChanged(nameof(SpecialObject));
+                OnPropertyChanged(nameof(SpecialObjectExists));
+                OnPropertyChanged(nameof(Name));
+                OnPropertyChanged(nameof(DisplayName));
+            } 
+        }
+
+        public bool SpecialObjectExists => SpecialObject != null;
+
+        private void SpecialObject_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(SpecialObject.Name))
+            {
+                OnPropertyChanged(nameof(Name));
+                OnPropertyChanged(nameof(DisplayName));
+            }
+        }
 
         public IEnumerable<IHierarchySelectable>? Children =>
             UseLodGroups

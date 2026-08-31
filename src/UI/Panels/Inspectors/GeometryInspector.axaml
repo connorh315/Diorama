@@ -44,16 +44,13 @@
           </TabItem>
           <TabItem Header="Material">
             <Grid Margin="5" RowDefinitions="Auto,Auto,*">
-              <controls:ListInput Grid.Row="0" InputLabel="Material" Items="{Binding Parent.SceneOwner.Materials}" SelectedItem="{Binding Material}"/>
+              <controls:ListInput Grid.Row="0" InputLabel="Material" Items="{Binding Parent.SceneOwner.Materials}" SelectedItem="{Binding Material}" CanBeNull="False"/>
               <StackPanel Grid.Row="1" IsVisible="{Binding !MaterialCompatible}" Orientation="Horizontal" Spacing="10" Margin="5">
                 <TextBlock Foreground="Red" VerticalAlignment="Center" ToolTip.Tip="Material vertex layout does not align with mesh">Material Incompatible!</TextBlock>
                 <Button x:Name="RebuildVertexDescriptors" ToolTip.Tip="Caution: If this material is used by other meshes, they will come out of alignment">Attempt Re-Align</Button>
               </StackPanel>
               <controls:MaterialPanel Grid.Row="2" Textures="{Binding DataContext.Controller.SelectedTextures, RelativeSource={RelativeSource AncestorType=controls:InspectorPanel}}" DataContext="{Binding Material}" />
             </Grid>
-          </TabItem>
-          <TabItem Header="SpecialObject">
-            <controls:SpecialObjectPanel DataContext="{Binding Controller.SelectedSceneObject}" />
           </TabItem>
           <TabItem Header="Lightmap">
             <controls:LightmapPanel Textures="{Binding DataContext.Controller.SelectedTextures, RelativeSource={RelativeSource AncestorType=controls:InspectorPanel}}" DataContext="{Binding Lightmap}" />

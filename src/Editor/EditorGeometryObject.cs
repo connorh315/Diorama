@@ -190,6 +190,11 @@ namespace Diorama.Editor
             Draw(shader);
         }
 
+        private Vector4 ResolvePacked(Vector4 packed)
+        {
+            return (packed * 2) - Vector4.One;
+        }
+
         public void Draw(Shader shader)
         {
             EditorMaterial Material = this.Material;
@@ -227,16 +232,21 @@ namespace Diorama.Editor
             shader.SetInt("diffuse2_uvset", Material.Diffuse2UVSet);
 
             shader.SetInt("normal0_uvset", Material.Normal0UVSet);
-            shader.SetBool("hasNormalMap", Material.Original.Normal0Index != -1);
+            shader.SetBool("hasNormal0Map", Material.Original.Normal0Index != -1);
             Material.Normal0.Use(TextureUnit.Texture4);
+            shader.SetInt("normal1_uvset", Material.Normal1UVSet);
+            shader.SetBool("hasNormal1Map", Material.Original.Normal1Index != -1);
+            Material.Normal1.Use(TextureUnit.Texture5);
+            shader.SetInt("normal0blendmode", (int)Material.Normal0LayerBlend);
 
             shader.SetInt("specular0_uvset", Material.Normal0UVSet); // needs looking into, possibly shader-tied, hopefully normal-tied
             shader.SetBool("hasSpecularMap", Material.Original.Specular0Index != -1);
-            Material.Specular0.Use(TextureUnit.Texture5);
+            Material.Specular0.Use(TextureUnit.Texture6);
+            shader.SetVector4("specular0_specular", ResolvePacked(Material.Colour5));
 
-            shader.SetFloat("PerLayerUVScale1", Material.PerLayerUVScale1);
-            shader.SetFloat("PerLayerUVScale2", Material.PerLayerUVScale2);
-            shader.SetFloat("PerLayerUVScale3", Material.PerLayerUVScale3);
+            shader.SetFloat("PerLayerUVScale1", Material.PerLayerScale ? Material.PerLayerUVScale1 : 1);
+            shader.SetFloat("PerLayerUVScale2", Material.PerLayerScale ? Material.PerLayerUVScale2 : 1);
+            shader.SetFloat("PerLayerUVScale3", Material.PerLayerScale ? Material.PerLayerUVScale3 : 1);
 
             shader.SetByte("has_vertex_colors", (byte)(Material.Colour ? 1 : 0));
 
@@ -250,6 +260,12 @@ namespace Diorama.Editor
             shader.SetFloat("normalStrength", Material.KNormal0);
 
             shader.SetBool("use_scene_envmap", Material.Reflection == EditorReflectionMode.ScaledBakedEnvironmentMap || Material.Reflection == EditorReflectionMode.BakedEnvironmentMap);
+            bool customEnvmap = Material.Reflection == EditorReflectionMode.CustomEnvironmentMap;
+            shader.SetBool("use_custom_envmap", customEnvmap);
+            if (customEnvmap)
+            {
+                Material.EnvMap.Use(TextureUnit.Texture18);
+            }
 
             float time = Program.TimeSinceStart;
 

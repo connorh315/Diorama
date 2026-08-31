@@ -34,5 +34,20 @@ namespace Diorama.Core.Filetypes.GSC.Components
         public Vector4[] CentreExtents = new Vector4[2];
 
         public float DensityDiscDiameter;
+
+        public uint DepthBits;
+
+        public VertexList DepthVertexBuffer;
+        public uint DepthVbUsedCount;
+        public ushort[] DepthIndices;
+        public uint DepthIndicesFlags;
+        public uint DepthVerticesBase;
+        public uint DepthVerticesCount;
+        public uint DepthFlags;
+        public int DepthOffsets;
+        public uint DepthIndicesBase;
+        public uint DepthIndicesOffset;
+        public uint DepthIndicesBase2;
+
     }
 }

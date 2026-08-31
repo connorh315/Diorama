@@ -36,7 +36,7 @@ namespace Diorama
 
             if (change.Property == TextureProperty && renderer is TextureRenderer texRenderer)
             {
-                texRenderer.ActiveTexture = (RenderTexture?)change.NewValue;
+                texRenderer.SetActiveTexture((RenderTexture?)change.NewValue);
                 surface?.IsDirty = true;
             }
         }

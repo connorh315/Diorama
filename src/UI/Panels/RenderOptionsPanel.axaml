@@ -37,7 +37,7 @@
           <controls:PropertyEditor Property="Color1A" />
 
           <controls:PropertyEditor Property="ShowSpecular" />
-          <controls:PropertyEditor Property="ShowOnlyEnvMap" />
+          <controls:PropertyEditor Property="ShowEnvMap" />
         </StackPanel>
       </ControlTemplate>
     </Setter>

@@ -15,6 +15,9 @@ namespace Diorama.Core.Filetypes.GSC.Components.RESH
 
         public List<NuResourceReference> References;
 
+        private string ResourcePath;
+        private NuCheckSum ResourceChecksum;
+
         private uint ResourceType;
         private string Stream;
         private long Transaction;
@@ -30,6 +33,11 @@ namespace Diorama.Core.Filetypes.GSC.Components.RESH
             {
                 schema.Expect(".CC4HSERHSER");
                 schema.HandleUInt(ref Version);
+                if (Version > 8) // TODO: Check this
+                {
+                    schema.HandlePascalString(ref ResourcePath, 1);
+                    schema.Handle(ref ResourceChecksum);
+                }
                 schema.HandleOptional(ref FileTree);
                 schema.HandleSchemaVector(ref References, Version);
                 if (Version > 1)

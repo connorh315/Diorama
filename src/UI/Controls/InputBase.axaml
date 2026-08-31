@@ -1,0 +1,38 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:Diorama">
+
+  <!--
+    Additional resources 
+    Using Control Themes:
+         https://docs.avaloniaui.net/docs/basics/user-interface/styling/control-themes
+    Using Theme Variants:
+         https://docs.avaloniaui.net/docs/guides/styles-and-resources/how-to-use-theme-variants
+  -->
+  
+  <Design.PreviewWith>
+    <StackPanel Width="400" Spacing="10">      
+        <StackPanel Background="{DynamicResource SystemRegionBrush}">
+          <controls:InputBase />
+        </StackPanel>
+    </StackPanel>
+  </Design.PreviewWith>
+ 
+  <ControlTheme x:Key="{x:Type controls:InputBase}" TargetType="controls:InputBase">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*" />
+            <ColumnDefinition Width="3*" />
+          </Grid.ColumnDefinitions>
+          <Grid Grid.Column="0" ColumnDefinitions="*, Auto">
+            <TextBlock Grid.Column="0" Text="{TemplateBinding InputLabel}" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1" Text="⚠︎" VerticalAlignment="Center" IsVisible="{Binding ShowWarning, RelativeSource={RelativeSource TemplatedParent}}" ToolTip.Tip="{Binding Warning, RelativeSource={RelativeSource TemplatedParent}}" Margin="0,0,5,0" />
+          </Grid>
+          <ContentPresenter Grid.Column="1" Content="{TemplateBinding Content}" />
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+</ResourceDictionary>

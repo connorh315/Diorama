@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BrickVault;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,37 +9,36 @@ namespace Diorama.Core.Filetypes.GSC.Components
 {
     public class NuSceneInfo : ISchemaSerializable
     {
-        public string[] Strings;
+        private uint Version;
 
-        public static NuSceneInfo Read(RawFile file, uint gscVersion)
-        {
-            Debug.Assert(file.ReadString(4) == "OFNI");
-
-            var info = new NuSceneInfo(); 
-            info.Strings = new string[file.ReadInt(true)];
-            for (int i = 0; i < info.Strings.Length; i++)
-            {
-                info.Strings[i] = file.ReadPascalString(true);
-            }
-
-            return info;
-        }
+        private string Username;
+        private string TimeDate;
+        private string LegoPartId;
 
         public void Handle(SchemaSerializer schema, uint parentVersion)
         {
             schema.Expect("OFNI");
 
-            schema.HandleArray(ref Strings);
-        }
+            schema.HandleUInt(ref Version);
 
-        public void Write(RawFile file, uint gscVersion)
-        {
-            file.WriteString("OFNI");
-
-            file.WriteInt(Strings.Length, true);
-            foreach (var str in Strings)
+            if (Version < 2)
             {
-                file.WritePascalString(str, 1);
+                var ctx = (GSerializationContext)schema.Context;
+                schema.HandleIntPascalString(ref Username, 1);
+                if (!string.IsNullOrEmpty(Username))
+                    ctx.AddReference(Username);
+                schema.HandleIntPascalString(ref TimeDate, 1);
+                if (!string.IsNullOrEmpty(TimeDate))
+                    ctx.AddReference(TimeDate);
+            }
+            else
+            {
+                schema.HandlePascalString(ref Username);
+                schema.HandlePascalString(ref TimeDate);
+                if (Version > 2)
+                {
+                    schema.HandlePascalString(ref LegoPartId);
+                }
             }
         }
     }

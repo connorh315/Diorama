@@ -26,6 +26,10 @@ namespace Diorama.Core.Filetypes.GSC
 
         public uint NU20Version;
 
+        public NuNameTable NameTable;
+
+        public NuTextureHeaders TextureHeaders;
+
         public NuDisplayScene DisplayScene;
 
         public NuMaterialDataBlock MaterialBlock;
@@ -88,6 +92,8 @@ namespace Diorama.Core.Filetypes.GSC
             uint nu20Version = file.ReadUInt(true);
             switch (nu20Version)
             {
+                case 0x43:
+                case 0x4a:
                 case 0x4e:
                 case 0x4f:
                 case 0x50:

@@ -49,18 +49,28 @@ namespace Diorama
                         Mode = BindingMode.TwoWay
                     });
             }
-            else if (property.PropertyType == typeof(float)
-                     || property.PropertyType == typeof(string)
-                     || property.PropertyType == typeof(byte)
-                     || property.PropertyType == typeof(uint))
+            else if (property.PropertyType == typeof(float))
             {
-                editor = new TextInput();
+                editor = new FloatInput();
                 editor.Bind(
                     Diorama.TextInput.ValueProperty,
                     new Binding(property.Name)
                     {
                         Mode = BindingMode.TwoWay
                     });
+            }
+            else if (property.PropertyType == typeof(float)
+                     || property.PropertyType == typeof(string)
+                     || property.PropertyType == typeof(byte)
+                     || property.PropertyType == typeof(uint))
+            {
+                editor = new TextInput();
+                var binding = new Binding(property.Name)
+                {
+                    Mode = BindingMode.TwoWay
+                };
+                editor.Bind(Diorama.TextInput.ValueProperty, binding);
+                ((TextInput)editor).ValueBinding = binding;
             }
             else if (property.PropertyType.IsEnum)
             {
@@ -128,40 +138,25 @@ namespace Diorama
                             new Binding(visible.PropertyName));
                         break;
 
+                    case SliderAttribute slider:
+                        FloatInput floatInput = (FloatInput)editor;
+                        floatInput.Minimum = slider.LowestValue;
+                        floatInput.Maximum = slider.HighestValue;
+                        floatInput.ShowSlider = true;
+                        break;
+
+                    case FSFolderAttribute fs:
+                        FSInput newEditor = new FSInput();
+                        newEditor.Bind(Diorama.FSInput.ValueProperty, ((TextInput)editor).ValueBinding);
+                        newEditor.InputLabel = editor.InputLabel;
+                        editor = newEditor;
+                        break;
+
                     case IWarningAttribute warning:
                         editor.SetWarning(warning.WarningMessage);
                         break;
                 }
             }
-
-
-            //var display =
-            //    property.GetCustomAttribute<DisplayLabelAttribute>();
-
-            //if (display != null)
-            //    editor.InputLabel = display.Name;
-
-            //var enabled =
-            //    property.GetCustomAttribute<EnabledIfAttribute>();
-
-            //if (enabled != null)
-            //{
-            //    editor.Bind(
-            //        InputElement.IsEnabledProperty,
-            //        new Binding(enabled.Property));
-            //}
-
-            //var visible =
-            //    property.GetCustomAttribute<VisibleIfAttribute>();
-
-            //if (visible != null)
-            //{
-            //    editor.Bind(
-            //        Visual.IsVisibleProperty,
-            //        new Binding(visible.PropertyName));
-            //}
-
-            //var warnings = property.GetCustomAttributes<IWarningAttribute>();
 
             return editor;
         }

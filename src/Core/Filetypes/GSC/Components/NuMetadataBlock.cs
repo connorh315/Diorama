@@ -32,7 +32,11 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             if (Version >= 0x46)
             {
-                schema.HandleSchemaVector(ref MetaStrings);
+                schema.HandleSchemaVector(ref MetaStrings, 0);
+            }
+            else
+            {
+                schema.HandleSchemaVarArray(ref MetaStrings, 1);
             }
         }
 

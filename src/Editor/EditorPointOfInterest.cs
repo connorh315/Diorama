@@ -25,7 +25,9 @@ namespace Diorama.Editor
         }
 
         [DisplayLabel("Name")]
-        public string Name { get => Original.Name; set => Set(ref Original.Name, value); }
+        public string Name { get => Original.Name; set { Set(ref Original.Name, value); OnPropertyChanged(nameof(DisplayName)); } }
+
+        public string DisplayName { get => Name; }
 
         [DisplayLabel("Offset from Parent Joint")]
         public Matrix4 Transform { 
@@ -44,7 +46,11 @@ namespace Diorama.Editor
 
         public void Draw(Shader shader, RenderContext ctx)
         {
-            shader.SetMatrix4("model", Matrix4.CreateScale(0.005f * Vector3.Distance(Transform.ExtractTranslation(), ctx.CameraScenePosition)) * Transform * Parent.WorldTransform);
+            Matrix4 parentTransform = Matrix4.Identity;
+            if (Parent != null)
+                parentTransform = Parent.WorldTransform;
+
+            shader.SetMatrix4("model", Matrix4.CreateScale(0.005f * Vector3.Distance(Transform.ExtractTranslation(), ctx.CameraScenePosition)) * Transform * parentTransform);
 
             MeshFactory.GetIcosahedron().Draw();
         }

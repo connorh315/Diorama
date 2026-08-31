@@ -20,7 +20,10 @@ namespace Diorama.Core.IO
                 if (datFile != null)
                 {
                     Archives.Add(datFile);
-                    ArchivesByName.Add(datFile.FileName.ToLower(), datFile);
+                    if (!ArchivesByName.TryAdd(datFile.FileName.ToLower(), datFile))
+                    {
+                        throw new Exception($"Location contains two DAT archives with the same name: {datFile.FileName}");
+                    }
                 }
             }
         }

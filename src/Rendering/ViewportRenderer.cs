@@ -49,10 +49,12 @@ namespace Diorama.Rendering
             blendShader.SetInt("diffuse2tex", 2);
             blendShader.SetInt("diffuse3tex", 3);
             blendShader.SetInt("normal0", 4);
-            blendShader.SetInt("specular0", 5);
+            blendShader.SetInt("normal1", 5);
+            blendShader.SetInt("specular0", 6);
             blendShader.SetInt("texture2", 15);
             blendShader.SetInt("texture3", 16);
             blendShader.SetInt("scene_envmap_tex", 17);
+            blendShader.SetInt("custom_envmap_tex", 18);
 
             picker = new ObjectPicker();
             picker.Initialize();
@@ -113,7 +115,8 @@ namespace Diorama.Rendering
                 {
                     maskShader.SetMatrix4("view", ctx.View);
 
-                    ((IRenderable)Controller.SelectedHierarchyObject).Draw(maskShader, ctx);
+                    if (Controller.SelectedHierarchyObject is IRenderable ren)
+                        ((IRenderable)ren).Draw(maskShader, ctx);
                 }
             }
 
@@ -178,7 +181,7 @@ namespace Diorama.Rendering
             blendShader.SetBool("debug_color1a", RenderOptions.Color1A);
 
             blendShader.SetBool("debug_showSpecular", RenderOptions.ShowSpecular);
-            blendShader.SetBool("debug_showEnvMap", RenderOptions.ShowOnlyEnvMap);
+            blendShader.SetBool("debug_showEnvMap", RenderOptions.ShowEnvMap);
 
             blendShader.SetFloat("time", (stopwatch.ElapsedMilliseconds) / 1000f);
             lastElapsedMilliseconds = stopwatch.ElapsedMilliseconds;
@@ -356,6 +359,16 @@ namespace Diorama.Rendering
                     GL.DepthMask(false);
                     break;
 
+                case EditorBlendMode.Multiply:
+                    GL.Enable(EnableCap.Blend);
+
+                    GL.BlendEquation(BlendEquationMode.FuncAdd);
+
+                    GL.BlendFunc(BlendingFactor.DstColor, BlendingFactor.OneMinusSrcAlpha);
+
+                    GL.DepthMask(false);
+
+                    break;
                 default:
 
                     GL.Disable(EnableCap.Blend);

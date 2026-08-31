@@ -15,13 +15,14 @@ namespace Diorama.Core.Filetypes.GSC
     {
         public NuSceneInfo SceneInfo;
 
-        public NuNameTable NameTable;
 
-        public NuTextureHeaders TextureHeaders;
+
 
         public List<NuSpline> Splines;
 
         public List<NuVfxLocator> VfxLocators;
+
+        public List<short> InstanceIxs;
 
         public List<NuMtlOldReferencedMaterial> EmbeddedTextures;
 
@@ -31,11 +32,16 @@ namespace Diorama.Core.Filetypes.GSC
 
         public NuCpuSkinnedblock CpuSkinnedBlock;
 
+        public List<NuTexAnim> TexAnims;
+        public List<ushort> TexAnimsTids;
+
         public NuTextureAnim3SceneBlock TextureAnim3SceneBlock;
 
         public float PlaybackFPS;
 
         public NuAnimSceneBlock AnimSceneBlock;
+
+        public NuRoomPortals PortalInstances;
 
         public NuBlendCharShapeBlock BlendCharShapeBlock;
 
@@ -48,9 +54,13 @@ namespace Diorama.Core.Filetypes.GSC
 
         public uint OldWiiMeshSceneBlockLinkArrayCount;
 
+        public byte LooseTextures; // deprecatedMiscData
+
         public uint TexHdrSceneBlock;
 
         public byte UseSingleLodAnim;
+
+        public byte Discipline;
 
         public uint NumBlendShapes;
 
@@ -81,6 +91,8 @@ namespace Diorama.Core.Filetypes.GSC
             }
         }
 
+        public byte HasSeparateTextureFiles;
+
         public byte WasGeneratedFromLEDImport;
 
         protected override void Parse(GSerializationContext ctx)
@@ -88,14 +100,14 @@ namespace Diorama.Core.Filetypes.GSC
             SchemaSerializer schema = new SchemaSerializer(file, false);
             schema.SetContext(ctx);
 
-            SceneInfo = NuSceneInfo.Read(file, NU20Version);
+            //SceneInfo = NuSceneInfo.Read(file, NU20Version);
 
             if (NU20Version > 0x56)
             {
                 WasGeneratedFromLEDImport = file.ReadByte();
             }
 
-            NameTable = NuNameTable.Read(file);
+            //NameTable = NuNameTable.Read(file);
 
             schema.HandleOptional(ref TextureHeaders, NU20Version);
             if (TextureHeaders != null)
@@ -133,7 +145,7 @@ namespace Diorama.Core.Filetypes.GSC
             Debug.Assert(cpusCount == 1);
             CpuSkinnedBlock = GComponentFactory.Parse<NuCpuSkinnedblock>(file, NU20Version);
 
-            DisplayScene = NuDisplayScene.Read(file, NameTable);
+            //DisplayScene = NuDisplayScene.Read(file, NameTable);
 
             TextureAnim3SceneBlock = GComponentFactory.Parse<NuTextureAnim3SceneBlock>(file);
 
@@ -146,7 +158,7 @@ namespace Diorama.Core.Filetypes.GSC
 
             BlendCharShapeBlock = NuBlendCharShapeBlock.Parse(file);
 
-            OccluderBlock = NuOccluderBlock.Parse(file);
+            //OccluderBlock = NuOccluderBlock.Parse(file);
 
             if (NU20Version < 0x4f)
             {
@@ -211,14 +223,14 @@ namespace Diorama.Core.Filetypes.GSC
         {
             SchemaSerializer schema = new SchemaSerializer(file, true);
 
-            SceneInfo.Write(file, NU20Version);
+            //SceneInfo.Write(file, NU20Version);
 
             if (NU20Version > 0x56)
             {
                 file.WriteByte(WasGeneratedFromLEDImport);
             }
 
-            NameTable.Write(file);
+            //NameTable.Write(file);
 
             schema.HandleOptional(ref TextureHeaders, NU20Version);
 
@@ -273,7 +285,7 @@ namespace Diorama.Core.Filetypes.GSC
             //    throw new NotSupportedException("cannot write cpu skin lods");
             //}
 
-            DisplayScene.Write(file, NameTable);
+            //DisplayScene.Write(file, NameTable);
 
             TextureAnim3SceneBlock.Handle(schema, NU20Version);
 
@@ -286,7 +298,7 @@ namespace Diorama.Core.Filetypes.GSC
 
             BlendCharShapeBlock.Write(file);
 
-            OccluderBlock.Write(file);
+            //OccluderBlock.Write(file);
 
             OctreeBlock.Handle(schema, NU20Version);
 
@@ -338,8 +350,15 @@ namespace Diorama.Core.Filetypes.GSC
 
             GSerializationContext ctx = new GSerializationContext();
             schema.SetContext(ctx);
+            ctx.AddReference(this);
 
             schema.Handle(ref SceneInfo);
+            ctx.AddReference(SceneInfo);
+
+            if (NU20Version >= 0x3d && NU20Version <= 0x4c)
+            {
+                schema.HandleByte(ref HasSeparateTextureFiles);
+            }
 
             if (NU20Version > 0x56)
             {
@@ -347,6 +366,7 @@ namespace Diorama.Core.Filetypes.GSC
             }
 
             schema.Handle(ref NameTable);
+            ctx.AddReference(NameTable);
 
             schema.HandleOptional(ref TextureHeaders);
             if (TextureHeaders != null)
@@ -358,10 +378,19 @@ namespace Diorama.Core.Filetypes.GSC
 
             schema.HandleSchemaVector(ref VfxLocators);
 
+            if (NU20Version < 0x4e)
+            {
+                schema.HandleSerializableVector(ref InstanceIxs);
+                //ctx.AddReference(InstanceIxs);
+            }
+
             schema.HandleOptional(ref MeshSceneBlock);
 
-            schema.HandleInt(ref unknownSection);
-            Debug.Assert(unknownSection == 0);
+            if (NU20Version > 0x48)
+            {
+                schema.HandleInt(ref unknownSection);
+                Debug.Assert(unknownSection == 0);
+            }
 
             schema.HandleOptional(ref MaterialBlock);
 
@@ -371,11 +400,22 @@ namespace Diorama.Core.Filetypes.GSC
 
             schema.Handle(ref DisplayScene, NU20Version);
 
+            if (NU20Version < 0x48)
+            {
+                schema.HandleSchemaVector(ref TexAnims);
+                schema.HandleSerializableVector(ref TexAnimsTids);
+            }
+
             schema.Handle(ref TextureAnim3SceneBlock);
 
             schema.HandleFloat(ref PlaybackFPS);
 
             schema.HandleOptional(ref AnimSceneBlock);
+
+            if (NU20Version < 0x48)
+            {
+                schema.Handle(ref PortalInstances);
+            }
 
             schema.HandleInt(ref unknownSection);
             Debug.Assert(unknownSection == 0);
@@ -402,6 +442,11 @@ namespace Diorama.Core.Filetypes.GSC
 
             schema.HandleUInt(ref OldWiiMeshSceneBlockLinkArrayCount);
 
+            if (NU20Version < 0x4c)
+            {
+                schema.HandleByte(ref LooseTextures);
+            }
+
             schema.Handle(ref Metadata);
 
             if (NameTable.Version < 0x51)
@@ -411,6 +456,11 @@ namespace Diorama.Core.Filetypes.GSC
             }
 
             schema.HandleByte(ref UseSingleLodAnim);
+
+            if (NU20Version < 0x4b)
+            {
+                schema.HandleByte(ref Discipline);
+            }
 
             schema.HandleUInt(ref NumBlendShapes);
 

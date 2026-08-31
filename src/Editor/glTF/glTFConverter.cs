@@ -1,4 +1,5 @@
 ﻿using Diorama.Core;
+using Diorama.Core.Filetypes.GSC;
 using Diorama.Core.Filetypes.GSC.Components;
 using Diorama.Rendering;
 using System;
@@ -30,12 +31,12 @@ namespace Diorama.Editor.glTF
                 int skinIndex = -1;
                 if (character != null)
                 {
-                    skinIndex = WriteSkin(header, binary, character);
+                    skinIndex = glTFBinary.WriteSkin(header, binary, character);
                 }
 
                 foreach (var geo in geometries)
                 {
-                    WriteMesh(header, binary, geo, skinIndex);
+                    glTFBinary.WriteMesh(header, binary, geo, skinIndex);
                 }
 
                 header.AddBuffer(Path.GetFileName(binPath), (int)binary.Position);
@@ -44,369 +45,279 @@ namespace Diorama.Editor.glTF
             header.WriteToFile(path);
         }
 
-        private static int WriteMesh(glTFHeader header, RawFile binary, EditorGeometryObject geo, int skinIndex)
+        public static RenderMesh GetObjectsFromGltf(string path, RenderMesh originalMesh, EditorScene scene)
         {
-            var mesh = geo.Mesh;
-            var nuMesh = mesh.OriginalMesh;
+            glTFHeader header = glTFHeader.ReadFromFile(path);
 
-            Vertex[] vertices = VertexList.CreateVerticesArray(mesh.VerticesCount);
+            string binaryPath = Path.Join(Path.GetDirectoryName(path), header.Buffers[0].Uri);
 
-            for (int i = 0; i < nuMesh.VertexBuffers.Length; i++)
+            Node mainNode = null;
+
+            var sceneNodes = header.Scenes[0].Nodes;
+
+            for (int i = 0; i < sceneNodes.Count; i++)
             {
-                nuMesh.VertexBuffers[i].FillVertices(ref vertices, mesh.VerticesBase);
-            }
-
-            Dictionary<string, int> attributeOffsets = GetAttributeOffsets(mesh);
-
-            Vector3 min;
-            Vector3 max;
-
-            WriteVertices(binary, vertices, nuMesh.SkinMtxMap, attributeOffsets, out min, out max);
-
-            var primitive = new GltfPrimitive
-            {
-                Attributes = new(),
-                Mode = 4
-            };
-
-            foreach (var attr in attributeOffsets)
-            {
-                if (attr.Value == -1)
-                    continue;
-
-                int stride = GetAttributeStride(attr.Key);
-
-                int bufferViewIndex = header.AddBufferView(new GltfBufferView
+                Node baseNode = header.Nodes[header.Scenes[0].Nodes[i]];
+                if (baseNode.Children != null)
                 {
-                    Buffer = 0,
-                    ByteOffset = attr.Value,
-                    ByteLength = vertices.Length * stride,
-                    Target = 34962
-                });
+                    foreach (int childNodeIndex in baseNode.Children)
+                    {
+                        Node child = header.Nodes[childNodeIndex];
 
-                var accessor = new GltfAccessor
-                {
-                    BufferView = bufferViewIndex,
-                    ComponentType = (int)GetComponentType(attr.Key),
-                    Count = vertices.Length,
-                    Type = GetAccessorType(attr.Key)
-                };
-
-                if (attr.Key == "POSITION")
-                {
-                    accessor.Min = [min.X, min.Y, min.Z];
-                    accessor.Max = [max.X, max.Y, max.Z];
+                        if (child.Mesh != null || child.Skin != null)
+                        {
+                            mainNode = child;
+                            break;
+                        }
+                    }
                 }
 
-                int accessorIndex = header.AddAccessor(accessor);
-
-                primitive.Attributes[attr.Key] = accessorIndex;
+                if (mainNode == null && baseNode.Mesh != null)
+                {
+                    mainNode = baseNode;
+                }
             }
 
-            int indicesOffset = (int)binary.Position;
+            if (mainNode == null)
+                throw new Exception($"Could not locate main node in scene!");
 
-            for (int i = (int)nuMesh.IndicesBase;
-                 i < nuMesh.IndicesBase + nuMesh.IndicesCount;
-                 i++)
+            if (!Path.Exists(binaryPath))
+                throw new FileNotFoundException($"Could not locate file: {binaryPath}");
+
+            using (RawFile binary = new RawFile(binaryPath))
             {
-                binary.WriteUShort(nuMesh.Indices[i], false);
+                RenderMesh mesh = DecodeMesh(binary, header, mainNode, originalMesh, scene);
+
+                Console.WriteLine();
+
+                return mesh;
             }
 
-            int indexBufferView = header.AddBufferView(new GltfBufferView
-            {
-                Buffer = 0,
-                ByteOffset = indicesOffset,
-                ByteLength = (int)nuMesh.IndicesCount * sizeof(ushort),
-                Target = 34963
-            });
-
-            int indexAccessor = header.AddAccessor(new GltfAccessor
-            {
-                BufferView = indexBufferView,
-                ComponentType = (int)GltfComponentType.UnsignedShort,
-                Count = (int)nuMesh.IndicesCount,
-                Type = "SCALAR"
-            });
-
-            primitive.Indices = indexAccessor;
-
-            string meshName = geo.Parent?.Parent?.Name ?? "diorama_exported_object";
-
-            int meshIndex = header.AddMesh(meshName, new() { primitive });
-
-            var node = header.AddMeshNodeToScene(0, meshName);
-            node.Mesh = meshIndex;
-
-            if (nuMesh.SkinMtxMap != null && skinIndex != -1)
-            {
-                node.Skin = skinIndex;
-            }
-
-            node.Matrix = geo.Transform.ToList();
-
-            return meshIndex;
         }
 
-        private static Dictionary<string, int> GetAttributeOffsets(RenderMesh mesh)
+        private static RenderMesh DecodeMesh(RawFile binary, glTFHeader header, Node node, RenderMesh originalMesh, EditorScene scene)
         {
-            Dictionary<string, int> attributeOffsets = new();
+            var glmesh = header.Meshes[node.Mesh ?? -1];
+            GltfSkin glskin = null;
+            if (node.Skin != null)
+                glskin = header.Skins[node.Skin.Value];
 
-            foreach (var buf in mesh.VertexBuffers)
+            List<glTFPrimitive> primitives = new();
+
+            foreach (var prim in glmesh.Primitives)
             {
-                foreach (var attr in buf.Attributes)
+                glTFPrimitive primitive = new glTFPrimitive();
+
+                primitive.Indices = glTFBinary.GetIndices(binary, header, prim.Indices);
+
+                if (prim.Mode != 4)
+                    throw new NotSupportedException("Unsupported primitive mode, only triangles supported!");
+
+                foreach (var attribute in prim.Attributes)
                 {
-                    string entry = GetGltfSemantic(attr.Variable);
-                    if (entry == "TEXCOORD_")
+                    string semantic = attribute.Key;
+                    int accessorIndex = attribute.Value;
+
+                    switch (semantic)
                     {
-                        attributeOffsets.Add($"{entry}0", -1);
-                        if (attr.Type == VertexDefinitionStorageEnum.vec4half)
-                        {
-                            attributeOffsets.Add($"{entry}1", -1);
-                        }
+                        case "POSITION":
+                            primitive.Positions = glTFBinary.GetFromAccessor<Vector3>(binary, header, accessorIndex);
+                            break;
+                        case "NORMAL":
+                            primitive.Normals = glTFBinary.GetFromAccessor<Vector3>(binary, header, accessorIndex);
+                            break;
+                        case "COLOR_0":
+                            primitive.ColorSet0 = glTFBinary.GetFromAccessor<Vector4>(binary, header, accessorIndex);
+                            break;
+                        case "COLOR_1":
+                            primitive.ColorSet1 = glTFBinary.GetFromAccessor<Vector4>(binary, header, accessorIndex);
+                            break;
+                        case "JOINTS_0":
+                            primitive.Joints = glTFBinary.GetFromAccessor<VectorI4>(binary, header, accessorIndex);
+                            break;
+                        case "WEIGHTS_0":
+                            primitive.Weights = glTFBinary.GetFromAccessor<Vector4>(binary, header, accessorIndex);
+                            break;
+                        case "TANGENT":
+                            primitive.Tangents = glTFBinary.GetFromAccessor<Vector3>(binary, header, accessorIndex);
+                            break;
+                        default:
+                            if (semantic.StartsWith("TEXCOORD_"))
+                            {
+                                int set = int.Parse(semantic[9..]);
+
+                                primitive.SetUVSet(set, glTFBinary.GetFromAccessor<Vector2>(binary, header, accessorIndex));
+                            }
+                            else
+                            {
+                                throw new NotSupportedException($"Unsupported vertex attribute value: {semantic}");
+                            }
+                            break;
+
+                    }
+                }
+
+                primitives.Add(primitive);
+            }
+
+            List<Vertex> vertices = new List<Vertex>();
+
+            List<ushort> indices = new List<ushort>();
+
+            int totalVertexCount = 0;
+            foreach (var primitive in primitives)
+            {
+                int thisVertexCount = primitive.Validate();
+                for (int i = 0; i < thisVertexCount; i++)
+                {
+                    vertices.Add(primitive.GetAsVertex(i));
+                }
+
+                for (int i = 0; i < primitive.Indices.Count; i++)
+                {
+                    uint index =
+                        primitive.Indices[i] +
+                        (uint)totalVertexCount;
+
+                    if (index > ushort.MaxValue)
+                    {
+                        throw new InvalidDataException(
+                            $"Mesh contains vertex index {index}, " + "which exceeds the target format's 16-bit index limit. Reduce the mesh complexity or split the mesh into two");
+                    }
+
+                    indices.Add((ushort)index);
+                }
+
+                totalVertexCount += thisVertexCount;
+            }
+
+            var nuMesh = originalMesh.OriginalMesh;
+            if (glskin != null)
+            {
+                byte counter = 0;
+                Dictionary<ushort, byte> usedJoints = new();
+                foreach (var vertex in vertices)
+                {
+                    VectorI4 joints = vertex.BlendIndices;
+                    Vector4 weights = vertex.BlendWeights;
+                    if (weights.X > 0)
+                    {
+                        if (!usedJoints.ContainsKey(joints.X))
+                            usedJoints.Add(joints.X, counter++);
+                        vertex.BlendIndices.X = usedJoints[joints.X];
                     }
                     else
                     {
-                        attributeOffsets.Add(entry, -1);
+                        vertex.BlendIndices.X = 0;
+                    }
+                    if (weights.Y > 0)
+                    {
+                        if (!usedJoints.ContainsKey(joints.Y))
+                            usedJoints.Add(joints.Y, counter++);
+                        vertex.BlendIndices.Y = usedJoints[joints.Y];
+                    }
+                    else
+                    {
+                        vertex.BlendIndices.Y = 0;
+                    }
+                    if (weights.Z > 0)
+                    {
+                        if (!usedJoints.ContainsKey(joints.Z))
+                            usedJoints.Add(joints.Z, counter++);
+                        vertex.BlendIndices.Z = usedJoints[joints.Z];
+                    }
+                    else
+                    {
+                        vertex.BlendIndices.Z = 0;
+                    }
+                    if (weights.W > 0)
+                    {
+                        if (!usedJoints.ContainsKey(joints.W))
+                            usedJoints.Add(joints.W, counter++);
+                        vertex.BlendIndices.W = usedJoints[joints.W];
+                    }
+                    else
+                    {
+                        vertex.BlendIndices.W = 0;
                     }
                 }
-            }
+                byte[] remap = new byte[counter];
 
-            return attributeOffsets;
-        }
-
-        private static int WriteSkin(glTFHeader header, RawFile binary, NuCharacterData character)
-        {
-            int[] jointNodeIndices = new int[character.JointData.Count];
-
-            for (int i = 0; i < character.JointData.Count; i++)
-            {
-                NuJointData joint = character.JointData[i];
-
-                int nodeIndex = header.Nodes.Count;
-                jointNodeIndices[i] = nodeIndex;
-
-                header.Nodes.Add(new Node
+                foreach (var jointPair in usedJoints)
                 {
-                    Name = joint.Name,
-                    Children = new List<int>(),
-                    Matrix = character.T[i].mtx.ToList()
-                });
-            }
+                    int nodeIndex = glskin.Joints[jointPair.Key];
+                    Node gltfJoint = header.Nodes[nodeIndex];
 
-            int rootJointNode = -1;
+                    int nuJointIndex = -1;
+                    for (int i = 0; i < scene.AllJoints.Count; i++)
+                    {
+                        if (gltfJoint.Name == scene.AllJoints[i].Name)
+                        {
+                            var eJoint = (EditorJoint)scene.AllJoints[i];
+                            nuJointIndex = i;
+                            break;
+                        }
+                    }
 
-            for (int i = 0; i < character.JointData.Count; i++)
-            {
-                NuJointData joint = character.JointData[i];
+                    if (nuJointIndex == -1)
+                        throw new Exception($"Could not find glTF bone {gltfJoint.Name} within the scene!");
 
-                if (joint.ParentIndex == 0xff)
-                {
-                    rootJointNode = jointNodeIndices[i];
-                    continue;
+                    remap[jointPair.Value] = (byte)nuJointIndex;
                 }
 
-                int parentNode = jointNodeIndices[joint.ParentIndex];
-                int childNode = jointNodeIndices[i];
-
-                header.Nodes[parentNode].Children.Add(childNode);
-            }
-
-            int inverseMatricesOffset = (int)binary.Position;
-
-            foreach (NuMtx mtx in character.Inv_Wt)
-                mtx.Serialize(binary, false);
-
-            int inverseBufferView = header.AddBufferView(new GltfBufferView
-            {
-                Buffer = 0,
-                ByteOffset = inverseMatricesOffset,
-                ByteLength = character.Inv_Wt.Count * 16 * sizeof(float)
-            });
-
-            int inverseBindAccessor = header.AddAccessor(new GltfAccessor
-            {
-                BufferView = inverseBufferView,
-                ComponentType = (int)GltfComponentType.Float,
-                Count = character.Inv_Wt.Count,
-                Type = "MAT4"
-            });
-
-            int skinIndex = header.AddSkin(new GltfSkin
-            {
-                Name = "Armature",
-                Skeleton = rootJointNode,
-                Joints = jointNodeIndices.ToList(),
-                InverseBindMatrices = inverseBindAccessor
-            });
-
-            header.Scenes[0].Nodes.Add(rootJointNode);
-
-            return skinIndex;
-        }
-
-        private static GltfComponentType GetComponentType(string semantic)
-        {
-            return semantic switch
-            {
-                "JOINTS_0" => GltfComponentType.UnsignedShort,
-                _ => GltfComponentType.Float
-            };
-        }
-
-        private static string GetAccessorType(string semantic)
-        {
-            return semantic switch
-            {
-                "POSITION" => "VEC3",
-                "NORMAL" => "VEC3",
-                "TANGENT" => "VEC3", // see caveat below
-                "COLOR_0" => "VEC4",
-                "COLOR_1" => "VEC4",
-                "TEXCOORD_0" => "VEC2",
-                "TEXCOORD_1" => "VEC2",
-                "TEXCOORD_2" => "VEC2",
-                "WEIGHTS_0" => "VEC4",
-                "JOINTS_0" => "VEC4",
-                _ => throw new NotSupportedException(semantic)
-            };
-        }
-
-        private static string GetGltfSemantic(VertexDefinitionVariableEnum variable) =>
-            variable switch
-            {
-                VertexDefinitionVariableEnum.position => "POSITION",
-                VertexDefinitionVariableEnum.normal => "NORMAL",
-                VertexDefinitionVariableEnum.colorSet0 => "COLOR_0",
-                VertexDefinitionVariableEnum.tangent => "TANGENT",
-                VertexDefinitionVariableEnum.colorSet1 => "COLOR_1",
-                VertexDefinitionVariableEnum.uvSet01 => "TEXCOORD_",
-                VertexDefinitionVariableEnum.diffuse => "_DIFFUSE",
-                VertexDefinitionVariableEnum.uvSet2 => "TEXCOORD_2",
-                VertexDefinitionVariableEnum.albedo => "_ALBEDO",
-                VertexDefinitionVariableEnum.blendIndices0 => "JOINTS_0",
-                VertexDefinitionVariableEnum.blendWeight0 => "WEIGHTS_0",
-                VertexDefinitionVariableEnum.tangent2 => "_TANGENT_2",
-                VertexDefinitionVariableEnum.lightDirSet => "_LIGHTDIRSET",
-                VertexDefinitionVariableEnum.lightColSet => "_LIGHTCOLSET",
-            };
-
-        private static int GetAttributeStride(string semantic)
-        {
-            return semantic switch
-            {
-                "POSITION" => 12,
-                "NORMAL" => 12,
-                "TANGENT" => 12,
-                "COLOR_0" => 16,
-                "COLOR_1" => 16,
-                "TEXCOORD_0" => 8,
-                "TEXCOORD_1" => 8,
-                "TEXCOORD_2" => 8,
-                "WEIGHTS_0" => 16,
-                "JOINTS_0" => 8,
-                _ => throw new NotSupportedException(semantic)
-            };
-        }
-
-        private static void WriteVertices(RawFile file, Vertex[] vertices, List<byte> remapBones, Dictionary<string, int> offsets, out Vector3 min, out Vector3 max)
-        {
-            min = Vector3.PositiveInfinity;
-            max = Vector3.NegativeInfinity;
-
-            if (offsets.ContainsKey("POSITION"))
-            {
-                offsets["POSITION"] = (int)file.Position;
-
-                foreach (Vertex v in vertices)
+                int originalMapSize = nuMesh.SkinMtxMap.Count; // doesn't seem to write the correct bones?
+                for (int i = 0; i < originalMapSize; i++)
                 {
-                    file.WriteVector3(v.Position, false);
-
-                    min = Vector3.Min(min, v.Position);
-                    max = Vector3.Max(max, v.Position);
+                    if (i < remap.Length)
+                        nuMesh.SkinMtxMap[i] = remap[i];
+                    else
+                        nuMesh.SkinMtxMap[i] = 0xff;
                 }
             }
 
-            if (offsets.ContainsKey("NORMAL"))
+            VertexList[] vertexLists = new VertexList[originalMesh.VertexBuffers.Length];
+            RenderVertexBuffer[] vertexBuffers = new RenderVertexBuffer[vertexLists.Length];
+            for (int i = 0; i < vertexLists.Length; i++)
             {
-                offsets["NORMAL"] = (int)file.Position;
-
-                foreach (Vertex v in vertices)
-                    file.WriteVector3(v.Normal, false);
+                var vertexList = VertexList.FromVertices(vertices, originalMesh.VertexBuffers[i].Attributes);
+                var vBuffer = (RenderVertexBuffer)scene.GetOrAdd(RenderVertexBuffer.FromBuffer(vertexList));
+                vertexLists[i] = vBuffer.Original;
+                vertexBuffers[i] = vBuffer;
             }
 
-            if (offsets.ContainsKey("COLOR_0"))
-            {
-                offsets["COLOR_0"] = (int)file.Position;
+            RenderIndicesBuffer indicesBuffer = (RenderIndicesBuffer)scene.GetOrAdd(RenderIndicesBuffer.FromBuffer(indices.ToArray()));
 
-                foreach (Vertex v in vertices)
-                    file.WriteVector4(v.ColorSet0, false);
+            RenderMesh mesh = new RenderMesh(vertexBuffers, indicesBuffer);
+            mesh.IndicesBase = 0;
+            mesh.IndicesCount = indices.Count;
+            mesh.VerticesBase = 0;
+            mesh.VerticesCount = vertices.Count;
+
+            
+            nuMesh.VertexBuffers = vertexLists;
+            nuMesh.Indices = indicesBuffer.Indices;
+            nuMesh.IndicesBase = 0;
+            nuMesh.IndicesCount = (uint)indices.Count;
+            nuMesh.VerticesBase = 0;
+            nuMesh.VerticesCount = (uint)vertices.Count;
+
+            for (int i = 0; i < vertexLists.Length; i++)
+            { // fixes a vertex explosion
+                nuMesh.VertexBufferFlags[i] = 0x502;
+                nuMesh.VertexBufferOffsets[i] = 0;
             }
 
-            if (offsets.ContainsKey("COLOR_1"))
-            {
-                offsets["COLOR_1"] = (int)file.Position;
+            nuMesh.IndicesFlags = 0x102;
 
-                foreach (Vertex v in vertices)
-                    file.WriteVector4(v.ColorSet1, false);
-            }
+            mesh.OriginalMesh = nuMesh;
 
-            if (offsets.ContainsKey("TANGENT"))
-            {
-                offsets["TANGENT"] = (int)file.Position;
-
-                foreach (Vertex v in vertices)
-                    file.WriteVector3(v.Tangent, false);
-            }
-
-            if (offsets.ContainsKey("TEXCOORD_0"))
-            {
-                offsets["TEXCOORD_0"] = (int)file.Position;
-
-                foreach (Vertex v in vertices)
-                    file.WriteVector2(
-                        new Vector2(v.UVSet01.X, v.UVSet01.Y),
-                        false);
-            }
-
-            if (offsets.ContainsKey("TEXCOORD_1"))
-            {
-                offsets["TEXCOORD_1"] = (int)file.Position;
-
-                foreach (Vertex v in vertices)
-                    file.WriteVector2(
-                        new Vector2(v.UVSet01.Z, v.UVSet01.W),
-                        false);
-            }
-
-            if (offsets.ContainsKey("TEXCOORD_2"))
-            {
-                offsets["TEXCOORD_2"] = (int)file.Position;
-
-                foreach (Vertex v in vertices)
-                    file.WriteVector2(v.UVSet02, false);
-            }
-
-            if (offsets.ContainsKey("WEIGHTS_0"))
-            {
-                offsets["WEIGHTS_0"] = (int)file.Position;
-
-                foreach (Vertex v in vertices)
-                    file.WriteVector4(v.BlendWeights, false);
-            }
-
-            if (offsets.ContainsKey("JOINTS_0"))
-            {
-                offsets["JOINTS_0"] = (int)file.Position;
-
-                foreach (Vertex v in vertices)
-                {
-                    file.WriteUShort(remapBones[v.BlendIndices.X], false);
-                    file.WriteUShort(remapBones[v.BlendIndices.Y], false);
-                    file.WriteUShort(remapBones[v.BlendIndices.Z], false);
-                    file.WriteUShort(remapBones[v.BlendIndices.W], false);
-                }
-            }
+            return mesh;
         }
+
+        //private static T ReadAccessor<T>(RawFile binary, )
+        //{
+
+        //}
 
         public static void Icosahedron()
         {

@@ -1,0 +1,46 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:Diorama">
+
+  <!--
+    Additional resources 
+    Using Control Themes:
+         https://docs.avaloniaui.net/docs/basics/user-interface/styling/control-themes
+    Using Theme Variants:
+         https://docs.avaloniaui.net/docs/guides/styles-and-resources/how-to-use-theme-variants
+  -->
+  
+  <Design.PreviewWith>
+    <StackPanel Width="400" Spacing="10">      
+        <StackPanel Background="{DynamicResource SystemRegionBrush}">
+          <controls:LayerInspector />
+        </StackPanel>
+    </StackPanel>
+  </Design.PreviewWith>
+ 
+  <ControlTheme x:Key="{x:Type controls:LayerInspector}" TargetType="controls:LayerInspector">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+          <StackPanel Margin="5" Spacing="5">
+            <controls:PropertyEditor Property="Name" />
+            <TextBlock>Layer Parts:</TextBlock>
+            <ItemsControl ItemsSource="{Binding LayerItems}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <Border BorderBrush="#ff404040" BorderThickness="1" Margin="5">
+                    <StackPanel Margin="5" Spacing="5">
+                      <controls:PropertyEditor Property="Type" />
+                      <controls:ListInput InputLabel="Joint" SelectedItem="{Binding Joint, Mode=TwoWay}" Items="{Binding SceneOwner.AllJoints}" />
+                      <controls:ListInput InputLabel="Special Object" SelectedItem="{Binding SpecialObject, Mode=TwoWay}" Items="{Binding SceneOwner.SpecialObjects}" />
+                    </StackPanel>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </ScrollViewer>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+</ResourceDictionary>

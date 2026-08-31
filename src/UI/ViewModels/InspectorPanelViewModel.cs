@@ -35,19 +35,34 @@ namespace Diorama.UI.ViewModels
 
             RenderService.Current.Enqueue(() =>
             {
-                RenderMesh newMesh = OBJConverter.MeshFromOBJ(path, selectedGeo.Mesh, scene);
+                try
+                {
+                    RenderMesh newMesh;
+                    if (isGLTF(path))
+                    {
+                        newMesh = glTFConverter.GetObjectsFromGltf(path, selectedGeo.Mesh, scene);
+                    }
+                    else
+                    {
+                        newMesh = OBJConverter.MeshFromOBJ(path, selectedGeo.Mesh, scene);
+                    }
 
-                selectedGeo.Mesh = newMesh;
+                    selectedGeo.Mesh = newMesh;
+                }
+                catch (Exception ex)
+                {
+                    Controller.ShowMessageDialog("Could not import from file", [ex.Message]);
+                }
             });
         }
 
         public void ExportMesh(string path)
         {
-            if (Controller.SelectedGeometry == null) return;
+            if (Controller.SelectedGeometry == null || path == null) return;
 
             var selectedGeo = Controller.SelectedGeometry;
 
-            if (Path.GetExtension(path).ToLower() == ".gltf")
+            if (isGLTF(path))
             {
                 glTFConverter.WriteObjectsToGltf([selectedGeo], path);
             }
@@ -57,6 +72,8 @@ namespace Diorama.UI.ViewModels
             }
 
         }
+
+        private bool isGLTF(string path) => Path.GetExtension(path).ToLower() == ".gltf";
 
         public void DebugMesh()
         {

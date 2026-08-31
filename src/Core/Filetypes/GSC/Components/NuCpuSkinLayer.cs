@@ -37,7 +37,13 @@ namespace Diorama.Core.Filetypes.GSC.Components
         {
             if (parentVersion < 4)
             {
-                Debug.Assert(1 == 0, "skinlayer v < 4 not supported!");
+                schema.HandleSchemaVarArray(ref Verts);
+                schema.HandleSchemaVarArray(ref Bones);
+                schema.HandleSchemaVarArray(ref Tris);
+                if (parentVersion == 3)
+                {
+                    schema.HandleSchemaVarArray(ref Colours);
+                }
             }
             else
             {
@@ -46,6 +52,8 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 schema.HandleSchemaVector(ref Tris);
                 schema.HandleSerializableVector(ref Colours);
             }
+
+            schema.HandleShort(ref LayerId);
         }
 
         public void Serialize(RawFile file, uint parentVersion)

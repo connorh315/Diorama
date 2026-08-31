@@ -24,7 +24,7 @@
         <StackPanel Spacing="5" Margin="5">
           <controls:PropertyEditor Property="Name" />
           <controls:PropertyEditor Property="ParentJoint" />
-          <controls:ListInput Grid.Row="0" InputLabel="Parent Joint" Items="{Binding ParentScene.Joints}" SelectedItem="{Binding Parent}"/>
+          <controls:ListInput Grid.Row="0" InputLabel="Parent Joint" Items="{Binding ParentScene.AllJoints}" SelectedItem="{Binding Parent}" CanBeNull="False" />
           <controls:PropertyEditor Property="Transform" />
         </StackPanel>
       </ControlTemplate>

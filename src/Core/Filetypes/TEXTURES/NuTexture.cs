@@ -181,7 +181,7 @@ namespace Diorama.Core.Filetypes.TEXTURES
             }
             else
             {
-                if (Header.Name != string.Empty)
+                if ((parentVersion > 1 && Header.Name != string.Empty) || (parentVersion == 1 && Header.Path != string.Empty))
                 {
                     Size = (uint)Calculate(schema.File);
                 }

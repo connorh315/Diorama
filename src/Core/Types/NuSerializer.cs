@@ -120,10 +120,10 @@ namespace Diorama.Core.Types
                 return (T)(object)file.ReadByte();
 
             if (typeof(T) == typeof(short))
-                return (T)(object)file.ReadShort();
+                return (T)(object)file.ReadShort(true);
 
             if (typeof(T) == typeof(ushort))
-                return (T)(object)file.ReadUShort();
+                return (T)(object)file.ReadUShort(true);
 
             if (typeof(T) == typeof(int))
                 return (T)(object)file.ReadInt();
@@ -145,6 +145,11 @@ namespace Diorama.Core.Types
                 return (T)(object)new Vector3(file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true));
             }
 
+            if (typeof(T) == typeof(Vector4))
+            {
+                return (T)(object)new Vector4(file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true));
+            }
+
             throw new NotSupportedException($"Unsupported vector type: {typeof(T)}");
         }
 
@@ -153,8 +158,8 @@ namespace Diorama.Core.Types
             switch (value)
             {
                 case byte v: file.WriteByte(v); break;
-                case short v: file.WriteShort(v); break;
-                case ushort v: file.WriteUShort(v); break;
+                case short v: file.WriteShort(v, true); break;
+                case ushort v: file.WriteUShort(v, true); break;
                 case int v: file.WriteInt(v); break;
                 case uint v: file.WriteUInt(v); break;
                 case long v: file.WriteLong(v); break;
@@ -164,6 +169,12 @@ namespace Diorama.Core.Types
                     file.WriteFloat(v.X, true);
                     file.WriteFloat(v.Y, true);
                     file.WriteFloat(v.Z, true);
+                    break;
+                case Vector4 v:
+                    file.WriteFloat(v.X, true);
+                    file.WriteFloat(v.Y, true);
+                    file.WriteFloat(v.Z, true);
+                    file.WriteFloat(v.W, true);
                     break;
                 default:
                     throw new NotSupportedException($"Unsupported type: {typeof(T)}");

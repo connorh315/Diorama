@@ -14,7 +14,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
     {
         public VertexDefinition[] Definitions;
 
-        public Vertex[] Vertices; // Defunct
+        public uint VerticesCount;
 
         public byte[] VerticesDump;
 
@@ -24,7 +24,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
         public VertexList(uint vertexCount, uint vertexDefinitionCount)
         {
-            Vertices = new Vertex[vertexCount];
+            VerticesCount = vertexCount;
 
             Definitions = new VertexDefinition[vertexDefinitionCount];
         }
@@ -84,7 +84,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
         public void Write(RawFile file)
         {
-            file.WriteInt(Vertices.Length, true);
+            file.WriteUInt(VerticesCount, true);
 
             WriteHeader(file);
 
@@ -117,16 +117,28 @@ namespace Diorama.Core.Filetypes.GSC.Components
                         WriteVector(file, new Vector4(vertex.Position, 1f), def.Type);
                         break;
                     case VertexDefinitionVariableEnum.normal:
-                        WriteVector(file, new Vector4(vertex.Normal, 1f), def.Type);
+                        WriteVector(file, new Vector4(vertex.Normal, 1f), def.Type, true);
+                        break;
+                    case VertexDefinitionVariableEnum.tangent:
+                        WriteVector(file, new Vector4(vertex.Tangent, 1), def.Type, true);
                         break;
                     case VertexDefinitionVariableEnum.colorSet0:
-                        WriteVector(file, vertex.ColorSet0, def.Type);
+                        WriteVector(file, new Vector4(vertex.ColorSet0.Z, vertex.ColorSet0.Y, vertex.ColorSet0.X, vertex.ColorSet0.W), def.Type);
                         break;
                     case VertexDefinitionVariableEnum.colorSet1:
                         WriteVector(file, vertex.ColorSet1, def.Type);
                         break;
                     case VertexDefinitionVariableEnum.uvSet01:
                         WriteVector(file, vertex.UVSet01, def.Type);
+                        break;
+                    case VertexDefinitionVariableEnum.uvSet2:
+                        WriteVector(file, vertex.UVSet23, def.Type);
+                        break;
+                    case VertexDefinitionVariableEnum.blendIndices0:
+                        WriteVectorI(file, vertex.BlendIndices);
+                        break;
+                    case VertexDefinitionVariableEnum.blendWeight0:
+                        WriteVector(file, vertex.BlendWeights, def.Type, false);
                         break;
                     default:
                         WriteVector(file, Vector4.Zero, def.Type); // discard, no implementation
@@ -135,7 +147,15 @@ namespace Diorama.Core.Filetypes.GSC.Components
             }
         }
 
-        public void WriteVector(RawFile file, Vector4 vec, VertexDefinitionStorageEnum storage)
+        public void WriteVectorI(RawFile file, VectorI4 vec)
+        {
+            file.WriteByte((byte)vec.X);
+            file.WriteByte((byte)vec.Y);
+            file.WriteByte((byte)vec.Z);
+            file.WriteByte((byte)vec.W);
+        }
+
+        public void WriteVector(RawFile file, Vector4 vec, VertexDefinitionStorageEnum storage, bool signedValue = false)
         {
             switch (storage)
             {
@@ -166,10 +186,20 @@ namespace Diorama.Core.Filetypes.GSC.Components
                     break;
                 case VertexDefinitionStorageEnum.vec4mini:
                 case VertexDefinitionStorageEnum.vec4char:
-                    file.WriteByte((byte)((vec.X + 1f) * 127.5f));
-                    file.WriteByte((byte)((vec.Y + 1f) * 127.5f));
-                    file.WriteByte((byte)((vec.Z + 1f) * 127.5f));
-                    file.WriteByte((byte)((vec.W + 1f) * 127.5f));
+                    if (signedValue)
+                    {
+                        file.WriteByte(NormalizeSignedFloat(vec.X));
+                        file.WriteByte(NormalizeSignedFloat(vec.Y));
+                        file.WriteByte(NormalizeSignedFloat(vec.Z));
+                        file.WriteByte(NormalizeSignedFloat(vec.W));
+                    }
+                    else
+                    {
+                        file.WriteByte(NormalizeFloat(vec.X));
+                        file.WriteByte(NormalizeFloat(vec.Y));
+                        file.WriteByte(NormalizeFloat(vec.Z));
+                        file.WriteByte(NormalizeFloat(vec.W));
+                    }
                     break;
                 case VertexDefinitionStorageEnum.color4char:
                     file.WriteByte((byte)(vec.X * 255));
@@ -179,6 +209,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
                     break;
             }
         }
+
+        public byte NormalizeFloat(float val) => (byte)MathF.Round(val * 255);
+
+        public byte NormalizeSignedFloat(float val) => (byte)MathF.Round((val + 1) * 127.5f);
 
         public static VertexList FromVertices(List<Vertex> vertices, VertexDefinition[] definitions)
         {
@@ -248,7 +282,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
                         vertex.Normal = ReadVector(file, def.Type, true).ToVector3();
                         break;
                     case VertexDefinitionVariableEnum.tangent:
-                        vertex.Tangent = ReadVector(file, def.Type).ToVector3();
+                        vertex.Tangent = ReadVector(file, def.Type, true).ToVector3();
                         break;
                     case VertexDefinitionVariableEnum.colorSet0:
                         vertex.ColorSet0 = ReadVector(file, def.Type);
@@ -258,6 +292,9 @@ namespace Diorama.Core.Filetypes.GSC.Components
                         break;
                     case VertexDefinitionVariableEnum.uvSet01:
                         vertex.UVSet01 = ReadVector(file, def.Type);
+                        break;
+                    case VertexDefinitionVariableEnum.uvSet2:
+                        vertex.UVSet23 = ReadVector(file, def.Type);
                         break;
                     case VertexDefinitionVariableEnum.blendWeight0:
                         vertex.BlendWeights = ReadVector(file, def.Type, false);

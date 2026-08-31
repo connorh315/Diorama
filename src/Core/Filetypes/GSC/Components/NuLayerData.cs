@@ -8,6 +8,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
 {
     public class NuLayerData : IVectorSerializable, ISchemaSerializable
     {
+        public uint NameIndex;
         public string Name;
         public short MetaDataIndex;
         public short NumRigids;
@@ -25,7 +26,18 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
         public void Handle(SchemaSerializer schema, uint parentVersion)
         {
-            schema.HandlePascalString(ref Name);
+            if (parentVersion < 6)
+            {
+                Debug.Assert(1 == 0, "unsupported LayerData version!");
+            }
+            if (parentVersion < 0xe)
+            {
+                schema.HandleUInt(ref NameIndex);
+            }
+            else
+            {
+                schema.HandlePascalString(ref Name);
+            }
             schema.HandleShort(ref MetaDataIndex);
             schema.HandleShort(ref NumRigids);
             schema.HandleShort(ref NumSkins);

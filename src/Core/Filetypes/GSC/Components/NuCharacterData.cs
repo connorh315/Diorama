@@ -51,71 +51,6 @@ namespace Diorama.Core.Filetypes.GSC.Components
         public uint JointNameHash;
         public byte IsReplacementMesh;
 
-        public void Deserialize(RawFile file, uint parentVersion)
-        {
-            SchemaSerializer temp = new SchemaSerializer(file, false);
-            
-            Debug.Assert(file.ReadString(4) == "LOGH");
-            uint version = file.ReadUInt(true);
-            Debug.Assert(version == 0x10 || version == 0x11, $"hgol version: {version:X2}");
-            if (version < 0xc)
-            {
-                Debug.Assert(1 == 0, "unsupported HGOL version!");
-            }
-            else
-            {
-                List<NuJointData> jointData = NuSerializer.ReadVectorArray<NuJointData>(file, version);
-                List<NuMtx> T = NuSerializer.ReadVectorArray<NuMtx>(file);
-                List<NuMtx> inv_wt = NuSerializer.ReadVectorArray<NuMtx>(file);
-                List<byte> jointIxs = NuSerializer.ReadVectorArray<byte>(file);
-                List<NuPointOfInterest> pointsOfInterest = NuSerializer.ReadVectorArray<NuPointOfInterest>(file, version);
-                List<byte> poiIxs = NuSerializer.ReadVectorArray<byte>(file);
-
-                int buffer_size = file.ReadInt(true); // I think
-                if (buffer_size != 0)
-                {
-                    byte[] buffer = file.ReadArray(buffer_size);
-                }
-
-                List<NuLayer_SpecialFlags> layerMetaData = NuSerializer.ReadVectorArray<NuLayer_SpecialFlags>(file, version);
-                List<NuLayerData> layers = NuSerializer.ReadVectorArray<NuLayerData>(file, version);
-
-                List<NuShadowData> shadowData = NuSerializer.ReadVectorArray<NuShadowData>(file, version);
-
-                float sphereRadius = file.ReadFloat(true);
-                float sphereYOff = file.ReadFloat(true);
-                Vector3 min = new Vector3(file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true));
-                Vector3 max = new Vector3(file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true));
-                float cylinderYOff = file.ReadFloat(true);
-                float cylinderHeight = file.ReadFloat(true);
-                float cylinderRadius = file.ReadFloat(true);
-                float lodBoundary = file.ReadFloat(true);
-
-                if (version < 0x10)
-                {
-                    List<byte> defunctTopLodRemapTable = NuSerializer.ReadVectorArray<byte>(file);
-                }
-
-                List<byte> lodRemapTable = NuSerializer.ReadVectorArray<byte>(file);
-
-                if (version < 0x10)
-                {
-                    float deprecatedModelRenderScale = file.ReadFloat(true);
-                }
-
-                List<short> lodSpecialRemapTable = NuSerializer.ReadVectorArray<short>(file);
-
-                byte krawlyLod = file.ReadByte();
-
-                if (version > 0x10)
-                {
-                    uint jointNameHash = file.ReadUInt(true);
-                    byte isReplacementMesh = file.ReadByte();
-                }
-
-            }
-        }
-
         public void Handle(SchemaSerializer schema, uint parentVersion)
         {
             schema.Expect("LOGH");
@@ -123,7 +58,66 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             if (Version < 0xc)
             {
-                Debug.Assert(1 == 0, "unsupported HGOL version!");
+                schema.HandleSchemaVarArray(ref JointData, Version);
+                schema.HandleSchemaVarArray(ref T);
+                schema.HandleSchemaVarArray(ref Inv_Wt);
+                schema.HandleLegacyVarArray(ref JointIxs);
+                schema.HandleSchemaVarArray(ref PointsOfInterest, Version);
+                schema.HandleLegacyVarArray(ref PoiIxs);
+
+                if (Version > 9)
+                {
+                    schema.HandleBuffer(ref Buffer);
+                }
+
+                if (Version > 5)
+                {
+                    schema.HandleSchemaVarArray(ref LayerMetadata, Version);
+                }
+
+                schema.HandleSchemaVarArray(ref Layers, Version);
+
+                if (Version > 2)
+                {
+                    schema.HandleSchemaVarArray(ref ShadowData, Version);
+                }
+
+                schema.HandleFloat(ref SphereRadius);
+                schema.HandleFloat(ref SphereYOff);
+                schema.HandleVector3(ref Min);
+                schema.HandleVector3(ref Max);
+                schema.HandleFloat(ref CylinderYOff);
+                schema.HandleFloat(ref CylinderHeight);
+                schema.HandleFloat(ref CylinderRadius);
+                schema.HandleFloat(ref LodBoundary);
+
+                if (Version > 3)
+                {
+                    schema.HandleLegacyVarArray(ref DefunctTopLodRemapTable);
+
+                    schema.HandleLegacyVarArray(ref LodRemapTable);
+
+                    if (Version > 4)
+                    {
+                        schema.HandleFloat(ref DeprecatedModelRenderScale);
+
+                        if (Version > 5)
+                        {
+                            schema.HandleLegacyVarArray(ref LodSpecialRemapTable);
+
+                            if (Version > 8)
+                            {
+                                schema.HandleByte(ref KrawlyLod);
+
+                                if (Version > 0x10)
+                                {
+                                    schema.HandleUInt(ref JointNameHash);
+                                    schema.HandleByte(ref IsReplacementMesh);
+                                }
+                            }
+                        }
+                    }
+                }
             }
             else
             {

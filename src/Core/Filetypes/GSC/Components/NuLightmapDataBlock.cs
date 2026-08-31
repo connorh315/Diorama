@@ -22,7 +22,11 @@ namespace Diorama.Core.Filetypes.GSC.Components
         {
             schema.Expect("TDML");
             schema.HandleUInt(ref Version);
-            if (Version >= 3)
+            if (Version < 3)
+            {
+                schema.HandleSerializableLegacyVarArray(ref Lightmaps, Version);
+            }
+            else
             {
                 schema.HandleSerializableVector(ref Lightmaps, Version);
             }

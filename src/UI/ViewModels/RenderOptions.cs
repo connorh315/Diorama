@@ -41,8 +41,8 @@ namespace Diorama.UI.ViewModels
         [DisplayLabel("Show Specular")]
         public static bool ShowSpecular { get; set; } = true;
 
-        [DisplayLabel("Show Only Env Map")]
-        public static bool ShowOnlyEnvMap { get; set; } = false;
+        [DisplayLabel("Show Env Map")]
+        public static bool ShowEnvMap { get; set; } = true;
 
         public static bool ShowPoIs { get; set; } = false;
     }

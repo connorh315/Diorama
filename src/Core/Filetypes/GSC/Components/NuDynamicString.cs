@@ -17,7 +17,14 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
         public void Handle(SchemaSerializer schema, uint parentVersion)
         {
-            schema.HandlePascalString(ref Value, 1);
+            if (parentVersion == 0)
+            {
+                schema.HandlePascalString(ref Value, 1);
+            }
+            else
+            {
+                schema.HandleIntPascalString(ref Value, 1);
+            }
         }
 
         public void Serialize(RawFile file, uint parentVersion)

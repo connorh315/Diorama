@@ -30,8 +30,10 @@ namespace Diorama.Editor.Material
         public string Name
         {
             get => Original.MaterialName;
-            set => Set(ref Original.MaterialName, value);
+            set { Set(ref Original.MaterialName, value); OnPropertyChanged(nameof(DisplayName)); }
         }
+
+        public string DisplayName { get => Name; }
 
         public EditorMaterial OverridingReference { get; set; }
 
@@ -57,13 +59,13 @@ namespace Diorama.Editor.Material
         public RenderTexture EnvMap { get; set; }
 
         [DisplayLabel("Metallic Specular")]
-        public byte MetallicSpecular { get => Original.materialFlags_metallic_specular; set => Set(ref Original.materialFlags_metallic_specular, value); }
+        public bool MetallicSpecular { get => GetBoolByte(Original.materialFlags_metallic_specular); set => SetBoolByte(ref Original.materialFlags_metallic_specular, value); }
 
         [DisplayLabel("Baked Specular")]
-        public byte BakedSpecular { get => Original.materialFlags_baked_specular; set => Set(ref Original.materialFlags_baked_specular, value); }
+        public bool BakedSpecular { get => GetBoolByte(Original.materialFlags_baked_specular); set => SetBoolByte(ref Original.materialFlags_baked_specular, value); }
 
         [DisplayLabel("Disable Varying Specular")]
-        public byte DisableVaryingSpecular { get => Original.materialFlags_disable_varying_specular; set => Set(ref Original.materialFlags_disable_varying_specular, value); }
+        public bool DisableVaryingSpecular { get => GetBoolByte(Original.materialFlags_disable_varying_specular); set => SetBoolByte(ref Original.materialFlags_disable_varying_specular, value); }
 
         [DisplayLabel("Specular Cos Power")]
         public float SpecularPower { get => Original.KBaseSpecularCosPower; set => Set(ref Original.KBaseSpecularCosPower, value); }
@@ -90,6 +92,7 @@ namespace Diorama.Editor.Material
 
         [DisplayLabel("Glow Intensity")]
         [VisibleIf(nameof(Glow))]
+        [Slider(0f, 1f)]
         public float KGlow
         {
             get => Original.KGlow;
@@ -97,7 +100,7 @@ namespace Diorama.Editor.Material
         }
 
         [DisplayLabel("Shaded Glow")]
-        public byte ShadedGlow { get => Original.miscFlags_shadedGlow; set => Set(ref Original.miscFlags_shadedGlow, value); }
+        public bool ShadedGlow { get => GetBoolByte(Original.miscFlags_shadedGlow); set => SetBoolByte(ref Original.miscFlags_shadedGlow, value); }
 
         public bool ShowDebugSpheres = false;
 
@@ -162,6 +165,7 @@ namespace Diorama.Editor.Material
 
         [DisplayLabel("Alpha Reference")]
         [VisibleIf(nameof(ShowAlphaRef))]
+        [Slider(0f, 1f)]
         public float AlphaRef { get => GetFloatByte(Original.Aref); set => SetFloatByte(ref Original.Aref, value); }
 
         [DisplayLabel("Can Alpha Blend")]
@@ -219,6 +223,7 @@ namespace Diorama.Editor.Material
         public EditorRoughnessMode Roughness { get => (EditorRoughnessMode)Original.roughnessMode; set => Set(ref Original.roughnessMode, (uint)value); }
 
         [DisplayLabel("Base Roughness")]
+        [Slider(0f, 1f)]
         public float BaseRoughness { get => Original.KBaseRoughness; set => Set(ref Original.KBaseRoughness, value); }
 
         [DisplayLabel("Roughness Mod")]
@@ -412,6 +417,9 @@ namespace Diorama.Editor.Material
         public bool Layer3AnimState { get => Original.TexAnimData4 == 3; set => Set(ref Original.TexAnimData4, value ? 3 : -1); }
 
         public EditorMaterialTextureAnim Layer3Anim { get; set; }
+
+        [DisplayLabel("Cast Shadow")]
+        public bool CastShadow { get => GetBoolByte(Original.Castshadow); set => SetBoolByte(ref Original.Castshadow, value); }
 
         public const int MaxShaderSet = 18;
         public uint[] GetShaderSet(int set)

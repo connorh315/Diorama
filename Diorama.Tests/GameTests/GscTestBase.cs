@@ -192,7 +192,7 @@ namespace Diorama.Tests.GameTests
                 process: (ctx, entry, file) =>
                 {
                     ctx.Count++;
-
+                    file.SetFileLocation(new ArchiveFileLocation(gamePath, "unit_test"));
                     file.fileStream.SetLength(entry.DecompressedSize);
 
                     if (TryParseFile(file, out var scene, out var error))

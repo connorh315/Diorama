@@ -12,21 +12,26 @@ namespace Diorama.Rendering
     {
         private Shader debugShader;
         private DebugSphere sphere;
+        private DebugLine line;
 
         public DebugRenderer()
         {
             debugShader = new Shader("debugshader.vert", "debugshader.frag");
             sphere = new DebugSphere();
+            line = new DebugLine();
         }
 
         public List<(Vector3, float)> SphereDraws = new List<(Vector3, float)>();
 
         public List<(Vector3, Vector3)> CapsuleDraws = new List<(Vector3, Vector3)>();
 
+        public List<(Vector3, Vector3)> LineDraws = new();
+
         public void Reset(EditorScene scene, Camera camera)
         {
             SphereDraws.Clear();
             CapsuleDraws.Clear();
+            LineDraws.Clear();
 
             debugShader.SetMatrix4("view", scene.SceneTransform * camera.GetViewMatrix());
             debugShader.SetMatrix4("projection", camera.Projection);
@@ -40,6 +45,11 @@ namespace Diorama.Rendering
         public void DrawCapsule(Vector3 center, Vector3 extents)
         {
             CapsuleDraws.Add((center, extents));
+        }
+
+        public void DrawLine(Vector3 center, Vector3 direction)
+        {
+            LineDraws.Add((center, direction));
         }
 
         public void Render()
@@ -64,6 +74,14 @@ namespace Diorama.Rendering
                 debugShader.SetMatrix4("model", model);
                 debugShader.SetVector4("Color", Vector4.One);
                 sphere.Draw();
+            }
+
+            foreach ((Vector3 center, Vector3 direction) in LineDraws)
+            {
+                var model = line.GetModelMatrix(center, direction);
+                debugShader.SetMatrix4("model", model);
+                debugShader.SetVector4("Color", new Vector4(1f, 0.2f, 0f, 1f));
+                line.Draw();
             }
             GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
         }

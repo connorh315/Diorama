@@ -37,9 +37,10 @@ namespace Diorama
         public bool UsingExtracted { get => !isArchive; set { Set(ref isArchive, !value); OnPropertyChanged(nameof(UsingArchives)); } }
 
         [DisplayLabel("Location")]
+        [FSFolder]
         public string ProviderPath { get; set; }
 
-        public static bool ShouldWriteROTV = false;
+        public static bool ShouldWriteROTV = true;
 
         public static string BuildDate => Assembly
             .GetExecutingAssembly()
@@ -55,6 +56,15 @@ namespace Diorama
 
         private void InitializeFileProvider()
         {
+            if (string.IsNullOrEmpty(ProviderPath))
+                return;
+
+            if (!Path.Exists(ProviderPath))
+            {
+                throw new Exception("Location in settings points to an invalid directory - Cannot setup File Provider!");
+                return;
+            }
+
             if (UsingArchives)
             {
                 FileProvider.InitializeArchives(ProviderPath);
@@ -80,9 +90,9 @@ namespace Diorama
                 }
             }
 
-            File.WriteAllLines(settingsFile, lines);
-
             InitializeFileProvider();
+
+            File.WriteAllLines(settingsFile, lines);
         }
 
         private static bool DoNotSave = false;
@@ -94,7 +104,10 @@ namespace Diorama
             var settings = new AppSettings();
 
             if (!File.Exists(settingsFile))
+            {
+                DoNotSave = false;
                 return settings;
+            }
 
             bool inSection = false;
             string section = string.Empty;
@@ -133,7 +146,14 @@ namespace Diorama
 
             DoNotSave = false;
 
-            settings.InitializeFileProvider();
+            try
+            {
+                settings.InitializeFileProvider();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to initialise File Provider: {ex.Message}");
+            }
 
             return settings;
         }

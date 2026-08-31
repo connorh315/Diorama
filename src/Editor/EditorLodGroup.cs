@@ -12,9 +12,34 @@ namespace Diorama.Editor
     {
         public string Name => $"LOD Group {Index}";
 
-        public IEnumerable<IHierarchySelectable> Children => ClipObject?.Elements;
+        public IEnumerable<IHierarchySelectable> Children
+        {
+            get
+            {
+                if (ClipObject != null)
+                {
+                    foreach (var el in ClipObject?.Elements)
+                    {
+                        yield return el;
+                    }
+                }
+
+                if (Spare != null)
+                {
+                    foreach (var clip in Spare)
+                    {
+                        foreach (var el in clip?.Elements)
+                        {
+                            yield return el;
+                        }
+                    }
+                }
+            }
+        }
 
         public EditorClipObject ClipObject { get; set; }
+
+        public List<EditorClipObject> Spare { get; set; }
 
         public int Index { get; set; }
 

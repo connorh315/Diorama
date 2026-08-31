@@ -29,7 +29,11 @@ namespace Diorama.Core.Filetypes.GSC.Components
         {
             if (parentVersion < 4)
             {
-                Debug.Assert(1 == 0, "unsupported skin version!");
+                schema.HandleSchemaVarArray(ref Layers, parentVersion);
+                if (parentVersion > 2)
+                {
+                    schema.HandleLegacyVarArray(ref LayerIdTable);
+                }
             }
             else
             {

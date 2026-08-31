@@ -1,4 +1,5 @@
-﻿using Diorama.Core.Types;
+﻿using BrickVault;
+using Diorama.Core.Types;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -24,10 +25,11 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 // Reference to existing vertex list
                 reference = (int)(vertexReference & 0xffff);
                 uint one = file.ReadUInt(true);
+                Debug.Assert(one == 1);
                 offset = file.ReadInt(true);
                 return ctx.GetObject<VertexList>(reference);
             }
-            else
+            else if (vertexReference == 0x1)
             {
                 // New vertex list
                 flags = file.ReadUInt(true); // 0x502??
@@ -36,6 +38,11 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 offset = file.ReadInt(true);
                 Debug.Assert(offset == 0);
                 return list;
+            }
+            else
+            {
+                offset = file.ReadInt(true);
+                return null;
             }
         }
 
@@ -49,7 +56,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 int unknown = file.ReadInt(true);
                 return ctx.GetObject<ushort[]>(reference);
             }
-            else
+            else if (indexReference == 0x1)
             {
                 flags = file.ReadUInt(true); // unknown
                 uint indicesCount = file.ReadUInt(true);
@@ -64,19 +71,32 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 ctx.AddReference(indexBuffer);
                 return indexBuffer;
             }
+            else
+            {
+                return null;
+            }
         }
 
         public void Read(RawFile file, GSerializationContext ctx)
         {
             Version = file.ReadUInt(true);
-            Debug.Assert(Version == 0xaf || Version == 0xc8);
+            Debug.Assert(Version == 0xa9 || Version == 0xad || Version == 0xaf || Version == 0xc8);
+
+            if (Version < 0xad)
+            {
+                Debug.Assert(file.ReadString(4) == "ROTV");
+            }
 
             Meshes = new NuRenderMesh[file.ReadInt(true)];
             for (int i = 0; i < Meshes.Length; i++)
             {
-                Debug.Assert(file.ReadUInt(true) == 0x1);
-
                 NuRenderMesh mesh = new NuRenderMesh();
+
+                if (Version > 0xac)
+                {
+                    Debug.Assert(file.ReadUInt(true) == 0x1);
+                    ctx.AddReference(mesh);
+                }
 
                 if (Version == 0xc8)
                 {
@@ -129,7 +149,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 int nuBlendShapeExists = file.ReadInt(true); // i think
                 if (nuBlendShapeExists == 1)
                 {
-                    mesh.Shape = NuBlendShape.Parse(file, ctx, Version);
+                    SchemaSerializer temp = new SchemaSerializer(file, false);
+                    temp.SetContext(ctx);
+                    temp.Handle(ref mesh.Shape, Version);
+                    //mesh.Shape = NuBlendShape.Parse(file, ctx, Version);
                 }
                 //Debug.Assert(defunctOptFlags == 0);
 
@@ -139,11 +162,33 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 {
                     mesh.CentreExtents[j] = new Vector4(file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true), file.ReadFloat(true));
                 }
-                ctx.AddReference(mesh.CentreExtents);
+
+                if (Version >= 0xaf)
+                {
+                    ctx.AddReference(mesh.CentreExtents);
+                }
 
                 mesh.DensityDiscDiameter = file.ReadFloat(true);
 
-                ctx.AddReference(mesh);
+                if (Version < 0xaf)
+                {
+                    mesh.DepthBits = file.ReadUInt(true);
+                    mesh.DepthVertexBuffer = GetVertexList(file, ctx, ref mesh.DepthFlags, ref mesh.DepthOffsets);
+
+                    mesh.DepthVbUsedCount = file.ReadUInt(true);
+                    mesh.DepthIndices = GetIndexList(file, ctx, ref mesh.DepthIndicesFlags);
+
+                    mesh.DepthIndicesBase = file.ReadUInt(true);
+                    mesh.DepthIndicesOffset = file.ReadUInt(true);
+                    mesh.DepthIndicesBase2 = file.ReadUInt(true);
+                }
+
+                if (Version < 0xad)
+                {
+                    ctx.AddReference(mesh);
+                }
+
+                //ctx.AddReference(mesh);
 
                 Meshes[i] = mesh;
             }
@@ -164,12 +209,21 @@ namespace Diorama.Core.Filetypes.GSC.Components
         {
             file.WriteUInt(Version, true);
 
+            if (Version < 0xad)
+            {
+                file.WriteString("ROTV");
+            }
+
             file.WriteInt(Meshes.Length, true);
             for (int i = 0; i < Meshes.Length; i++)
             {
-                file.WriteInt(1, true);
-
                 var mesh = Meshes[i];
+
+                if (Version > 0xac)
+                {
+                    file.WriteInt(1, true);
+                    ctx.AddReference(mesh);
+                }
 
                 if (Version == 0xc8)
                 {
@@ -286,17 +340,62 @@ namespace Diorama.Core.Filetypes.GSC.Components
                     file.WriteFloat(mesh.CentreExtents[j].W, true);
                 }
 
-                ctx.AddReference(mesh.CentreExtents);
+                if (Version >= 0xaf)
+                {
+                    ctx.AddReference(mesh.CentreExtents);
+                }
 
                 file.WriteFloat(mesh.DensityDiscDiameter, true);
 
-                ctx.AddReference(mesh);
+                if (Version < 0xaf)
+                {
+                    file.WriteUInt(mesh.DepthBits, true);
+
+                    var buffer = mesh.DepthVertexBuffer;
+                    if (buffer == null)
+                    {
+                        file.WriteInt(0, true);
+                        file.WriteInt(mesh.DepthOffsets, true);
+                    }
+                    else if (ctx.GetOrAddReference(buffer, out int reference))
+                    {
+                        file.WriteUInt((uint)(reference | 0xc0000000), true);
+                        file.WriteUInt(1, true);
+                        file.WriteInt(mesh.DepthOffsets, true);
+                    }
+                    else
+                    {
+                        file.WriteUInt((uint)1, true);
+                        file.WriteUInt(mesh.DepthFlags, true);
+                        buffer.Write(file);
+                        file.WriteInt(mesh.DepthOffsets, true);
+                    }
+
+                    file.WriteUInt(mesh.DepthVbUsedCount, true);
+                    file.WriteInt(mesh.DepthIndices != null ? 1 : 0, true);
+                    if (mesh.DepthIndices != null)
+                    {
+                        file.WriteUInt(mesh.DepthIndicesFlags, true);
+                        file.WriteInt(mesh.DepthIndices.Length, true);
+                        file.WriteInt(2, true);
+
+                        for (int idx = 0; idx < mesh.DepthIndices.Length; idx++)
+                        {
+                            file.WriteUShort(mesh.DepthIndices[idx], (mesh.DepthIndicesFlags & 0x100) == 0);
+                        }
+                    }
+
+                    file.WriteUInt(mesh.DepthIndicesBase, true);
+                    file.WriteUInt(mesh.DepthIndicesOffset, true);
+                    file.WriteUInt(mesh.DepthIndicesBase2, true);
+                }
             }
         }
 
         public void Handle(SchemaSerializer schema, uint parentVersion)
         {
             schema.Expect("HSEM");
+            ((GSerializationContext)schema.Context).AddReference(this);
 
             if (schema.Writing)
             {

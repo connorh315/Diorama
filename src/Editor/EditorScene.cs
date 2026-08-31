@@ -42,7 +42,10 @@ namespace Diorama.Editor
 
         public ObservableCollection<INamedItem> Objects { get; }
         public ObservableCollection<INamedItem> Joints { get; }
+        public ObservableCollection<INamedItem> AllJoints { get; }
         public ObservableCollection<INamedItem> PoIs { get; }
+        public ObservableCollection<INamedItem> Layers { get; }
+        public ObservableCollection<INamedItem> SpecialObjects { get; }
 
         private readonly Dictionary<RenderBuffer, RenderBuffer> _buffers = new();
 
@@ -78,12 +81,17 @@ namespace Diorama.Editor
             Materials = new();
             Objects = new();
             Joints = new();
+            AllJoints = new();
             PoIs = new();
+            Layers = new();
+            SpecialObjects = new();
 
             HierarchyItems = 
             [
                 new("Geometry", Objects),
-                new("Points of Interest", PoIs)
+                new("Joints", Joints),
+                new("Points of Interest", PoIs),
+                new("Layers", Layers)
             ];
         }
 

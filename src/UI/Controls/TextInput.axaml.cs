@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Diorama.UI.Controls;
 
 namespace Diorama;
@@ -15,5 +16,5 @@ public class TextInput : LabelledInput
         set => SetValue(ValueProperty, value);
     }
 
-
+    public Binding ValueBinding;
 }

@@ -10,8 +10,11 @@ namespace Diorama.Core.Filetypes.GSC.Components
     {
         public byte[] Hash;
         public string Path;
+        public byte[] PathBuffer;
+        public short ResourceId;
         public string Name;
         public byte Type;
+        public byte Flags;
 
         public uint Level;
         public string ObjectId;
@@ -20,9 +23,25 @@ namespace Diorama.Core.Filetypes.GSC.Components
         public void Handle(SchemaSerializer schema, uint parentVersion)
         {
             schema.HandleArray(ref Hash, 16);
-            schema.HandlePascalString(ref Path, 1);
-            schema.HandlePascalString(ref Name, 1);
+            if (parentVersion < 0xc)
+            {
+                NuAlignedBuffer.HandleSingle(schema, ref Path);
+                if (schema.Context is GSerializationContext ctx && !string.IsNullOrEmpty(Path))
+                    ctx.AddReference(this);
+                schema.HandleShort(ref ResourceId);
+            }
+            else
+            {
+                schema.HandlePascalString(ref Path, 1);
+                schema.HandlePascalString(ref Name, 1);
+            }
+            
             schema.HandleByte(ref Type);
+
+            if (parentVersion < 0xc)
+            {
+                schema.HandleByte(ref Flags);
+            }
 
             if (parentVersion > 0xc)
             {

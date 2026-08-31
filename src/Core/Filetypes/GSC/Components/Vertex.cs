@@ -22,7 +22,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
         public Vector4 UVSet01;
 
-        public Vector2 UVSet02;
+        public Vector4 UVSet23;
 
         public VectorI4 BlendIndices;
 

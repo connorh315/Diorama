@@ -8,6 +8,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
 {
     public class NuCpuSkinnedblock : ISchemaSerializable
     {
+        public uint BlockVersion;
         public uint Version;
 
         public List<NuCpuSkinLod> CpuSkinLods;
@@ -15,15 +16,16 @@ namespace Diorama.Core.Filetypes.GSC.Components
         public void Handle(SchemaSerializer schema, uint parentVersion)
         {
             schema.Expect("SUPC");
-            schema.HandleUInt(ref Version);
+            schema.HandleUInt(ref BlockVersion);
             
-            if (Version < 3)
+            if (BlockVersion < 3)
             {
-
+                schema.HandleUInt(ref Version);
+                schema.HandleSchemaVarArray(ref CpuSkinLods, Version);
             }
-            else if (Version == 3)
+            else if (BlockVersion == 3)
             {
-
+                schema.HandleSchemaVarArray(ref CpuSkinLods, parentVersion);
             }
             else
             {

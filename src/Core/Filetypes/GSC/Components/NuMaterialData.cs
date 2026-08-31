@@ -587,7 +587,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 if (Version > 0x97)
                 {
                     schema.HandleArray(ref dummyHashArray_12, hashCount);
-                    if (Version > 0xb4)
+                    if (Version > 0xb1)
                     {
                         schema.HandleArray(ref dummyHashArray_13, hashCount);
                     }
@@ -907,10 +907,16 @@ namespace Diorama.Core.Filetypes.GSC.Components
             schema.HandleByte(ref ShadowFromFrontFaces);
             schema.HandleByte(ref DoUntexturedTPage);
             schema.HandleByte(ref ForceTPageRemap);
-            schema.HandleByte(ref ForceTPageSurfType);
-            schema.HandleByte(ref ForceTPageAlphaFade);
+            if (Version > 0xba)
+            {
+                schema.HandleByte(ref ForceTPageSurfType);
+            }
+            if (Version > 0xbe)
+            {
+                schema.HandleByte(ref ForceTPageAlphaFade);
+            }
 
-            if (Version < 0xd3)
+            if (Version < 0xd3 && Version > 0xb3 || Version == 0xb1)
             {
                 schema.HandleInt(ref nameIx);
             }
@@ -1028,7 +1034,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
             schema.HandleUInt(ref surfaceMapFormat0);
             schema.HandleUInt(ref surfaceMapFormat1);
             schema.HandleUInt(ref surfaceMapFormat2);
-            schema.HandleUInt(ref surfaceMapFormat3);
+            if (Version > 0xb3) // Technically it should be 0xb1, however LCU doesn't implement this on 0xb2
+            {
+                schema.HandleUInt(ref surfaceMapFormat3);
+            }
             schema.HandleUInt(ref surfaceMapFormatVTFN);
             schema.HandleUInt(ref occlusion);
             schema.HandleUInt(ref refraction);
@@ -1066,11 +1075,17 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             schema.HandleUInt(ref layerBlendSpecular0);
             schema.HandleUInt(ref layerBlendSpecular1);
-            schema.HandleUInt(ref layerBlendSpecular2);
+            if (Version > 0xb1)
+            {
+                schema.HandleUInt(ref layerBlendSpecular2);
+            }
             schema.HandleUInt(ref dummy);
             schema.HandleUInt(ref layerBlendNormal0);
             schema.HandleUInt(ref layerBlendNormal1);
-            schema.HandleUInt(ref layerBlendNormal2);
+            if (Version > 0xb3)
+            {
+                schema.HandleUInt(ref layerBlendNormal2);
+            }
             schema.HandleUInt(ref dummyX);
 
             schema.HandleUInt(ref numUVSets);
@@ -1085,7 +1100,11 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             schema.HandleByte(ref numBones);
 
-            int uvBlocksToRead = 16;
+            int uvBlocksToRead = 14;
+            if (Version > 0xb3) // LCU issue, really this should be 0xb1
+            {
+                uvBlocksToRead += 2;
+            }
             if (Version > 0xcc)
             {
                 uvBlocksToRead += 1;
@@ -1315,9 +1334,16 @@ namespace Diorama.Core.Filetypes.GSC.Components
             schema.HandleByte(ref VertexFlags_VertexControlledTint);
             schema.HandleByte(ref vertexFlags_ZBias);
             schema.HandleByte(ref vertexFlags_layer1VertAlbedo);
-            schema.HandleByte(ref vertexFlags_layer2VertAlbedo);
-            schema.HandleByte(ref vertexFlags_layer3VertAlbedo);
-            schema.HandleByte(ref vertexFlags_disableSeparatePositionStream);
+            if (Version >= 0xb3)
+            {
+                schema.HandleByte(ref vertexFlags_layer2VertAlbedo);
+                schema.HandleByte(ref vertexFlags_layer3VertAlbedo);
+            }
+
+            if (Version > 0xb0)
+            {
+                schema.HandleByte(ref vertexFlags_disableSeparatePositionStream);
+            }
 
             if (Version > 0xc2)
             {
@@ -1330,7 +1356,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 schema.HandleByte(ref vertexFlags_largeWorldAwareCamera);
             }
 
-            schema.HandleByte(ref vertexFlags_wind);
+            if (Version > 0xb5)
+            {
+                schema.HandleByte(ref vertexFlags_wind);
+            }
 
             if (Version > 0xe1)
             {
@@ -1523,8 +1552,11 @@ namespace Diorama.Core.Filetypes.GSC.Components
             schema.HandleInt(ref Normal2);
             schema.HandleInt(ref Specular2);
 
-            schema.HandleInt(ref Normal3);
-            schema.HandleInt(ref Specular3);
+            if (Version > 0xb3)
+            {
+                schema.HandleInt(ref Normal3);
+                schema.HandleInt(ref Specular3);
+            }
 
             if (Version > 0xef)
             {
@@ -1590,7 +1622,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             for (int i = 0; i < 4; i++)
             {
-                schema.Handle(ref TexAnimBlocks[i]);
+                schema.Handle(ref TexAnimBlocks[i], Version);
             }
 
             schema.HandleInt(ref Colour1);
@@ -1603,7 +1635,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
             schema.HandleFloat(ref KNormal0);
             schema.HandleFloat(ref KNormal1);
             schema.HandleFloat(ref KNormal2);
-            schema.HandleFloat(ref KNormal3);
+            if (Version > 0xb3)
+            {
+                schema.HandleFloat(ref KNormal3);
+            }
 
             schema.HandleFloat(ref KParallax);
             schema.HandleFloat(ref KParallaxBias);
@@ -1611,7 +1646,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
             schema.HandleInt(ref Colour5);
             schema.HandleInt(ref Colour6);
             schema.HandleInt(ref Colour7);
-            schema.HandleInt(ref Colour8);
+            if (Version > 0xb3)
+            {
+                schema.HandleInt(ref Colour8);
+            }
             schema.HandleInt(ref Colour9);
             schema.HandleInt(ref Colour10);
             schema.HandleInt(ref Colour11);
@@ -1741,7 +1779,10 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             schema.HandleShort(ref KTPageID);
 
-            schema.HandleFloat(ref KStiffness);
+            if (Version > 0xb5)
+            {
+                schema.HandleFloat(ref KStiffness);
+            }
 
             if (Version > 0xb6)
             {

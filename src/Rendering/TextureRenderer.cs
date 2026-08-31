@@ -1,6 +1,7 @@
 ﻿using Diorama.Rendering.Shaders;
 using Diorama.UI.Controls;
 using OpenTK.Graphics.OpenGL4;
+using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,32 +10,64 @@ namespace Diorama.Rendering
 {
     public class TextureRenderer : IRenderer
     {
-        public bool ContinuousRendering => false;
+        public bool ContinuousRendering { get; private set; } = false;
 
-        public RenderTexture ActiveTexture = null;
+        private RenderTexture ActiveTexture = null;
 
-        private Shader shader;
+        public void SetActiveTexture(RenderTexture active)
+        {
+            ActiveTexture = active;
+            ContinuousRendering = active?.Target == TextureTarget.TextureCubeMap;
+        }
+
+        private Shader flatShader;
+        private Shader cubeShader;
 
         public void Initialize()
         {
-            shader = new Shader("trishader.vert", "trishader.frag");
-            shader.Use();
-            shader.SetInt("texture0", 0);
+            flatShader = new Shader("trishader.vert", "trishader.frag");
+            flatShader.Use();
+            flatShader.SetInt("texture0", 0);
 
-            _vao = GL.GenVertexArray();
+            cubeShader = new Shader("cubepreview.vert", "cubepreview.frag");
+            cubeShader.Use();
+            cubeShader.SetInt("texture0", 0);
 
-            GL.BindVertexArray(_vao);
+            InitializeQuad();
+            InitializeCube();
+        }
 
-            _vbo = GL.GenBuffer();
+        private readonly float[] quadVertices =
+        {
+            // Position     UV
+            -1, -1,         0, 0,
+             1, -1,         1, 0,
+             1,  1,         1, 1,
+
+            -1, -1,         0, 0,
+             1,  1,         1, 1,
+            -1,  1,         0, 1,
+        };
+
+        private int _quadVAO;
+        private int _quadVBO;
+
+        private void InitializeQuad()
+        {
+            _quadVAO = GL.GenVertexArray();
+
+            GL.BindVertexArray(_quadVAO);
+
+            _quadVBO = GL.GenBuffer();
 
             GL.BindBuffer(
                 BufferTarget.ArrayBuffer,
-                _vbo);
+                _quadVBO);
 
             GL.BufferData(
                 BufferTarget.ArrayBuffer,
-                vertices.Length * sizeof(float),
-                vertices,
+                quadVertices.Length * sizeof(float),
+                quadVertices,
                 BufferUsageHint.StaticDraw);
 
             GL.EnableVertexAttribArray(0);
@@ -58,20 +91,76 @@ namespace Diorama.Rendering
                 2 * sizeof(float));
         }
 
-        float[] vertices =
-        {
-            // Position     UV
-            -1, -1,         0, 0,
-             1, -1,         1, 0,
-             1,  1,         1, 1,
+        private int _cubeVAO;
+        private int _cubeVBO;
 
-            -1, -1,         0, 0,
-             1,  1,         1, 1,
-            -1,  1,         0, 1,
+        private readonly float[] cubeVertices =
+        {
+            -1, -1, -1,
+             1,  1, -1,
+             1, -1, -1,
+             1,  1, -1,
+            -1, -1, -1,
+            -1,  1, -1,
+            -1, -1,  1,
+             1, -1,  1,
+             1,  1,  1,
+             1,  1,  1,
+            -1,  1,  1,
+            -1, -1,  1,
+            -1,  1,  1,
+            -1,  1, -1,
+            -1, -1, -1,
+            -1, -1, -1,
+            -1, -1,  1,
+            -1,  1,  1,
+             1,  1,  1,
+             1, -1, -1,
+             1,  1, -1,
+             1, -1, -1,
+             1,  1,  1,
+             1, -1,  1,
+            -1, -1, -1,
+             1, -1, -1,
+             1, -1,  1,
+             1, -1,  1,
+            -1, -1,  1,
+            -1, -1, -1,
+            -1,  1, -1,
+             1,  1,  1,
+             1,  1, -1,
+             1,  1,  1,
+            -1,  1, -1,
+            -1,  1,  1
         };
 
-        private int _vao;
-        private int _vbo;
+        private void InitializeCube()
+        {
+            _cubeVAO = GL.GenVertexArray();
+            _cubeVBO = GL.GenBuffer();
+
+            GL.BindVertexArray(_cubeVAO);
+
+            GL.BindBuffer(BufferTarget.ArrayBuffer, _cubeVBO);
+
+            GL.BufferData(
+                BufferTarget.ArrayBuffer,
+                cubeVertices.Length * sizeof(float),
+                cubeVertices,
+                BufferUsageHint.StaticDraw);
+
+            GL.EnableVertexAttribArray(0);
+
+            GL.VertexAttribPointer(
+                0,
+                3,
+                VertexAttribPointerType.Float,
+                false,
+                3 * sizeof(float),
+                0);
+
+            GL.BindVertexArray(0);
+        }
 
         public void Render(RenderSurface surface)
         {
@@ -83,19 +172,66 @@ namespace Diorama.Rendering
 
             if (ActiveTexture != null)
             {
-                shader.Use();
-
-                ActiveTexture.Use();
-
-                GL.BindVertexArray(_vao);
-
-                GL.DrawArrays(
-                    PrimitiveType.Triangles,
-                    0,
-                    6);
-
-                GL.Enable(EnableCap.DepthTest);
+                if (ActiveTexture.Target == TextureTarget.TextureCubeMap)
+                {
+                    RenderCube(surface);
+                }
+                else
+                {
+                    RenderFlat(surface);
+                }
             }
+        }
+
+        public void RenderFlat(RenderSurface surface)
+        {
+            flatShader.Use();
+
+            ActiveTexture.Use();
+
+            GL.BindVertexArray(_quadVAO);
+
+            GL.DrawArrays(
+                PrimitiveType.Triangles,
+                0,
+                6);
+
+            GL.Enable(EnableCap.DepthTest);
+        }
+
+        public void RenderCube(RenderSurface surface)
+        {
+            cubeShader.Use();
+
+            float aspect =
+                surface.Host.Width /
+                (float)surface.Host.Height;
+
+            Matrix4 projection =
+                Matrix4.CreatePerspectiveFieldOfView(
+                    MathHelper.DegreesToRadians(90.0f),
+                    aspect,
+                    0.1f,
+                    10.0f);
+
+            float time = (float)Program.TimeSinceStart;
+
+            Matrix4 rotation =
+                Matrix4.CreateRotationY(time * 0.2f);
+
+            cubeShader.SetMatrix4("projection", projection);
+            cubeShader.SetMatrix4("rotation", rotation);
+
+            ActiveTexture.Use();
+
+            GL.BindVertexArray(_cubeVAO);
+
+            GL.DrawArrays(
+                PrimitiveType.Triangles,
+                0,
+                36);
+
+            GL.BindVertexArray(0);
         }
     }
 }

@@ -24,17 +24,35 @@ public partial class SettingsWindow : ModalWindow
                 AppSettings.Settings = AppSettings.Load();
             }
         };
+
     }
 
-    private void SaveSettings_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    private async Task<bool> CheckSettings()
     {
-        AppSettings.Settings.Save();
-        CleanExit = true;
+        try
+        {
+            AppSettings.Settings.Save();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            var messageWindow = new MessageWindow("Failed to save settings", [ex.Message]);
+            await messageWindow.ShowDialog(this);
+            return false;
+        }
+    }
+
+    private async void SaveSettings_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        CleanExit = await CheckSettings();
         Close();
     }
 
-    private void GenerateFingerprints_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    private async void GenerateFingerprints_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
+        if (!await CheckSettings())
+            return;
+
         var cacheProgressWindow = new GenerateFingerprintsWindow();
         cacheProgressWindow.ShowDialog(this);
     }

@@ -99,6 +99,8 @@ namespace Diorama.Core.Filetypes.GSC.Components
         public uint Buffer5;
         public uint Buffer6;
 
+        public int LitFogEnabled;
+
         public void HandleLightDescCommon(SchemaSerializer schema)
         {
             schema.HandlePascalString(ref LightDescName, 1);
@@ -206,11 +208,19 @@ namespace Diorama.Core.Filetypes.GSC.Components
             schema.HandleFloat(ref SpotAspectRatio);
             schema.HandleFloat(ref SpotNegativeDistance);
 
-            schema.HandleUInt(ref Buffer5);
-            Debug.Assert(Buffer5 == 0);
+            if (Version > 0x30)
+            {
+                schema.HandleUInt(ref Buffer5);
+                //Debug.Assert(Buffer5 == 0);
 
-            schema.HandleUInt(ref Buffer6);
-            Debug.Assert(Buffer6 == 0);
+                schema.HandleUInt(ref Buffer6);
+                //Debug.Assert(Buffer6 == 0);   
+            }
+
+            if (Version == 0x2f)
+            {
+                schema.HandleInt(ref LitFogEnabled);
+            }
         }
 
         public byte UsedBits;
@@ -316,7 +326,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
         public void HandleLightDesc(SchemaSerializer schema)
         {
             schema.HandleByte(ref UsedBits);
-            Debug.Assert(UsedBits == 0);
+            //Debug.Assert(UsedBits == 0);
 
             schema.HandleUInt(ref NumRayTracedShadowRays);
 
@@ -430,7 +440,7 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 schema.HandleByte(ref ShadowsOnDx11Only);
             }
 
-            if (Version > 0x2e)
+            if (Version > 0x2f) // not in lcu, confirm in others?
             {
                 schema.HandleByte(ref DeferredBoundingBoxesAsExclusion);
                 schema.HandleByte(ref UseBoundingBoxesForBlendedDirectional);

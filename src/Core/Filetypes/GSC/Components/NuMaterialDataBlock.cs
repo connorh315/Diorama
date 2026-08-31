@@ -90,6 +90,8 @@ namespace Diorama.Core.Filetypes.GSC.Components
             }
         }
 
+        public int UnsureLcu;
+
         public void Handle(SchemaSerializer schema, uint parentVersion)
         {
             this.ctx = (GSerializationContext)schema.Context;
@@ -99,6 +101,13 @@ namespace Diorama.Core.Filetypes.GSC.Components
 
             int count = schema.Writing ? Materials.Length : 0;
             schema.HandleInt(ref count);
+
+            if (Version == 0xb1)
+            {
+                int count2 = count;
+                schema.HandleInt(ref count2);
+                Debug.Assert(count2 == count);
+            }
 
             if (!schema.Writing)
             {
@@ -117,6 +126,11 @@ namespace Diorama.Core.Filetypes.GSC.Components
                 {
                     HandleMaterialWrite(Materials[i], schema);
                 }
+            }
+
+            if (Version < 0xb4 && Version != 0xb1)
+            {
+                schema.HandleInt(ref UnsureLcu);
             }
 
             if (Version < 0xfa)
